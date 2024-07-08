@@ -10,8 +10,7 @@
 
 *Harina, Jhaycie Lloyd D.*
 
-## ***Project Introduction***
-Project Overview:
+## ***Project Overview***
 WeatherWise is a cross-platform weather application developed using Flutter. The app aims to provide users with accurate and personalized weather information based on their location. It will be available on both iOS and Android platforms.
 
 ## ***Objectives:***
