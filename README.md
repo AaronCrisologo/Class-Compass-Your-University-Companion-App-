@@ -11,7 +11,7 @@
 *Harina, Jhaycie Lloyd D.*
 
 ## ***Project Overview***
-WeatherWise is a cross-platform weather application developed using Flutter. The app aims to provide users with accurate and personalized weather information based on their location. It will be available on both iOS and Android platforms.
+WeatherWise is an innovative, weather application meticulously crafted using the robust Flutter framework. WeatherWise stands out with its commitment to delivering precise and tailored weather insights. Leveraging the power of the Open Weather Map API, the app ensures that users receive real-time weather data, including temperature, humidity, and wind speed, directly pertinent to their specific location.
 
 ## ***Objectives:***
 **Real-Time Weather Data:**
@@ -58,7 +58,7 @@ Personalize the app’s appearance and features.
 Notify users about severe weather conditions (storms, heavy rain, snow, etc.).
 
 
-### ***Limitations:***
+### ***Acknowledging Limitations:***
 **Geographical Coverage:**
 The app’s accuracy depends on the coverage and reliability of the weather API.
 
@@ -74,14 +74,14 @@ Advanced features like hyper-local forecasts (street-level accuracy) may not be 
 **Design Complexity:**
 Balancing aesthetics with functionality is crucial.
 
-## ***Sustainable Development Goals 13 Climate Action:***
-WeatherWise contributes by providing accurate weather information to users. By helping individuals make informed decisions related to climate variability, extreme weather events, and safety precautions, the app indirectly supports climate resilience. Additionally, WeatherWise can raise awareness about climate-related challenges and encourage sustainable practices.
+## ***Climate Action Commitment:***
+Aligned with Sustainable Development Goal 13, WeatherWise plays a pivotal role in fostering climate awareness and resilience. By equipping users with precise weather data, the app facilitates informed decision-making in the face of climate variability and extreme weather events. Moreover, WeatherWise serves as a platform to promote sustainable living practices and heighten consciousness about climate change challenges.
 
 ## ***Technologies***
-• Flutter
+• Flutter: The choice of Flutter as the development framework underscores WeatherWise’s dedication to cross-platform compatibility and performance.
 
-• Dart Programming Language
+• Dart Programming Language: Dart’s versatility and efficiency are instrumental in powering the app’s dynamic features and user interface.
 
-• Open Weather Map API
+• Open Weather Map API: This API is the cornerstone of WeatherWise’s data accuracy, providing a reliable source for weather information.
 
 ## ***References***
