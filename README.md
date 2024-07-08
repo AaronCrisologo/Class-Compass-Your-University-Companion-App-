@@ -2,10 +2,13 @@
 
 ## ***Name of Team Member***
 
-Cabalag, Francis Melvin V.
-Crisologo, Aaron Angelo D.
-Gudtan, Gian Aron B.
-Harina, Jhaycie Lloyd D.
+*Cabalag, Francis Melvin V.*
+
+*Crisologo, Aaron Angelo D.*
+
+*Gudtan, Gian Aron B.*
+
+*Harina, Jhaycie Lloyd D.*
 
 ## ***Project Introduction***
 Project Overview:
@@ -35,7 +38,7 @@ Ensure safety by providing timely alerts.
 **Purpose:**
 The purpose of WeatherWise is to empower users with accurate weather insights, helping them make informed decisions based on current and forecasted conditions. Whether planning outdoor activities, travel, or daily routines, users can rely on this app for reliable weather information.
 ## ***Project Description***
-Scope:
+### ***Scope:***
 **Weather Data Retrieval:**
 Fetch real-time weather data from a reliable weather API.
 Display current conditions (temperature, humidity, wind speed, etc.) for the user’s location.
@@ -56,7 +59,7 @@ Personalize the app’s appearance and features.
 Notify users about severe weather conditions (storms, heavy rain, snow, etc.).
 
 
-Limitations:
+### ***Limitations:***
 **Geographical Coverage:**
 The app’s accuracy depends on the coverage and reliability of the weather API.
 
@@ -77,7 +80,9 @@ WeatherWise contributes by providing accurate weather information to users. By h
 
 ## ***Technologies***
 • Flutter
+
 • Dart Programming Language
+
 • Open Weather Map API
 
 ## ***References***
