@@ -212,6 +212,8 @@ class _NotificationSettingsScreenState
     extends State<NotificationSettingsScreen> {
   bool _doNotDisturb = false;
   bool _reminder = false;
+  bool _eventReminder = false;
+  bool _cancellationAlert = false;
 
   @override
   Widget build(BuildContext context) {
@@ -241,6 +243,26 @@ class _NotificationSettingsScreenState
               });
             },
           ),
+          SwitchListTile(
+            title: Text('Event Reminder'),
+            subtitle: Text('Notify about upcoming events'),
+            value: _eventReminder,
+            onChanged: (bool value) {
+              setState(() {
+                _eventReminder = value;
+              });
+            },
+          ),
+          SwitchListTile(
+            title: Text('Cancellation Alerts'),
+            subtitle: Text('Alert when a class is cancelled'),
+            value: _cancellationAlert,
+            onChanged: (bool value) {
+              setState(() {
+                _cancellationAlert = value;
+              });
+            },
+          ),
           // Add more notification settings if needed
         ],
       ),
@@ -260,6 +282,8 @@ class _PrivacySecuritySettingsScreenState
   bool _dataSharing = false;
   bool _adPersonalization = false;
   bool _passwordProtection = false;
+  bool _twoFactorAuth = false;
+  bool _incognitoMode = false;
 
   @override
   Widget build(BuildContext context) {
@@ -306,6 +330,26 @@ class _PrivacySecuritySettingsScreenState
             onChanged: (bool value) {
               setState(() {
                 _passwordProtection = value;
+              });
+            },
+          ),
+          SwitchListTile(
+            title: Text('Two-Factor Authentication'),
+            subtitle: Text('Add an extra layer of security to your account'),
+            value: _twoFactorAuth,
+            onChanged: (bool value) {
+              setState(() {
+                _twoFactorAuth = value;
+              });
+            },
+          ),
+          SwitchListTile(
+            title: Text('Incognito Mode'),
+            subtitle: Text('Use the app without saving activity history'),
+            value: _incognitoMode,
+            onChanged: (bool value) {
+              setState(() {
+                _incognitoMode = value;
               });
             },
           ),
