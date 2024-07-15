@@ -19,113 +19,161 @@ class _CalendarScreenState extends State<CalendarScreen> {
   List<DateTime> userNoClassDays = [];
   List<DateTime> partialNoClassDays = []; // New list for partial no class days
 
+  DateTime currentDate = DateTime(2024, 8, 9);
+  DateTime nextNoClassDay = DateTime(2024, 8, 15);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('August 2024'),
+        title: Text('Calendar'),
+        backgroundColor: Colors.white,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 7,
-            childAspectRatio: 1.0,
-          ),
-          itemCount: daysInMonth(DateTime(2024, 8)) +
-              4, // Offset for starting on Thursday
-          itemBuilder: (context, index) {
-            DateTime currentDay;
-            if (index < 4) {
-              currentDay = DateTime(2024, 7, 28 + index);
-            } else {
-              currentDay = DateTime(2024, 8, index - 3);
-            }
-            bool isHoliday =
-                holidays.any((holiday) => holiday['date'] == currentDay);
-            bool isWeatherDisturbance =
-                weatherDisturbances.contains(currentDay);
-            bool isUserNoClassDay = userNoClassDays.contains(currentDay);
-            bool isPartialNoClassDay = partialNoClassDays.contains(currentDay);
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: GridView.builder(
+                physics:
+                    NeverScrollableScrollPhysics(), // Disable GridView's own scrolling
+                shrinkWrap: true, // Take up only the necessary space
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7,
+                  childAspectRatio: 1.0,
+                ),
+                itemCount: daysInMonth(DateTime(2024, 8)) +
+                    4, // Offset for starting on Thursday
+                itemBuilder: (context, index) {
+                  DateTime currentDay;
+                  if (index < 4) {
+                    currentDay = DateTime(2024, 7, 28 + index);
+                  } else {
+                    currentDay = DateTime(2024, 8, index - 3);
+                  }
+                  bool isHoliday =
+                      holidays.any((holiday) => holiday['date'] == currentDay);
+                  bool isWeatherDisturbance =
+                      weatherDisturbances.contains(currentDay);
+                  bool isUserNoClassDay = userNoClassDays.contains(currentDay);
+                  bool isPartialNoClassDay =
+                      partialNoClassDays.contains(currentDay);
+                  bool isCurrentDate = currentDay == currentDate;
 
-            IconData? getIcon() {
-              if (isHoliday) return Icons.event;
-              if (isWeatherDisturbance) return Icons.cloud;
-              if (isUserNoClassDay) return Icons.person;
-              return null;
-            }
+                  IconData? getIcon() {
+                    if (isHoliday) return Icons.event;
+                    if (isWeatherDisturbance) return Icons.cloud;
+                    if (isUserNoClassDay) return Icons.person;
+                    return null;
+                  }
 
-            Color getBackgroundColor() {
-              if (isHoliday || isWeatherDisturbance || isUserNoClassDay) {
-                return Colors.red[100]!;
-              }
-              if (isPartialNoClassDay) {
-                return Colors.yellow[100]!;
-              }
-              return Colors.white;
-            }
+                  Color getBackgroundColor() {
+                    if (isCurrentDate) return Colors.lightBlue[100]!;
+                    if (isHoliday || isWeatherDisturbance || isUserNoClassDay) {
+                      return Colors.red[100]!;
+                    }
+                    if (isPartialNoClassDay) {
+                      return Colors.yellow[100]!;
+                    }
+                    return Colors.white;
+                  }
 
-            return GestureDetector(
-              onTap: () {
-                _showDayDetails(
-                    context,
-                    currentDay,
-                    isHoliday,
-                    isWeatherDisturbance,
-                    isUserNoClassDay,
-                    isPartialNoClassDay);
-              },
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      color: getBackgroundColor(),
-                    ),
-                    child: Center(
-                      child: Text(
-                        index < 4 ? '' : '${currentDay.day}',
-                        style: TextStyle(fontSize: 16.0),
-                      ),
-                    ),
-                  ),
-                  if (isHoliday ||
-                      isWeatherDisturbance ||
-                      isUserNoClassDay ||
-                      isPartialNoClassDay)
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (getIcon() != null)
-                            Icon(
-                              getIcon(),
-                              color: Colors.red,
-                              size: 18.0,
+                  return GestureDetector(
+                    onTap: () {
+                      _showDayDetails(
+                          context,
+                          currentDay,
+                          isHoliday,
+                          isWeatherDisturbance,
+                          isUserNoClassDay,
+                          isPartialNoClassDay);
+                    },
+                    child: Stack(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            color: getBackgroundColor(),
+                          ),
+                          child: Center(
+                            child: Text(
+                              index < 4 ? '' : '${currentDay.day}',
+                              style: TextStyle(fontSize: 16.0),
                             ),
-                          if (isPartialNoClassDay)
-                            Text(
-                              '*',
-                              style:
-                                  TextStyle(color: Colors.red, fontSize: 24.0),
+                          ),
+                        ),
+                        if (isHoliday ||
+                            isWeatherDisturbance ||
+                            isUserNoClassDay ||
+                            isPartialNoClassDay)
+                          Positioned(
+                            top: 4,
+                            right: 4,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (getIcon() != null)
+                                  Icon(
+                                    getIcon(),
+                                    color: Colors.red,
+                                    size: 18.0,
+                                  ),
+                                if (isPartialNoClassDay)
+                                  Text(
+                                    '*',
+                                    style: TextStyle(
+                                        color: Colors.red, fontSize: 24.0),
+                                  ),
+                                if (isHoliday ||
+                                    isWeatherDisturbance ||
+                                    isUserNoClassDay)
+                                  Icon(
+                                    Icons.close,
+                                    color: Colors.red,
+                                    size: 24.0,
+                                  ),
+                              ],
                             ),
-                          if (isHoliday ||
-                              isWeatherDisturbance ||
-                              isUserNoClassDay)
-                            Icon(
-                              Icons.close,
-                              color: Colors.red,
-                              size: 24.0,
-                            ),
-                        ],
-                      ),
+                          ),
+                      ],
                     ),
-                ],
+                  );
+                },
               ),
-            );
-          },
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Container(
+                padding: EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.blue, width: 2),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'Current Date: ${currentDate.day}/${currentDate.month}/${currentDate.year}',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue[800],
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Next No Class Day: ${nextNoClassDay.day}/${nextNoClassDay.month}/${nextNoClassDay.year}',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.blue[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

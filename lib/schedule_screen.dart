@@ -16,7 +16,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Class Compass'),
+        title: Text("Class Scheduler"),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -34,13 +34,13 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     child: Center(
                       child: Text(
                         [
-                          'Sunday',
-                          'Monday',
-                          'Tuesday',
-                          'Wednesday',
-                          'Thursday',
-                          'Friday',
-                          'Saturday'
+                          'Sun',
+                          'Mon',
+                          'Tue',
+                          'Wed',
+                          'Thu',
+                          'Fri',
+                          'Sat'
                         ][index],
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
@@ -91,10 +91,27 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                         ),
                         child: Center(
                           child: isFirstSlot
-                              ? Text(
-                                  '${classForTimeSlot['name']}\n${classForTimeSlot['instructor']}',
-                                  style: TextStyle(fontSize: 10),
-                                  textAlign: TextAlign.center,
+                              ? Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      classForTimeSlot['name'],
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    Text(
+                                      classForTimeSlot['instructor'],
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.white70,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
                                 )
                               : null,
                         ),

@@ -14,7 +14,7 @@ class ClassCompassApp extends StatelessWidget {
     return MaterialApp(
       title: 'Class Compass',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.red,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: MainScreen(),
@@ -48,6 +48,7 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Class Compass'),
+        backgroundColor: Colors.red,
       ),
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
@@ -77,6 +78,7 @@ class _MainScreenState extends State<MainScreen> {
         selectedItemColor: Colors.blueAccent,
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
+        backgroundColor: Colors.red,
       ),
       drawer: Drawer(
         child: ListView(
