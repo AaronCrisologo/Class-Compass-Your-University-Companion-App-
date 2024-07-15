@@ -1,4 +1,4 @@
-# ***WeatherWise Your Personalized Weather Companion***
+# ***Class Compass Your University Companion App***
 
 ## ***Name of Team Member***
 
@@ -11,77 +11,73 @@
 *Harina, Jhaycie Lloyd D.*
 
 ## ***Project Overview***
-WeatherWise is an innovative, weather application meticulously crafted using the robust Flutter framework. WeatherWise stands out with its commitment to delivering precise and tailored weather insights. Leveraging the power of the Open Weather Map API, the app ensures that users receive real-time weather data, including temperature, humidity, and wind speed, directly pertinent to their specific location.
+  Class Compass is a comprehensive mobile application designed to streamline and enhance the student experience by consolidating critical academic information and updates into a single, user-friendly interface. Built using the Flutter framework, Class Compass is intended to provide students with real-time notifications about class cancellations, school holidays, emergency announcements, and other vital information that could affect their academic schedule. The application will feature a robust login system that detects the student's department, ensuring that each user receives tailored updates relevant to their specific academic environment. In addition to providing timely alerts, Class Compass will also aggregate essential information such as the school's academic calendar and national holidays, enabling students to stay organized and informed. Furthermore, the app will empower students to create and manage their own class schedules, with the ability to mark and track cancellations as they occur. With additional features such as event reminders, resource links, emergency contact information, and instructor announcements, Class Compass aims to be an indispensable tool for every student navigating their academic journey.
 
 ## ***Objectives:***
-**Real-Time Weather Data:**
-Fetch real-time weather data from a reliable weather API.
-Display current conditions (temperature, humidity, wind speed, etc.) for the user’s location.
 
-**Hourly and Daily Forecasts:**
-Provide detailed hourly and daily weather forecasts.
-Include information such as temperature trends, precipitation chances, and wind conditions.
+  The objectives of Class Compass are multifaceted, targeting both immediate and long-term benefits for the student body. Firstly, the app aims to deliver real-time notifications for class cancellations, school events, and emergency announcements, ensuring that students are promptly informed about any changes that might impact their academic schedule. 
+Secondly, Class Compass will provide a centralized repository of critical academic information, such as the school’s academic calendar and national holidays, enabling students to plan their studies and personal activities effectively. Thirdly, the app will include a customizable schedule management feature that allows students to create, modify, and monitor their class schedules, with an easy-to-use interface for marking and tracking class cancellations. 
+Additionally, by incorporating event reminders, resource links, and emergency contact information, Class Compass will serve as a comprehensive academic companion that supports students in various aspects of their university life. Finally, the app aims to foster better communication between instructors and students through dedicated announcement sections, ensuring that important updates from faculty members are never missed. Overall, the goal of Class Compass is to enhance student productivity, reduce informational barriers, and create a more connected and efficient academic community.
 
-**Location Services:**
-Automatically detect the user’s location using GPS or network services.
-Allow users to manually search for other locations.
-
-**Customization Options:**
-Enable users to set preferences (e.g., temperature units, dark/light mode).
-Personalize the app’s appearance and features.
-
-**Severe Weather Alerts:**
-Notify users about severe weather conditions (storms, heavy rain, snow, etc.).
-Ensure safety by providing timely alerts.
 
 **Purpose:**
-The purpose of WeatherWise is to empower users with accurate weather insights, helping them make informed decisions based on current and forecasted conditions. Whether planning outdoor activities, travel, or daily routines, users can rely on this app for reliable weather information.
+
+  The primary purpose of Class Compass is to bridge the communication gap between students and the various administrative and academic departments within a university. In the fast-paced academic environment, students often find it challenging to keep up with sudden changes, such as class cancellations due to unforeseen circumstances or important announcements that require immediate attention. 
+
+  By centralizing all such information in one accessible platform, Class Compass seeks to alleviate the stress and confusion associated with these sudden changes, ensuring that students are always in the loop. Additionally, the app aims to enhance the overall academic experience by providing tools that help students manage their schedules more effectively and stay informed about important events and deadlines. By leveraging the capabilities of Flutter, Class Compass will offer a seamless and visually appealing user experience across multiple devices, making it easier for students to access the information they need anytime, anywhere.
+
+
 ## ***Project Description***
 ### ***Scope:***
-**Weather Data Retrieval:**
-Fetch real-time weather data from a reliable weather API.
-Display current conditions (temperature, humidity, wind speed, etc.) for the user’s location.
 
-**Forecast Information:**
-Provide detailed hourly and daily weather forecasts.
-Include information such as temperature trends, precipitation chances, and wind conditions.
+The scope of the Class Compass project is focused on developing a front-end mobile application using Flutter that enhances the academic experience for university students. The application will include the following features:
 
-**Location Services:**
+**User Authentication and Personalization:**
+Students should be able to login with their own provided school accounts to authenticate with the application and receive personalized content based on their department.
+
+**Real-Time Notifications:**
+An interface for displaying real-time notifications about class cancellations, emergency announcements, and other critical updates.
+
+**Customizable Schedule Planner:**
 Automatically detect the user’s location using GPS or network services.
 Allow users to manually search for other locations.
 
-**Customization Options:**
-Enable users to set preferences (e.g., temperature units, dark/light mode).
-Personalize the app’s appearance and features.
+**Instructor Announcements Section:**
+A dedicated area for instructors to post updates and important notices directly to their students.
 
-**Severe Weather Alerts:**
-Notify users about severe weather conditions (storms, heavy rain, snow, etc.).
+**Resource Links and Emergency Contacts:**
+An integrated section with links to valuable academic resources and emergency contact information.
 
 
 ### ***Acknowledging Limitations:***
-**Geographical Coverage:**
-The app’s accuracy depends on the coverage and reliability of the weather API.
+**No Backend Integration:**
+The project will not involve any backend development. All data used in the application will be static or mocked, and there will be no real-time data fetching or database interactions.
 
-**Data Latency:**
-Real-time data updates may have a slight delay due to API response times.
+**Limited Real-Time Functionality:**
+While the app will include a design for real-time notifications, the actual implementation of real-time data updates and push notifications will not be covered in this phase.
 
-**Battery Usage:**
-Continuous location tracking and data retrieval can impact device battery life.
+**Simplified Authentication:**
+The login system will be designed to simulate user authentication and personalization but will not involve actual user verification or secure credential storage.
 
-**Localized Features:**
-Advanced features like hyper-local forecasts (street-level accuracy) may not be feasible without additional data sources.
-
-**Design Complexity:**
-Balancing aesthetics with functionality is crucial.
+**No Network Security:**
+Since the project does not involve backend interaction, network security measures like data encryption and secure API communication will not be implemented.
 
 ## ***Climate Action Commitment:***
-Aligned with Sustainable Development Goal 13, WeatherWise plays a pivotal role in fostering climate awareness and resilience. By equipping users with precise weather data, the app facilitates informed decision-making in the face of climate variability and extreme weather events. Moreover, WeatherWise serves as a platform to promote sustainable living practices and heighten consciousness about climate change challenges.
+The Class Compass project aligns with **Sustainable Development Goal 4 (Quality Education)**, which aims to ensure inclusive and equitable quality education and promote lifelong learning opportunities for all.
 
 ## ***Technologies***
-• **Flutter:** The choice of Flutter as the development framework underscores WeatherWise’s dedication to cross-platform compatibility and performance.
+• **Flutter Framework:** Flutter will serve as the primary framework for developing the mobile application's front-end. Flutter enables rapid development of cross-platform applications with a single codebase, ensuring consistency across Android and iOS devices.
 
-• **Dart Programming Language:** Dart’s versatility and efficiency are instrumental in powering the app’s dynamic features and user interface.
+• **Dart Programming Language:** 
+Dart, the programming language used with Flutter, will be employed for writing the application's logic and user interface components. Dart's efficiency in handling UI rendering and business logic makes it well-suited for mobile app development.
 
-• **Open Weather Map API:** This API is the cornerstone of WeatherWise’s data accuracy, providing a reliable source for weather information.
+• **Integrated Development Environment (IDE):** 
+**VS Code** will be used as the primary integrated development environment (IDE) for coding, debugging, and testing the Flutter application. Its robust Flutter and Dart extensions simplify development tasks and provide essential tools for efficient coding.
+
+• **Version Control System:** 
+Git will be utilized for version control, enabling collaborative development, tracking changes, and managing codebase updates throughout the project lifecycle. **GitHub** will serve as the remote repository hosting service.
+
+• *Mock Data and Assets:** 
+Static data and mock assets, including academic calendars, event information, and departmental resources, will be stored locally within the application. These will be accessed and displayed dynamically to simulate real-time updates and functionality.
 
 ## ***References***
