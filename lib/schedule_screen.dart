@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
+String formatTimeWithoutMinutes(BuildContext context, TimeOfDay time) {
+  final formattedTime = time.format(context);
+  return formattedTime
+      .replaceAll(':00', '')
+      .replaceAll('10 AM', '10AM')
+      .replaceAll('11 AM', '11AM')
+      .replaceAll('12 PM', '12PM');
+}
+
 class ScheduleScreen extends StatefulWidget {
   @override
   _ScheduleScreenState createState() => _ScheduleScreenState();
@@ -11,121 +20,198 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Class Scheduler"),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Row(
+      backgroundColor: Colors.red[10],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final double cellWidth = constraints.maxWidth / 8;
+          final double cellHeight =
+              cellWidth * 1.4; // Adjust the aspect ratio as needed
+
+          return SingleChildScrollView(
+            child: Column(
               children: [
-                Container(
-                    width: screenWidth / 8,
-                    height: 60,
-                    child: Center(child: Text(''))),
-                ...List.generate(7, (index) {
-                  return Container(
-                    width: screenWidth / 8,
-                    height: 60,
-                    child: Center(
-                      child: Text(
-                        [
-                          'Sun',
-                          'Mon',
-                          'Tue',
-                          'Wed',
-                          'Thu',
-                          'Fri',
-                          'Sat'
-                        ][index],
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  );
-                }),
-              ],
-            ),
-            ...List.generate(13, (timeIndex) {
-              final currentTime = TimeOfDay(hour: 7 + timeIndex, minute: 0);
-              return Row(
-                children: [
-                  Container(
-                    width: screenWidth / 8,
-                    height: screenHeight / 15,
-                    child: Center(
-                      child: Text('${currentTime.format(context)}'),
+                Padding(
+                  padding: const EdgeInsets.only(top: 40.0, bottom: 20.0),
+                  child: Text(
+                    "Class Scheduler",
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red[700],
+                      shadows: [
+                        Shadow(
+                          blurRadius: 10.0,
+                          color: Colors.red[300]!,
+                          offset: Offset(3.0, 3.0),
+                        ),
+                      ],
                     ),
                   ),
-                  ...List.generate(7, (dayIndex) {
-                    final classForTimeSlot = classes.firstWhere(
-                      (classItem) =>
-                          classItem['day'] == dayIndex &&
-                          classItem['startTime'].hour <= currentTime.hour &&
-                          classItem['endTime'].hour > currentTime.hour,
-                      orElse: () => {},
-                    );
-
-                    bool isClassBlock = classForTimeSlot.isNotEmpty;
-                    bool isFirstSlot = classForTimeSlot.isNotEmpty &&
-                        classForTimeSlot['startTime'].hour == currentTime.hour;
-
-                    return GestureDetector(
-                      onTap: () => isClassBlock
-                          ? _editClass(classForTimeSlot)
-                          : _addClass(dayIndex, currentTime),
-                      child: Container(
-                        width: screenWidth / 8,
-                        height: screenHeight / 15,
-                        decoration: BoxDecoration(
-                          color: isClassBlock
-                              ? classForTimeSlot['color'].withOpacity(0.5)
-                              : null,
-                          border: Border.all(
-                            color:
-                                isClassBlock ? Colors.transparent : Colors.grey,
+                ),
+                Row(
+                  children: [
+                    Container(
+                      width: cellWidth,
+                      height: cellHeight,
+                      child: Center(child: Text('')),
+                    ),
+                    ...List.generate(7, (index) {
+                      return Container(
+                        width: cellWidth,
+                        height: cellHeight,
+                        child: Center(
+                          child: Text(
+                            [
+                              'Sun',
+                              'Mon',
+                              'Tue',
+                              'Wed',
+                              'Thu',
+                              'Fri',
+                              'Sat'
+                            ][index],
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
-                        child: Center(
-                          child: isFirstSlot
-                              ? Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      classForTimeSlot['name'],
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    Text(
-                                      classForTimeSlot['instructor'],
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: Colors.white70,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                )
-                              : null,
+                      );
+                    }),
+                  ],
+                ),
+                ...List.generate(12, (timeIndex) {
+                  final currentTime = TimeOfDay(hour: 7 + timeIndex, minute: 0);
+                  return Row(
+                    children: [
+                      Container(
+                        width: cellWidth,
+                        height: cellHeight,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: Align(
+                              alignment: FractionalOffset(
+                                  1.0, -0.2), // Your chosen offset
+                              child: Text(
+                                formatTimeWithoutMinutes(context, currentTime),
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    );
-                  }),
-                ],
-              );
-            }),
-          ],
-        ),
+                      ...List.generate(7, (dayIndex) {
+                        final classForTimeSlot = classes.firstWhere(
+                          (classItem) =>
+                              classItem['day'] == dayIndex &&
+                              classItem['startTime'].hour <= currentTime.hour &&
+                              classItem['endTime'].hour > currentTime.hour,
+                          orElse: () => {},
+                        );
+
+                        bool isClassBlock = classForTimeSlot.isNotEmpty;
+                        bool isFirstSlot = classForTimeSlot.isNotEmpty &&
+                            classForTimeSlot['startTime'].hour ==
+                                currentTime.hour;
+
+                        return GestureDetector(
+                          onTap: () => isClassBlock
+                              ? _editClass(classForTimeSlot)
+                              : _addClass(dayIndex, currentTime),
+                          child: Container(
+                            width: cellWidth,
+                            height: cellHeight,
+                            decoration: BoxDecoration(
+                              color: isClassBlock
+                                  ? classForTimeSlot['color'].withOpacity(0.7)
+                                  : Colors.white,
+                              border: Border.all(
+                                color: Colors.red[100]!,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.red[100]!,
+                                  blurRadius: 5,
+                                  offset: Offset(2, 2),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: isFirstSlot
+                                  ? Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          classForTimeSlot['name'],
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        Text(
+                                          classForTimeSlot['instructor'],
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.white70,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
+                                    )
+                                  : null,
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
+                  );
+                }),
+                // Add the 7:00 PM time as a standalone text widget
+                Row(
+                  children: [
+                    Container(
+                      width: cellWidth,
+                      height: cellHeight,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: Align(
+                            alignment: FractionalOffset(1.0, -0.3),
+                            child: Text(
+                              '7 PM',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Spacer(),
+                    ...List.generate(7, (index) => Spacer()),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addClassPrompt,
+        backgroundColor: Colors.red[100],
         child: Icon(Icons.add),
       ),
     );
@@ -235,6 +321,9 @@ class __ClassDialogState extends State<_ClassDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16.0),
+      ),
       title: Text(widget.classItem != null ? 'Edit Class' : 'Add Class'),
       content: SingleChildScrollView(
         child: Column(
@@ -250,13 +339,13 @@ class __ClassDialogState extends State<_ClassDialog> {
             ),
             DropdownButton<int>(
               value: selectedDay,
-              onChanged: (value) {
+              onChanged: (int? newValue) {
                 setState(() {
-                  selectedDay = value!;
+                  selectedDay = newValue!;
                 });
               },
               items: List.generate(7, (index) {
-                return DropdownMenuItem(
+                return DropdownMenuItem<int>(
                   value: index,
                   child: Text([
                     'Sunday',
@@ -270,52 +359,49 @@ class __ClassDialogState extends State<_ClassDialog> {
                 );
               }),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Start Time: ${startTime.format(context)}'),
-                TextButton(
-                  onPressed: () async {
-                    final picked = await showTimePicker(
-                      context: context,
-                      initialTime: startTime,
-                    );
-                    if (picked != null) {
-                      setState(() {
-                        startTime = picked;
-                      });
-                    }
-                  },
-                  child: Text('Select'),
-                ),
-              ],
+            ListTile(
+              title: Text('Start Time'),
+              trailing: TextButton(
+                onPressed: () async {
+                  TimeOfDay? picked = await showTimePicker(
+                    context: context,
+                    initialTime: startTime,
+                  );
+                  if (picked != null && picked != startTime) {
+                    setState(() {
+                      startTime = picked;
+                    });
+                  }
+                },
+                child: Text(formatTimeWithoutMinutes(context, startTime)),
+              ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('End Time: ${endTime.format(context)}'),
-                TextButton(
-                  onPressed: () async {
-                    final picked = await showTimePicker(
-                      context: context,
-                      initialTime: endTime,
-                    );
-                    if (picked != null) {
-                      setState(() {
-                        endTime = picked;
-                      });
-                    }
-                  },
-                  child: Text('Select'),
-                ),
-              ],
+            ListTile(
+              title: Text('End Time'),
+              trailing: TextButton(
+                onPressed: () async {
+                  TimeOfDay? picked = await showTimePicker(
+                    context: context,
+                    initialTime: endTime,
+                  );
+                  if (picked != null && picked != endTime) {
+                    setState(() {
+                      endTime = picked;
+                    });
+                  }
+                },
+                child: Text(formatTimeWithoutMinutes(context, endTime)),
+              ),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Class Color'),
                 IconButton(
-                  icon: Icon(Icons.color_lens, color: selectedColor),
+                  icon: Icon(
+                    Icons.color_lens,
+                    color: Colors.red,
+                  ),
                   onPressed: () async {
                     final pickedColor = await showDialog<Color>(
                       context: context,
@@ -361,7 +447,7 @@ class __ClassDialogState extends State<_ClassDialog> {
             onPressed: () {
               Navigator.of(context).pop({'delete': true});
             },
-            child: Text('Delete'),
+            child: Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         TextButton(
           onPressed: () {
@@ -380,7 +466,7 @@ class __ClassDialogState extends State<_ClassDialog> {
               'color': selectedColor,
             });
           },
-          child: Text('Save'),
+          child: Text(widget.classItem != null ? 'Save' : 'Add'),
         ),
       ],
     );

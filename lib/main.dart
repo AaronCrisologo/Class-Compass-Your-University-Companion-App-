@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'home_screen.dart';
 import 'calendar_screen.dart';
 import 'notifications_screen.dart';
 import 'announcements_screen.dart';
 import 'schedule_screen.dart';
 import 'settings_screen.dart';
+import 'login_screen.dart';
 
 void main() => runApp(ClassCompassApp());
 
@@ -17,7 +19,7 @@ class ClassCompassApp extends StatelessWidget {
         primarySwatch: Colors.red,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MainScreen(),
+      home: LoginScreen(),
     );
   }
 }
@@ -29,7 +31,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  static List<Widget> _widgetOptions = <Widget>[
+  static final List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
     CalendarScreen(),
     NotificationsScreen(),
@@ -41,6 +43,13 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  void _logout() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginScreen()),
+    );
   }
 
   @override
@@ -66,7 +75,9 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Notifications',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.announcement),
+            icon: Icon(
+              FontAwesomeIcons.bullhorn,
+            ),
             label: 'Announcements',
           ),
           BottomNavigationBarItem(
@@ -95,7 +106,7 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               ),
               decoration: BoxDecoration(
-                color: Colors.blue,
+                color: Colors.grey,
               ),
             ),
             ListTile(
@@ -134,6 +145,7 @@ class _MainScreenState extends State<MainScreen> {
             ListTile(
               leading: Icon(Icons.logout),
               title: Text('Logout'),
+              onTap: _logout,
             ),
           ],
         ),

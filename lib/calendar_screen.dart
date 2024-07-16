@@ -26,7 +26,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Calendar'),
+        title: Text('School Calendar'),
         backgroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -162,7 +162,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     ),
                     SizedBox(height: 10),
                     Text(
-                      'Next No Class Day: ${nextNoClassDay.day}/${nextNoClassDay.month}/${nextNoClassDay.year}',
+                      'Next Asychronous Date: ${nextNoClassDay.day}/${nextNoClassDay.month}/${nextNoClassDay.year}',
                       style: TextStyle(
                         fontSize: 16,
                         fontStyle: FontStyle.italic,
