@@ -32,9 +32,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(top: 40.0, bottom: 20.0),
+                  padding: const EdgeInsets.only(top: 30.0),
                   child: Text(
-                    "Class Scheduler",
+                    "Weekly Schedule",
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,

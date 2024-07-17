@@ -7,6 +7,7 @@ import 'announcements_screen.dart';
 import 'schedule_screen.dart';
 import 'settings_screen.dart';
 import 'login_screen.dart';
+import 'profile_screen.dart';
 
 void main() => runApp(ClassCompassApp());
 
@@ -52,11 +53,42 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  void _navigateToProfile() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ProfileScreen()),
+    );
+  }
+
+  String _getAppBarTitle(int index) {
+    switch (index) {
+      case 0:
+        return 'Class Compass';
+      case 1:
+        return 'Calendar';
+      case 2:
+        return 'Notifications';
+      case 3:
+        return 'Announcements';
+      case 4:
+        return 'Schedule';
+      default:
+        return 'Class Compass';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Class Compass'),
+        title: Text(
+          _getAppBarTitle(_selectedIndex),
+          style: const TextStyle(
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
         backgroundColor: Colors.red,
       ),
       body: _widgetOptions.elementAt(_selectedIndex),
@@ -78,7 +110,7 @@ class _MainScreenState extends State<MainScreen> {
             icon: Icon(
               FontAwesomeIcons.bullhorn,
             ),
-            label: 'Announcements',
+            label: 'Posts',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.schedule),
@@ -86,7 +118,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blueAccent,
+        selectedItemColor: Colors.red,
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
         backgroundColor: Colors.red,
@@ -98,11 +130,14 @@ class _MainScreenState extends State<MainScreen> {
             UserAccountsDrawerHeader(
               accountName: Text("User Name"),
               accountEmail: Text("user@example.com"),
-              currentAccountPicture: CircleAvatar(
-                backgroundColor: Colors.white,
-                child: Text(
-                  "U",
-                  style: TextStyle(fontSize: 40.0),
+              currentAccountPicture: GestureDetector(
+                onTap: _navigateToProfile,
+                child: CircleAvatar(
+                  backgroundColor: Colors.white,
+                  child: Text(
+                    "U",
+                    style: TextStyle(fontSize: 40.0),
+                  ),
                 ),
               ),
               decoration: BoxDecoration(
@@ -110,13 +145,9 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ),
             ListTile(
-                leading: Icon(Icons.school),
-                title: Text('Department: CICS',
-                    style: TextStyle(fontWeight: FontWeight.bold))),
-            ListTile(
-              leading: Icon(Icons.book),
-              title: Text('Course: Information Technology',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              leading: Icon(Icons.person),
+              title: Text('My Profile'),
+              onTap: _navigateToProfile,
             ),
             ListTile(
               leading: Icon(Icons.add),
@@ -131,6 +162,11 @@ class _MainScreenState extends State<MainScreen> {
               onTap: () {
                 // Implement Resources functionality
               },
+            ),
+            ListTile(
+              leading: Icon(Icons.archive),
+              title: Text('Notification Archive'),
+              onTap: () {},
             ),
             ListTile(
               leading: Icon(Icons.settings),

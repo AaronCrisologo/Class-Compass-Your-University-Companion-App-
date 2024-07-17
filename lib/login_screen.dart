@@ -12,8 +12,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   String? _validateEmail(String? value) {
-    const pattern = r'^[^@]+@[^@]+\.[^@]+';
-    final regex = RegExp(pattern);
+    // const pattern = r'^[^@]+@[^@]+\.[^@]+';
+    // final regex = RegExp(pattern);
     // if (!regex.hasMatch(value!)) {
     //   return 'Enter a valid email address';
     // }

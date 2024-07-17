@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 
-class NotificationScreen extends StatelessWidget {
+class NotificationScreen extends StatefulWidget {
+  @override
+  _NotificationScreenState createState() => _NotificationScreenState();
+}
+
+class _NotificationScreenState extends State<NotificationScreen> {
   final List<Map<String, dynamic>> notifications = [
     // Announcement Screen Data
     {
@@ -72,19 +77,50 @@ class NotificationScreen extends StatelessWidget {
     },
   ];
 
+  void _archiveNotification(int index) {
+    setState(() {
+      notifications.removeAt(index);
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Notification archived'),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Notifications'),
-        backgroundColor: Colors.deepPurple,
-      ),
       body: ListView.builder(
         padding: const EdgeInsets.all(8.0),
         itemCount: notifications.length,
         itemBuilder: (context, index) {
           final notification = notifications[index];
-          return NotificationCard(notification: notification);
+          return Dismissible(
+            key: Key(notification['title']),
+            direction: DismissDirection.endToStart,
+            onDismissed: (direction) {
+              _archiveNotification(index);
+            },
+            background: Container(
+              alignment: Alignment.centerRight,
+              padding: EdgeInsets.symmetric(horizontal: 20.0),
+              margin: EdgeInsets.symmetric(vertical: 10.0),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.remove_circle, color: Colors.white),
+                  SizedBox(width: 10),
+                  Text('Removing...', style: TextStyle(color: Colors.white)),
+                ],
+              ),
+            ),
+            child: NotificationCard(notification: notification),
+          );
         },
       ),
     );
