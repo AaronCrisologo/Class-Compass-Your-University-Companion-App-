@@ -34,7 +34,7 @@ class _MainScreenState extends State<MainScreen> {
   static final List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
     CalendarScreen(),
-    NotificationsScreen(),
+    NotificationScreen(),
     AnnouncementsScreen(),
     ScheduleScreen(),
   ];
