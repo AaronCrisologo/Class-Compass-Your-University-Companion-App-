@@ -15,6 +15,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       'type': 'announcement',
       'date': DateTime(2024, 7, 24),
       'profilePic': 'https://via.placeholder.com/150',
+      'expanded': false,
     },
     {
       'title': 'Career Fair Announcement',
@@ -23,6 +24,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       'type': 'announcement',
       'date': DateTime(2024, 7, 25),
       'profilePic': 'https://via.placeholder.com/150',
+      'expanded': false,
     },
     {
       'title': 'No Classes - National Holiday',
@@ -30,6 +32,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           'There will be no classes on July 20 due to the National Independence Day celebration. Enjoy your holiday!',
       'type': 'holiday',
       'date': DateTime(2024, 7, 20),
+      'expanded': false,
     },
     {
       'title': 'Weather Alert - Typhoon Warning',
@@ -37,6 +40,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           'Classes are suspended on July 21 due to an incoming typhoon. Stay safe and stay indoors. Please keep updated with the latest news and weather reports.',
       'type': 'weather',
       'date': DateTime(2024, 7, 21),
+      'expanded': false,
     },
     {
       'title': 'Partial No Class - Maintenance',
@@ -44,6 +48,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           'There will be a partial no class on July 22 from 10:00 AM to 12:00 PM due to maintenance work in the building. Classes during this time will be asynchronous. Please check your email for further instructions from your professors.',
       'type': 'custom_event',
       'date': DateTime(2024, 7, 22),
+      'expanded': false,
     },
     {
       'title': 'Student Council Announcement',
@@ -52,6 +57,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       'type': 'announcement',
       'date': DateTime(2024, 7, 18),
       'profilePic': 'https://via.placeholder.com/150',
+      'expanded': false,
     },
     {
       'title': 'Upcoming Math Class',
@@ -59,6 +65,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           'Don’t forget your Math class with Professor Smith at 10:00 AM. Be prepared and bring your homework. Please be on time and review the materials beforehand.',
       'type': 'class',
       'date': DateTime.now().add(Duration(hours: 1)),
+      'expanded': false,
     },
     {
       'title': 'Reminder - Assignment Due',
@@ -66,6 +73,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           'Your assignment for the Data Structures class is due tomorrow. Make sure to submit it before midnight. Please double-check your work and submit via the portal.',
       'type': 'class',
       'date': DateTime.now().add(Duration(days: 1)),
+      'expanded': false,
     },
     {
       'title': 'COVID-19 Safety Measures Update',
@@ -74,6 +82,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       'type': 'announcement',
       'date': DateTime(2024, 7, 17),
       'profilePic': 'https://via.placeholder.com/150',
+      'expanded': false,
     },
   ];
 
@@ -86,6 +95,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
         content: Text('Notification archived'),
       ),
     );
+  }
+
+  void _toggleExpanded(int index) {
+    setState(() {
+      notifications[index]['expanded'] = !notifications[index]['expanded'];
+    });
   }
 
   @override
@@ -119,7 +134,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 ],
               ),
             ),
-            child: NotificationCard(notification: notification),
+            child: NotificationCard(
+              notification: notification,
+              onToggleExpanded: () => _toggleExpanded(index),
+            ),
           );
         },
       ),
@@ -129,8 +147,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
 class NotificationCard extends StatelessWidget {
   final Map<String, dynamic> notification;
+  final VoidCallback onToggleExpanded;
+  final int maxChars = 100; // Max characters before showing "Read More"
 
-  NotificationCard({required this.notification});
+  NotificationCard({
+    required this.notification,
+    required this.onToggleExpanded,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -183,7 +206,22 @@ class NotificationCard extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(notification['description']),
+            notification['expanded']
+                ? Text(notification['description'])
+                : Text(
+                    notification['description'],
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+            if (!notification['expanded'] &&
+                notification['description'].length > maxChars)
+              InkWell(
+                onTap: onToggleExpanded,
+                child: Text(
+                  'Read more',
+                  style: TextStyle(color: Colors.blue),
+                ),
+              ),
             SizedBox(height: 5),
             Text(
               '${notification['date'].day}/${notification['date'].month}/${notification['date'].year} at ${notification['date'].hour}:${notification['date'].minute.toString().padLeft(2, '0')}',

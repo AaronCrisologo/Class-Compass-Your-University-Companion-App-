@@ -95,13 +95,20 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                             padding: const EdgeInsets.only(right: 8.0),
                             child: Align(
                               alignment: FractionalOffset(
-                                  1.0, -0.2), // Your chosen offset
-                              child: Text(
-                                formatTimeWithoutMinutes(context, currentTime),
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 14,
-                                ),
+                                  1.0, -0.1), // Adjust the y-position here
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  double fontSize = constraints.maxWidth /
+                                      3; // Adjust the divisor as needed
+                                  return Text(
+                                    formatTimeWithoutMinutes(
+                                        context, currentTime),
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: fontSize,
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                           ),
@@ -187,15 +194,22 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                         alignment: Alignment.centerRight,
                         child: Padding(
                           padding: const EdgeInsets.only(right: 8.0),
-                          child: Align(
-                            alignment: FractionalOffset(1.0, -0.3),
-                            child: Text(
-                              '7 PM',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 14,
-                              ),
-                            ),
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              double fontSize = constraints.maxWidth /
+                                  3; // Adjust the divisor as needed
+                              return Align(
+                                alignment: FractionalOffset(
+                                    1.0, -0.2), // Adjust the y-position here
+                                child: Text(
+                                  '7 PM',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: fontSize,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ),
