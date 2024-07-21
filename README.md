@@ -11,9 +11,7 @@
 *Harina, Jhaycie Lloyd D.*
 
 ## ***Project Overview***
-  Class Compass is a comprehensive mobile application designed to streamline and enhance the student experience by consolidating critical academic information and updates into a single, user-friendly interface. Built using the Flutter framework, Class Compass is intended to provide students with real-time notifications about class cancellations, school holidays, emergency announcements, and other vital information that could affect their academic schedule. 
-  
-  The application will feature a robust login system that detects the student's department, ensuring that each user receives tailored updates relevant to their specific academic environment. In addition to providing timely alerts, Class Compass will also aggregate essential information such as the school's academic calendar and national holidays, enabling students to stay organized and informed. Furthermore, the app will empower students to create and manage their own class schedules, with the ability to mark and track cancellations as they occur. With additional features such as event reminders, resource links, and emergency contact information, Class Compass aims to be an indispensable tool for every student navigating their academic journey.
+  Class Compass is a comprehensive mobile application designed to streamline and enhance the student experience by consolidating critical academic information and updates into a single, user-friendly interface. Built using the Flutter framework, Class Compass is intended to provide students with real-time notifications about class cancellations, school holidays, emergency announcements, and other vital information that could affect their academic schedule. The application will feature a robust login system that detects the student's department, ensuring that each user receives tailored updates relevant to their specific academic environment. In addition to providing timely alerts, Class Compass will also aggregate essential information such as the school's academic calendar and national holidays, enabling students to stay organized and informed. Furthermore, the app will empower students to create and manage their own class schedules, with the ability to mark and track cancellations as they occur. With additional features such as event reminders, resource links, emergency contact information, and instructor announcements, Class Compass aims to be an indispensable tool for every student navigating their academic journey.
 
 ## ***Objectives:***
 
@@ -78,16 +76,7 @@ The login system will be designed to simulate user authentication and personaliz
 Since the project does not involve backend interaction, network security measures like data encryption and secure API communication will not be implemented.
 
 ## ***Climate Action Commitment:***
-The Class Compass project aligns with Sustainable Development Goal 4 (Quality Education), which aims to ensure inclusive and equitable quality education and promote lifelong learning opportunities for all. By providing students with a centralized platform for accessing critical academic information and resources, Class Compass supports Goal 4 by:
-
-**Increasing Access to Information:**
-By aggregating academic calendars, event information, and emergency contacts in one accessible app, Class Compass enhances students' access to essential educational resources, promoting informed decision-making and improving overall educational outcomes.
-
-**Enhancing Educational Quality:**
-By facilitating effective communication between students and academic institutions, Class Compass helps streamline administrative processes and reduce disruptions in students' learning experiences. This contributes to a more efficient and effective educational environment.
-
-**Promoting Digital Innovation:**
-Class Compass leverages digital technology to innovate how educational information is accessed and managed, promoting sustainable practices and enhancing the efficiency of educational services.
+The Class Compass project aligns with **Sustainable Development Goal 4 (Quality Education)**, which aims to ensure inclusive and equitable quality education and promote lifelong learning opportunities for all.
 
 ## ***Technologies***
 • **Flutter Framework:** Flutter will serve as the primary framework for developing the mobile application's front-end. Flutter enables rapid development of cross-platform applications with a single codebase, ensuring consistency across Android and iOS devices.

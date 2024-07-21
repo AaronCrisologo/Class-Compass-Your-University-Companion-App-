@@ -10,6 +10,7 @@ import 'login_screen.dart';
 import 'profile_screen.dart';
 import 'archivednotifications_screen.dart';
 import 'blockedaccounts_screen.dart';
+import 'resources.dart';
 
 void main() => runApp(ClassCompassApp());
 
@@ -88,10 +89,27 @@ class _MainScreenState extends State<MainScreen> {
           style: const TextStyle(
             fontSize: 20.0,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: Color(0xFFFFEBEE), // Equivalent to Colors.red[50]
           ),
         ),
         backgroundColor: Colors.red,
+        centerTitle: false,
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.red[50]),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.settings,
+              color: Colors.red[50],
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingsScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
@@ -136,11 +154,11 @@ class _MainScreenState extends State<MainScreen> {
                 onTap: _navigateToProfile,
                 child: CircleAvatar(
                   backgroundImage: NetworkImage("assets/profile.png"),
-                  backgroundColor: Colors.white,
+                  backgroundColor: Colors.red[600],
                 ),
               ),
               decoration: BoxDecoration(
-                color: Colors.grey,
+                color: Colors.red[800],
               ),
             ),
             ListTile(
@@ -151,7 +169,12 @@ class _MainScreenState extends State<MainScreen> {
             ListTile(
               leading: Icon(Icons.book),
               title: Text('Resources'),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ResourceScreen()),
+                );
+              },
             ),
             ListTile(
               leading: Icon(Icons.block),

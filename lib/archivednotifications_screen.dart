@@ -65,10 +65,10 @@ class _ArchivedNotificationsScreenState
       appBar: AppBar(
         title: Text(
           'Archived Notifications',
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 20.0,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: Colors.white,
           ),
         ),
         backgroundColor: Colors.red,

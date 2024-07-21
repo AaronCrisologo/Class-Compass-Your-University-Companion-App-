@@ -77,10 +77,10 @@ class _BlockedAccountsScreenState extends State<BlockedAccountsScreen> {
       appBar: AppBar(
         title: Text(
           'Blocked Accounts',
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 20.0,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: Colors.white,
           ),
         ),
         backgroundColor: Colors.red,
