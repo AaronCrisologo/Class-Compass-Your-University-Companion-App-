@@ -13,10 +13,10 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
   // Mock announcement data
   final List<Map<String, dynamic>> announcements = [
     {
-      'profilePicture': 'assets/BSUSSC.png', // Path to profile picture
+      'profilePicture': 'assets/cabeihm.jpg',
       'accountName': 'CABEIHM Student Council',
       'message':
-          'ACADEMIC BREAK: NO CLASSES on November 2-6, 2022. In light of the ongoing challenge caused by Typhoon Paeng, the University Student Council stands with you in providing assistance and support to students and their families who were severely affected by the typhoon in order to assist them in recovering completely from the chaos. Please be guided accordingly. #ZitoRedSpartans',
+          'ACADEMIC BREAK: NO CLASSES on August 2-6, 2024. In light of the ongoing challenge caused by the Typhoon, the University Student Council stands with you in providing assistance and support to students and their families who were severely affected by the typhoon in order to assist them in recovering completely from the chaos. Please be guided accordingly. #ZitoRedSpartans',
       'likes': 0,
       'dislikes': 0,
       'notifications': false,
@@ -26,10 +26,10 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
       'expanded': false,
     },
     {
-      'profilePicture': 'assets/profile2.png', // Path to profile picture
-      'accountName': 'CABEIHM Student Council',
+      'profilePicture': 'assets/wpa.jpg',
+      'accountName': 'Walang Pasok Advisory',
       'message':
-          'ACADEMIC BREAK: NO CLASSES on November 2-6, 2022. In light of the ongoing challenge caused by Typhoon Paeng, the University Student Council stands with you in providing assistance and support to students and their families who were severely affected by the typhoon in order to assist them in recovering completely from the chaos. Please be guided accordingly. #ZitoRedSpartans',
+          '#WalangPasokAdvisory: Malacañang declares Monday, Jul 17, a regular holiday in observance of Eidl Adha. Proclamation No. 579 signed by Executive Secretary Lucas Bersamin was released yesterday, June 5, 2024.',
       'likes': 0,
       'dislikes': 0,
       'notifications': false,
@@ -39,10 +39,10 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
       'expanded': false,
     },
     {
-      'profilePicture': 'assets/profile3.png', // Path to profile picture
-      'accountName': 'CABEIHM Student Council',
+      'profilePicture': 'assets/batspio.jpg',
+      'accountName': 'Batangas PIO',
       'message':
-          'ATTENTION, CABEIHMKADA! As per the directives outlined in Memorandum Order No. 572, there will be asynchronous classes in all levels scheduled for tomorrow, on November 3, 2022. It is with consideration of the celebration of All Saints\' Day, providing both students and faculty an opportunity to spend time with their families. Source: Office of the University President #CABEIHMAboveandBeyond',
+          'Upon the  recommendation of the Provincial Disaster Risk Reduction and Management Office, and in view of the continuing inclement weather due to the effects of TS Florita (moderate to heavy rains) the Provincial Government of Batangas, as per Gov. DoDo Mandanas, declares that classes, in private and public schools, from kindergarten to senior high school, are suspended tomorrow, 24 August 2022, in the whole Province of Batangas. Stay safe Batangueños! God bless.',
       'likes': 0,
       'dislikes': 0,
       'notifications': false,
@@ -52,7 +52,33 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
       'expanded': false,
     },
     {
-      'profilePicture': 'assets/profile4.png', // Path to profile picture
+      'profilePicture': 'assets/cics.jpg',
+      'accountName': 'College of Informatics and Computing Sciences - CICS',
+      'message':
+          'Classes will be suspended on all campuses today, April 10, 2024. Only faculty members and employees are expected to report to work. Please be guided accordingly. Dissemination of this advisory to all concerned is desired. Source: Office of the President, Batangas State University',
+      'likes': 0,
+      'dislikes': 0,
+      'notifications': false,
+      'liked': false,
+      'disliked': false,
+      'date': null,
+      'expanded': false,
+    },
+    {
+      'profilePicture': 'assets/cabeihm.jpg',
+      'accountName': 'CABEIHM Student Council',
+      'message':
+          'ATTENTION, CABEIHMKADA! As per the directives outlined in Memorandum Order No. 572, there will be asynchronous classes in all levels scheduled for tomorrow, on July 3, 2024. It is with consideration of the celebration of All Saints\' Day, providing both students and faculty an opportunity to spend time with their families. Source: Office of the University President #CABEIHMAboveandBeyond',
+      'likes': 0,
+      'dislikes': 0,
+      'notifications': false,
+      'liked': false,
+      'disliked': false,
+      'date': null,
+      'expanded': false,
+    },
+    {
+      'profilePicture': 'assets/BSUSSC.png',
       'accountName': 'Supreme Student Council - BatStateU Alangilan Campus',
       'message':
           'In view of Typhoon Signal Number 2 being raised over Eastern Batangas due to Typhoon Paeng, classes are hereby suspended both synchronous and asynchronous on October 29, 2022, Saturday. Keep safe and stay dry, Red Spartans! #WalangPasok #TyphoonKarding',
@@ -65,10 +91,10 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
       'expanded': false,
     },
     {
-      'profilePicture': 'assets/profile5.png', // Path to profile picture
-      'accountName': 'Supreme Student Council - BatStateU Alangilan Campus',
+      'profilePicture': 'assets/cics_sc.jpg',
+      'accountName': 'CICS Alangilan - Student Council',
       'message':
-          'ANNOUNCEMENT: NO CLASSES Source: Official Gazette Pursuant to Proclamation No. 986 of the President, April 9, 2021 (Friday) was declared as a regular holiday to commemorate the Araw ng Kagitingan. #ZitoRedSpartans',
+          'No classes on Monday for the school holiday. Enjoy your long weekend everyone!',
       'likes': 0,
       'dislikes': 0,
       'notifications': false,
@@ -78,10 +104,10 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
       'expanded': false,
     },
     {
-      'profilePicture': 'assets/profile6.png', // Path to profile picture
-      'accountName': 'College of Informatics and Computing Sciences - CICS',
+      'profilePicture': 'assets/pagasa.png',
+      'accountName': 'Dost_pagasa',
       'message':
-          'Classes will be suspended on all campuses today, April 10, 2017. Only faculty members and employees are expected to report to work. Please be guided accordingly. Dissemination of this advisory to all concerned is desired. Source: Office of the President, Batangas State University',
+          'TROPICAL CYCLONE BULLETIN NR. 16 Super Typhoon #GoringPH (SAOLA) Issued at 5:00 PM, 27 August 2023 Valid for broadcast until the next bulletin at 11:00 PM today. GORING PERSISTS IN STRENGTH WHILE MOVING SOUTH SOUTHEASTWARD EAST NORTHEAST OF CASIGURAN, AURORA',
       'likes': 0,
       'dislikes': 0,
       'notifications': false,
@@ -91,7 +117,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
       'expanded': false,
     },
     {
-      'profilePicture': 'assets/profile7.png', // Path to profile picture
+      'profilePicture': 'assets/cics.jpg',
       'accountName': 'College of Informatics and Computing Sciences - CICS',
       'message':
           'Due to the moderate and heavy rains brought by Tropical Depression Florita, and by recommendation of the Batangas City Mayor, Face-to-Face and Online Classes in ALL LEVELS of BatStateU Pablo Borbon and BatStateU Alangilan are hereby suspended today, August 24. Please observe safety precautions until the situation has normalized.',
@@ -104,7 +130,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
       'expanded': false,
     },
     {
-      'profilePicture': 'assets/profile8.png', // Path to profile picture
+      'profilePicture': 'assets/BSUSSC.png',
       'accountName': 'Supreme Student Council - BatStateU Alangilan Campus',
       'message':
           'Classes are suspended tomorrow due to typhoon warnings. Stay safe everyone!',
@@ -117,20 +143,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
       'expanded': false,
     },
     {
-      'profilePicture': 'assets/profile9.png', // Path to profile picture
-      'accountName': 'CICS Alangilan - Student Council',
-      'message':
-          'No classes on Monday for the school holiday. Enjoy your long weekend!',
-      'likes': 0,
-      'dislikes': 0,
-      'notifications': false,
-      'liked': false,
-      'disliked': false,
-      'date': null,
-      'expanded': false,
-    },
-    {
-      'profilePicture': 'assets/profile10.png', // Path to profile picture
+      'profilePicture': 'assets/cics.jpg',
       'accountName': 'College of Informatics and Computing Sciences - CICS',
       'message':
           'Class schedules will be adjusted due to ongoing repairs in the main building. Check the updated schedule on our website.',
@@ -143,8 +156,8 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
       'expanded': false,
     },
     {
-      'profilePicture': 'assets/profile11.png', // Path to profile picture
-      'accountName': 'Walang Pasok',
+      'profilePicture': 'assets/wpa.jpg',
+      'accountName': 'Walang Pasok Advisory',
       'message':
           'Classes are suspended today due to heavy rainfall and flooding in the area. Stay dry and safe!',
       'likes': 0,
@@ -156,7 +169,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
       'expanded': false,
     },
     {
-      'profilePicture': 'assets/profile12.png', // Path to profile picture
+      'profilePicture': 'assets/batspio.jpg',
       'accountName': 'Batangas PIO',
       'message':
           'Typhoon Signal Number 3 is raised in our area. Classes are suspended until further notice.',
@@ -169,10 +182,23 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
       'expanded': false,
     },
     {
-      'profilePicture': 'assets/profile13.png', // Path to profile picture
-      'accountName': 'PAG-ASA',
+      'profilePicture': 'assets/pagasa.png',
+      'accountName': 'Dost_pagasa',
       'message':
           'Weather update: Typhoon approaching. Please monitor local news for announcements on class suspensions.',
+      'likes': 0,
+      'dislikes': 0,
+      'notifications': false,
+      'liked': false,
+      'disliked': false,
+      'date': null,
+      'expanded': false,
+    },
+    {
+      'profilePicture': 'assets/BSUSSC.png',
+      'accountName': 'Supreme Student Council - BatStateU Alangilan Campus',
+      'message':
+          'ANNOUNCEMENT: NO CLASSES Source: Official Gazette Pursuant to Proclamation No. 986 of the President, April 9, 2021 (Friday) was declared as a regular holiday to commemorate the Araw ng Kagitingan. #ZitoRedSpartans',
       'likes': 0,
       'dislikes': 0,
       'notifications': false,

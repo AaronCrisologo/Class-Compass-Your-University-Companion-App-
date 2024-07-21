@@ -9,29 +9,45 @@ class _NotificationScreenState extends State<NotificationScreen> {
   final List<Map<String, dynamic>> notifications = [
     // Announcement Screen Data
     {
-      'title': 'Library Closure',
+      'title': 'Class Announcement',
+      'description':
+          'Please be advised that a power outage is scheduled to occur on August 14 from 10:00 am to 12:00pm. Due to this outage, all classes scheduled during this time may be canceled or rescheduled.',
+      'type': 'class',
+      'date': DateTime.now().add(Duration(days: 5)),
+      'expanded': false,
+    },
+    {
+      'title': 'Batangas State University Library - Alangilan',
       'description':
           'The campus library will be closed on July 24 for a staff training event. Please plan your visits accordingly. Online resources will still be available during this time.',
       'type': 'announcement',
       'date': DateTime(2024, 7, 24),
-      'profilePic': 'https://via.placeholder.com/150',
-      'expanded': false,
-    },
-    {
-      'title': 'Career Fair Announcement',
-      'description':
-          'A career fair will be held on July 25 from 9:00 AM to 4:00 PM in the main hall. Students are encouraged to bring their resumes and meet with potential employers. Don’t miss this opportunity to network and explore job opportunities.',
-      'type': 'announcement',
-      'date': DateTime(2024, 7, 25),
-      'profilePic': 'https://via.placeholder.com/150',
+      'profilePic': 'assets/bsulib.jpg',
       'expanded': false,
     },
     {
       'title': 'No Classes - National Holiday',
       'description':
-          'There will be no classes on July 20 due to the National Independence Day celebration. Enjoy your holiday!',
+          'There will be no classes on tomorrow, August 9 2024, due to Ninoy Aquino Day celebration. Enjoy your holiday!',
       'type': 'holiday',
       'date': DateTime(2024, 7, 20),
+      'expanded': false,
+    },
+    {
+      'title': 'Partial Asychronous Classes',
+      'description':
+          'There will be a partial no class on July 22 from 10:00 AM to 12:00 PM due to maintenance work in the building. Classes during this time will be asynchronous. Please check your email for further instructions from your professors.',
+      'type': 'custom_event',
+      'date': DateTime(2024, 7, 22),
+      'expanded': false,
+    },
+    {
+      'title': 'CICS Alangilan - Student Council',
+      'description':
+          'The Student Council will be holding a virtual town hall meeting on July 18 at 3:00 PM. All students are encouraged to attend and voice their concerns. Your participation is important for making positive changes on campus.',
+      'type': 'announcement',
+      'date': DateTime(2024, 7, 18),
+      'profilePic': 'assets/cics_sc.jpg',
       'expanded': false,
     },
     {
@@ -43,45 +59,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
       'expanded': false,
     },
     {
-      'title': 'Partial No Class - Maintenance',
+      'title': 'College of Informatics and Computing Sciences - CICS',
       'description':
-          'There will be a partial no class on July 22 from 10:00 AM to 12:00 PM due to maintenance work in the building. Classes during this time will be asynchronous. Please check your email for further instructions from your professors.',
-      'type': 'custom_event',
-      'date': DateTime(2024, 7, 22),
-      'expanded': false,
-    },
-    {
-      'title': 'Student Council Announcement',
-      'description':
-          'The Student Council will be holding a virtual town hall meeting on July 18 at 3:00 PM. All students are encouraged to attend and voice their concerns. Your participation is important for making positive changes on campus.',
+          'In light of the upcoming University Festival, all classes scheduled for July 23, 2024 will be suspended to allow everyone to participate and enjoy the festivities. This event is a great opportunity to engage with your peers and take part in various exciting activities organized by the student body.',
       'type': 'announcement',
-      'date': DateTime(2024, 7, 18),
-      'profilePic': 'https://via.placeholder.com/150',
-      'expanded': false,
-    },
-    {
-      'title': 'Upcoming Math Class',
-      'description':
-          'Don’t forget your Math class with Professor Smith at 10:00 AM. Be prepared and bring your homework. Please be on time and review the materials beforehand.',
-      'type': 'class',
-      'date': DateTime.now().add(Duration(hours: 1)),
-      'expanded': false,
-    },
-    {
-      'title': 'Reminder - Assignment Due',
-      'description':
-          'Your assignment for the Data Structures class is due tomorrow. Make sure to submit it before midnight. Please double-check your work and submit via the portal.',
-      'type': 'class',
       'date': DateTime.now().add(Duration(days: 1)),
-      'expanded': false,
-    },
-    {
-      'title': 'COVID-19 Safety Measures Update',
-      'description':
-          'Please adhere to the updated COVID-19 safety measures on campus. Wear masks at all times, maintain social distancing, and sanitize your hands regularly. Let’s work together to keep our community safe.',
-      'type': 'announcement',
-      'date': DateTime(2024, 7, 17),
-      'profilePic': 'https://via.placeholder.com/150',
+      'profilePic': 'assets/cics.jpg',
       'expanded': false,
     },
   ];
