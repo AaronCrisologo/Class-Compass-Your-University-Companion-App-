@@ -8,6 +8,8 @@ import 'schedule_screen.dart';
 import 'settings_screen.dart';
 import 'login_screen.dart';
 import 'profile_screen.dart';
+import 'archivednotifications_screen.dart';
+import 'blockedaccounts_screen.dart';
 
 void main() => runApp(ClassCompassApp());
 
@@ -159,15 +161,29 @@ class _MainScreenState extends State<MainScreen> {
             ListTile(
               leading: Icon(Icons.book),
               title: Text('Resources'),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: Icon(Icons.block),
+              title: Text('Blocked Accounts'),
               onTap: () {
-                // Implement Resources functionality
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => BlockedAccountsScreen()),
+                );
               },
             ),
             ListTile(
-              leading: Icon(Icons.archive),
-              title: Text('Notification Archive'),
-              onTap: () {},
-            ),
+                leading: Icon(Icons.archive),
+                title: Text('Notification Archive'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ArchivedNotificationsScreen()),
+                  );
+                }),
             ListTile(
               leading: Icon(Icons.settings),
               title: Text('Settings'),
