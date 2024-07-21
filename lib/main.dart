@@ -130,16 +130,13 @@ class _MainScreenState extends State<MainScreen> {
           padding: EdgeInsets.zero,
           children: <Widget>[
             UserAccountsDrawerHeader(
-              accountName: Text("User Name"),
-              accountEmail: Text("user@example.com"),
+              accountName: Text("Aaron Angelo Crisologo"),
+              accountEmail: Text("21-08166@g.batstate-u.edu.ph"),
               currentAccountPicture: GestureDetector(
                 onTap: _navigateToProfile,
                 child: CircleAvatar(
+                  backgroundImage: NetworkImage("assets/profile.png"),
                   backgroundColor: Colors.white,
-                  child: Text(
-                    "U",
-                    style: TextStyle(fontSize: 40.0),
-                  ),
                 ),
               ),
               decoration: BoxDecoration(
@@ -150,13 +147,6 @@ class _MainScreenState extends State<MainScreen> {
               leading: Icon(Icons.person),
               title: Text('My Profile'),
               onTap: _navigateToProfile,
-            ),
-            ListTile(
-              leading: Icon(Icons.add),
-              title: Text('Add Class'),
-              onTap: () {
-                // Implement Add Class functionality
-              },
             ),
             ListTile(
               leading: Icon(Icons.book),

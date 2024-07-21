@@ -72,6 +72,7 @@ flutter:
     - assets/cics_sc.jpg
     - assets/wpa.jpg
     - assets/bsulib.jpg
+    - assets/profile.png
     
 
   # An image asset can refer to one or more resolution-specific "variants", see
