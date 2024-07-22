@@ -35,8 +35,8 @@ class ResourceScreen extends StatelessWidget {
                 'https://facebook.com/schoolpage'),
             buildHyperlink(FontAwesomeIcons.twitter, 'School Twitter Page',
                 'https://twitter.com/schoolpage'),
-            buildHyperlink(FontAwesomeIcons.school, 'School Portal',
-                'https://schoolportal.example.com'),
+            buildHyperlink(
+                Icons.web, 'School Portal', 'https://schoolportal.example.com'),
             SizedBox(height: 30),
             buildSectionTitle('Contact Information'),
             buildContactInfo(Icons.email, 'Email', 'contact@school.edu'),

@@ -25,152 +25,200 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('School Calendar'),
-        backgroundColor: Colors.white,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _showDatePickerAndAddDetails(context);
+        },
+        child: Icon(Icons.add),
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: GridView.builder(
-                physics:
-                    NeverScrollableScrollPhysics(), // Disable GridView's own scrolling
-                shrinkWrap: true, // Take up only the necessary space
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 7,
-                  childAspectRatio: 1.0,
-                ),
-                itemCount: daysInMonth(DateTime(2024, 8)) +
-                    4, // Offset for starting on Thursday
-                itemBuilder: (context, index) {
-                  DateTime currentDay;
-                  if (index < 4) {
-                    currentDay = DateTime(2024, 7, 28 + index);
-                  } else {
-                    currentDay = DateTime(2024, 8, index - 3);
-                  }
-                  bool isHoliday =
-                      holidays.any((holiday) => holiday['date'] == currentDay);
-                  bool isWeatherDisturbance =
-                      weatherDisturbances.contains(currentDay);
-                  bool isUserNoClassDay = userNoClassDays.contains(currentDay);
-                  bool isPartialNoClassDay =
-                      partialNoClassDays.contains(currentDay);
-                  bool isCurrentDate = currentDay == currentDate;
+              padding: const EdgeInsets.fromLTRB(10, 30, 10, 30),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+                        .map((day) => Expanded(
+                              child: Center(
+                                child: Text(
+                                  day,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.red[800],
+                                  ),
+                                ),
+                              ),
+                            ))
+                        .toList(),
+                  ),
+                  GridView.builder(
+                    physics:
+                        NeverScrollableScrollPhysics(), // Disable GridView's own scrolling
+                    shrinkWrap: true, // Take up only the necessary space
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 7,
+                      childAspectRatio: 1.0,
+                    ),
+                    itemCount: daysInMonth(DateTime(2024, 8)) +
+                        4, // Offset for starting on Thursday
+                    itemBuilder: (context, index) {
+                      DateTime currentDay;
+                      if (index < 4) {
+                        currentDay = DateTime(2024, 7, 28 + index);
+                      } else {
+                        currentDay = DateTime(2024, 8, index - 3);
+                      }
+                      bool isHoliday = holidays
+                          .any((holiday) => holiday['date'] == currentDay);
+                      bool isWeatherDisturbance =
+                          weatherDisturbances.contains(currentDay);
+                      bool isUserNoClassDay =
+                          userNoClassDays.contains(currentDay);
+                      bool isPartialNoClassDay =
+                          partialNoClassDays.contains(currentDay);
+                      bool isCurrentDate = currentDay == currentDate;
 
-                  IconData? getIcon() {
-                    if (isHoliday) return Icons.event;
-                    if (isWeatherDisturbance) return Icons.cloud;
-                    if (isUserNoClassDay) return Icons.person;
-                    return null;
-                  }
+                      IconData? getIcon() {
+                        if (isHoliday) return Icons.event;
+                        if (isWeatherDisturbance) return Icons.cloud;
+                        if (isUserNoClassDay) return Icons.person;
+                        return null;
+                      }
 
-                  Color getBackgroundColor() {
-                    if (isCurrentDate) return Colors.lightBlue[100]!;
-                    if (isHoliday || isWeatherDisturbance || isUserNoClassDay) {
-                      return Colors.red[100]!;
-                    }
-                    if (isPartialNoClassDay) {
-                      return Colors.yellow[100]!;
-                    }
-                    return Colors.white;
-                  }
-
-                  return GestureDetector(
-                    onTap: () {
-                      _showDayDetails(
-                          context,
-                          currentDay,
-                          isHoliday,
-                          isWeatherDisturbance,
-                          isUserNoClassDay,
-                          isPartialNoClassDay);
-                    },
-                    child: Stack(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            color: getBackgroundColor(),
-                          ),
-                          child: Center(
-                            child: Text(
-                              index < 4 ? '' : '${currentDay.day}',
-                              style: TextStyle(fontSize: 16.0),
-                            ),
-                          ),
-                        ),
+                      Color getBackgroundColor() {
+                        if (isCurrentDate) return Colors.red[100]!;
                         if (isHoliday ||
                             isWeatherDisturbance ||
-                            isUserNoClassDay ||
-                            isPartialNoClassDay)
-                          Positioned(
-                            top: 4,
-                            right: 4,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
+                            isUserNoClassDay) {
+                          return Colors.red[100]!;
+                        }
+                        if (isPartialNoClassDay) {
+                          return Colors.yellow[100]!;
+                        }
+                        return Colors.white;
+                      }
+
+                      return LayoutBuilder(
+                        builder: (context, constraints) {
+                          double iconSize = constraints.maxWidth * 0.3;
+                          return GestureDetector(
+                            onTap: () {
+                              _showDayDetails(
+                                  context,
+                                  currentDay,
+                                  isHoliday,
+                                  isWeatherDisturbance,
+                                  isUserNoClassDay,
+                                  isPartialNoClassDay);
+                            },
+                            child: Stack(
                               children: [
-                                if (getIcon() != null)
-                                  Icon(
-                                    getIcon(),
-                                    color: Colors.red,
-                                    size: 18.0,
+                                Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey),
+                                    color: getBackgroundColor(),
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.5),
+                                        spreadRadius: 2,
+                                        blurRadius: 5,
+                                        offset: Offset(
+                                            0, 3), // changes position of shadow
+                                      ),
+                                    ],
                                   ),
-                                if (isPartialNoClassDay)
-                                  Text(
-                                    '*',
-                                    style: TextStyle(
-                                        color: Colors.red, fontSize: 24.0),
+                                  child: Center(
+                                    child: Text(
+                                      index < 4 ? '' : '${currentDay.day}',
+                                      style: TextStyle(
+                                          fontSize: 16.0,
+                                          fontWeight: FontWeight.bold),
+                                    ),
                                   ),
+                                ),
                                 if (isHoliday ||
                                     isWeatherDisturbance ||
-                                    isUserNoClassDay)
-                                  Icon(
-                                    Icons.close,
-                                    color: Colors.red,
-                                    size: 24.0,
+                                    isUserNoClassDay ||
+                                    isPartialNoClassDay)
+                                  Positioned(
+                                    top: 4,
+                                    right: 4,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (getIcon() != null)
+                                          Icon(
+                                            getIcon(),
+                                            color: Colors.red,
+                                            size: iconSize,
+                                          ),
+                                        if (isPartialNoClassDay)
+                                          Text(
+                                            '*',
+                                            style: TextStyle(
+                                                color: Colors.red,
+                                                fontSize: iconSize),
+                                          ),
+                                        if (isHoliday ||
+                                            isWeatherDisturbance ||
+                                            isUserNoClassDay)
+                                          Icon(
+                                            Icons.close,
+                                            color: Colors.red,
+                                            size: iconSize,
+                                          ),
+                                      ],
+                                    ),
                                   ),
                               ],
                             ),
-                          ),
-                      ],
-                    ),
-                  );
-                },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Container(
-                padding: EdgeInsets.all(16.0),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.blue, width: 2),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      'Current Date: ${currentDate.day}/${currentDate.month}/${currentDate.year}',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue[800],
-                      ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return Container(
+                    width: constraints.maxWidth,
+                    padding: EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      color: Colors.red[50],
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.red, width: 2),
                     ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Next Asychronous Date: ${nextNoClassDay.day}/${nextNoClassDay.month}/${nextNoClassDay.year}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontStyle: FontStyle.italic,
-                        color: Colors.blue[600],
-                      ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Current Date: ${currentDate.day}/${currentDate.month}/${currentDate.year}',
+                          style: TextStyle(
+                            fontSize: constraints.maxWidth * 0.06,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red[800],
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          'Next Asynchronous Date: ${nextNoClassDay.day}/${nextNoClassDay.month}/${nextNoClassDay.year}',
+                          style: TextStyle(
+                            fontSize: constraints.maxWidth * 0.04,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.red[600],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
           ],
@@ -201,7 +249,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     } else if (isWeatherDisturbance) {
       reason = 'Weather Disturbance';
     } else if (isUserNoClassDay) {
-      reason = 'No Class (User Defined)';
+      reason = 'Asynchronous Class (User Defined)';
     } else if (isPartialNoClassDay) {
       reason = 'Partial Class Cancellation';
     }
@@ -209,6 +257,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
     TextEditingController noteController = TextEditingController(
       text: userNotes[day] ?? '',
     );
+    bool noClassDay = isUserNoClassDay;
+    bool partialNoClass = isPartialNoClassDay;
 
     showDialog(
       context: context,
@@ -229,11 +279,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   maxLines: 5, // Increase height for better note-taking
                 ),
                 CheckboxListTile(
-                  title: Text('Mark as no class'),
-                  value: isUserNoClassDay,
+                  title: Text('Mark as asynchronous class'),
+                  value: noClassDay,
                   onChanged: (bool? value) {
                     setState(() {
-                      if (value == true) {
+                      noClassDay = value ?? false;
+                      if (noClassDay) {
                         userNoClassDays.add(day);
                         partialNoClassDays.remove(day);
                       } else {
@@ -243,11 +294,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   },
                 ),
                 CheckboxListTile(
-                  title: Text('Mark as partial no class'),
-                  value: isPartialNoClassDay,
+                  title: Text('Mark as partial asynchronous'),
+                  value: partialNoClass,
                   onChanged: (bool? value) {
                     setState(() {
-                      if (value == true) {
+                      partialNoClass = value ?? false;
+                      if (partialNoClass) {
                         partialNoClassDays.add(day);
                         userNoClassDays.remove(day);
                       } else {
@@ -262,8 +314,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
           actions: [
             TextButton(
               onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
                 setState(() {
-                  userNotes[day] = noteController.text;
+                  if (noteController.text.isNotEmpty) {
+                    userNotes[day] = noteController.text;
+                  } else {
+                    userNotes.remove(day);
+                  }
                 });
                 Navigator.of(context).pop();
               },
@@ -273,5 +335,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
         );
       },
     );
+  }
+
+  void _showDatePickerAndAddDetails(BuildContext context) {
+    DateTime selectedDate = DateTime.now();
+
+    showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+    ).then((pickedDate) {
+      if (pickedDate != null) {
+        selectedDate = pickedDate;
+        _showDayDetails(context, selectedDate, false, false, false, false);
+      }
+    });
   }
 }

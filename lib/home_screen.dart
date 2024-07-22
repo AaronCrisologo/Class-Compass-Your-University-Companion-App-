@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'calendar_screen.dart';
 import 'resources.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -147,7 +147,7 @@ class HomeScreen extends StatelessWidget {
                     _buildQuickLinkCard(
                       context,
                       icon: Icons.calendar_today,
-                      title: 'School Calendar',
+                      title: 'Academic Calendar',
                       onTap: () {
                         Navigator.push(
                           context,
@@ -158,7 +158,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     _buildQuickLinkCard(
                       context,
-                      icon: Icons.info,
+                      icon: Icons.my_library_books,
                       title: 'School Resources',
                       onTap: () {
                         Navigator.push(
@@ -170,9 +170,28 @@ class HomeScreen extends StatelessWidget {
                     ),
                     _buildQuickLinkCard(
                       context,
-                      icon: Icons.contact_mail,
-                      title: 'Contact Information',
-                      onTap: () {},
+                      icon: Icons.info,
+                      title: 'User Information',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ResourceScreen()),
+                        );
+                      },
+                    ),
+                    _buildQuickLinkCard(
+                      context,
+                      icon: Icons.cloud,
+                      title: 'Weather Alerts',
+                      onTap: () async {
+                        const url = 'https://www.weather.com/';
+                        if (await canLaunch(url)) {
+                          await launch(url);
+                        } else {
+                          throw 'Could not launch $url';
+                        }
+                      },
                     ),
                   ],
                 ),

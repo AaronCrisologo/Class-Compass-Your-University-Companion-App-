@@ -87,10 +87,7 @@ class _MainScreenState extends State<MainScreen> {
         title: Text(
           _getAppBarTitle(_selectedIndex),
           style: const TextStyle(
-            fontSize: 20.0,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFFFFEBEE), // Equivalent to Colors.red[50]
-          ),
+              fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Colors.red,
         centerTitle: false,
