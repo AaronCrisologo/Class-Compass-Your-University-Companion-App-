@@ -1,6 +1,6 @@
 # ***Class Compass Your University Companion App***
 
-## ***🤼Name of Team Member***
+## **🤼Name of Team Member**
 
 *Cabalag, Francis Melvin V.*
 
@@ -10,12 +10,12 @@
 
 *Harina, Jhaycie Lloyd D.*
 
-## ***📝Project Overview***
+## **📝Project Overview**
   Class Compass is a comprehensive mobile application designed to streamline and enhance the student experience by consolidating critical academic information and updates into a single, user-friendly interface. Built using the Flutter framework, Class Compass is intended to provide students with real-time notifications about class cancellations, school holidays, emergency announcements, and other vital information that could affect their academic schedule. 
   
   The application will feature a robust login system that detects the student's department, ensuring that each user receives tailored updates relevant to their specific academic environment. In addition to providing timely alerts, Class Compass will also aggregate essential information such as the school's academic calendar and national holidays, enabling students to stay organized and informed. Furthermore, the app will empower students to create and manage their own class schedules, with the ability to mark and track cancellations as they occur. With additional features such as event reminders, resource links, and emergency contact information, Class Compass aims to be an indispensable tool for every student navigating their academic journey.
 
-## ***🎯Objectives:***
+## **🎯Objectives:**
 
   The objectives of Class Compass are multifaceted, targeting both immediate and long-term benefits for the student body. Firstly, the app aims to deliver real-time notifications for class cancellations, school events, and emergency announcements, ensuring that students are promptly informed about any changes that might impact their academic schedule. 
 Secondly, Class Compass will provide a centralized repository of critical academic information, such as the school’s academic calendar and national holidays, enabling students to plan their studies and personal activities effectively. Thirdly, the app will include a customizable schedule management feature that allows students to create, modify, and monitor their class schedules, with an easy-to-use interface for marking and tracking class cancellations. 
@@ -36,7 +36,7 @@ The Class Compass project addresses several key challenges faced by university s
 
 **Resource Accessibility:** Access to essential academic resources, such as departmental events, academic calendars, and emergency contact information, may not be readily available or easily accessible to students when needed. This lack of accessibility can hinder students' ability to stay informed and engaged in university activities.
 
-## ***📚Project Description***
+## **📚Project Description**
 ### ***Scope:***
 
 The scope of the Class Compass project is focused on developing a front-end mobile application using Flutter that enhances the academic experience for university students. The application will include the following features:
@@ -77,7 +77,7 @@ The login system will be designed to simulate user authentication and personaliz
 **No Network Security:**
 Since the project does not involve backend interaction, network security measures like data encryption and secure API communication will not be implemented.
 
-## ***🌳Climate Action Commitment:***
+## **🌳Climate Action Commitment:**
 The Class Compass project aligns with Sustainable Development Goal 4 (Quality Education), which aims to ensure inclusive and equitable quality education and promote lifelong learning opportunities for all. By providing students with a centralized platform for accessing critical academic information and resources, Class Compass supports Goal 4 by:
 
 **Increasing Access to Information:**
@@ -89,7 +89,7 @@ By facilitating effective communication between students and academic institutio
 **Promoting Digital Innovation:**
 Class Compass leverages digital technology to innovate how educational information is accessed and managed, promoting sustainable practices and enhancing the efficiency of educational services.
 
-## ***⚙Technologies***
+## **⚙Technologies**
 • **Flutter Framework:** Flutter will serve as the primary framework for developing the mobile application's front-end. Flutter enables rapid development of cross-platform applications with a single codebase, ensuring consistency across Android and iOS devices.
 
 • **Dart Programming Language:** 
@@ -104,4 +104,4 @@ Git will be utilized for version control, enabling collaborative development, tr
 • **Mock Data and Assets:** 
 Static data and mock assets, including academic calendars, event information, and departmental resources, will be stored locally within the application. These will be accessed and displayed dynamically to simulate real-time updates and functionality.
 
-## ***References***
+## **References**
