@@ -24,201 +24,223 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       backgroundColor: Colors.red[10],
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final double cellWidth = constraints.maxWidth / 8;
+          final double padding = 7.0;
+          final double maxScreenWidth =
+              constraints.maxWidth - padding * 2; // Take padding into account
+          final double screenWidth =
+              maxScreenWidth > 600 ? 600 : maxScreenWidth;
+          final double cellWidth = screenWidth / 8;
           final double cellHeight =
               cellWidth * 1.4; // Adjust the aspect ratio as needed
 
           return SingleChildScrollView(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 30.0),
-                  child: Text(
-                    "Weekly Schedule",
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red[700],
-                      shadows: [
-                        Shadow(
-                          blurRadius: 10.0,
-                          color: Colors.red[300]!,
-                          offset: Offset(3.0, 3.0),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Row(
-                  children: [
-                    Container(
-                      width: cellWidth,
-                      height: cellHeight,
-                      child: Center(child: Text('')),
-                    ),
-                    ...List.generate(7, (index) {
-                      return Container(
-                        width: cellWidth,
-                        height: cellHeight,
-                        child: Center(
-                          child: Text(
-                            [
-                              'Sun',
-                              'Mon',
-                              'Tue',
-                              'Wed',
-                              'Thu',
-                              'Fri',
-                              'Sat'
-                            ][index],
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-                  ],
-                ),
-                ...List.generate(12, (timeIndex) {
-                  final currentTime = TimeOfDay(hour: 7 + timeIndex, minute: 0);
-                  return Row(
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: padding), // Add padding here
+                child: Container(
+                  width: screenWidth,
+                  child: Column(
                     children: [
-                      Container(
-                        width: cellWidth,
-                        height: cellHeight,
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: Align(
-                              alignment: FractionalOffset(
-                                  1.0, -0.1), // Adjust the y-position here
-                              child: LayoutBuilder(
-                                builder: (context, constraints) {
-                                  double fontSize = constraints.maxWidth /
-                                      3; // Adjust the divisor as needed
-                                  return Text(
-                                    formatTimeWithoutMinutes(
-                                        context, currentTime),
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: fontSize,
-                                    ),
-                                  );
-                                },
+                      Padding(
+                        padding: const EdgeInsets.only(top: 30.0),
+                        child: Text(
+                          "Weekly Schedule",
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red[700],
+                            shadows: [
+                              Shadow(
+                                blurRadius: 10.0,
+                                color: Colors.red[300]!,
+                                offset: Offset(3.0, 3.0),
                               ),
-                            ),
+                            ],
                           ),
                         ),
                       ),
-                      ...List.generate(7, (dayIndex) {
-                        final classForTimeSlot = classes.firstWhere(
-                          (classItem) =>
-                              classItem['day'] == dayIndex &&
-                              classItem['startTime'].hour <= currentTime.hour &&
-                              classItem['endTime'].hour > currentTime.hour,
-                          orElse: () => {},
-                        );
-
-                        bool isClassBlock = classForTimeSlot.isNotEmpty;
-                        bool isFirstSlot = classForTimeSlot.isNotEmpty &&
-                            classForTimeSlot['startTime'].hour ==
-                                currentTime.hour;
-
-                        return GestureDetector(
-                          onTap: () => isClassBlock
-                              ? _editClass(classForTimeSlot)
-                              : _addClass(dayIndex, currentTime),
-                          child: Container(
+                      Row(
+                        children: [
+                          Container(
                             width: cellWidth,
                             height: cellHeight,
-                            decoration: BoxDecoration(
-                              color: isClassBlock
-                                  ? classForTimeSlot['color'].withOpacity(0.7)
-                                  : Colors.white,
-                              border: Border.all(
-                                color: Colors.red[100]!,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.red[100]!,
-                                  blurRadius: 5,
-                                  offset: Offset(2, 2),
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: isFirstSlot
-                                  ? Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          classForTimeSlot['name'],
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        Text(
-                                          classForTimeSlot['instructor'],
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.white70,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ],
-                                    )
-                                  : null,
-                            ),
+                            child: Center(child: Text('')),
                           ),
-                        );
-                      }),
-                    ],
-                  );
-                }),
-                // Add the 7:00 PM time as a standalone text widget
-                Row(
-                  children: [
-                    Container(
-                      width: cellWidth,
-                      height: cellHeight,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              double fontSize = constraints.maxWidth /
-                                  3; // Adjust the divisor as needed
-                              return Align(
-                                alignment: FractionalOffset(
-                                    1.0, -0.2), // Adjust the y-position here
+                          ...List.generate(7, (index) {
+                            return Container(
+                              width: cellWidth,
+                              height: cellHeight,
+                              child: Center(
                                 child: Text(
-                                  '7 PM',
+                                  [
+                                    'Sun',
+                                    'Mon',
+                                    'Tue',
+                                    'Wed',
+                                    'Thu',
+                                    'Fri',
+                                    'Sat'
+                                  ][index],
                                   style: TextStyle(
+                                    fontWeight: FontWeight.bold,
                                     color: Colors.black,
-                                    fontSize: fontSize,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                      ...List.generate(12, (timeIndex) {
+                        final currentTime =
+                            TimeOfDay(hour: 7 + timeIndex, minute: 0);
+                        return Row(
+                          children: [
+                            Container(
+                              width: cellWidth,
+                              height: cellHeight,
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: Align(
+                                    alignment: FractionalOffset(1.0,
+                                        -0.1), // Adjust the y-position here
+                                    child: LayoutBuilder(
+                                      builder: (context, constraints) {
+                                        double fontSize = constraints.maxWidth /
+                                            3; // Adjust the divisor as needed
+                                        return Text(
+                                          formatTimeWithoutMinutes(
+                                              context, currentTime),
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: fontSize > 16
+                                                ? 16
+                                                : fontSize, // Set a max font size
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            ...List.generate(7, (dayIndex) {
+                              final classForTimeSlot = classes.firstWhere(
+                                (classItem) =>
+                                    classItem['day'] == dayIndex &&
+                                    classItem['startTime'].hour <=
+                                        currentTime.hour &&
+                                    classItem['endTime'].hour >
+                                        currentTime.hour,
+                                orElse: () => {},
+                              );
+
+                              bool isClassBlock = classForTimeSlot.isNotEmpty;
+                              bool isFirstSlot = classForTimeSlot.isNotEmpty &&
+                                  classForTimeSlot['startTime'].hour ==
+                                      currentTime.hour;
+
+                              return GestureDetector(
+                                onTap: () => isClassBlock
+                                    ? _editClass(classForTimeSlot)
+                                    : _addClass(dayIndex, currentTime),
+                                child: Container(
+                                  width: cellWidth,
+                                  height: cellHeight,
+                                  decoration: BoxDecoration(
+                                    color: isClassBlock
+                                        ? classForTimeSlot['color']
+                                            .withOpacity(0.7)
+                                        : Colors.white,
+                                    border: Border.all(
+                                      color: Colors.red[100]!,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.red[100]!,
+                                        blurRadius: 5,
+                                        offset: Offset(2, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: isFirstSlot
+                                        ? Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                classForTimeSlot['name'],
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              Text(
+                                                classForTimeSlot['instructor'],
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.white70,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ],
+                                          )
+                                        : null,
                                   ),
                                 ),
                               );
-                            },
+                            }),
+                          ],
+                        );
+                      }),
+                      // Add the 7:00 PM time as a standalone text widget
+                      Row(
+                        children: [
+                          Container(
+                            width: cellWidth,
+                            height: cellHeight,
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    double fontSize = constraints.maxWidth /
+                                        3; // Adjust the divisor as needed
+                                    return Align(
+                                      alignment: FractionalOffset(1.0,
+                                          -0.2), // Adjust the y-position here
+                                      child: Text(
+                                        '7 PM',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: fontSize > 16
+                                              ? 16
+                                              : fontSize, // Set a max font size
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
+                          Spacer(),
+                          ...List.generate(7, (index) => Spacer()),
+                        ],
                       ),
-                    ),
-                    Spacer(),
-                    ...List.generate(7, (index) => Spacer()),
-                  ],
+                    ],
+                  ),
                 ),
-              ],
+              ),
             ),
           );
         },
@@ -319,26 +341,24 @@ class __ClassDialogState extends State<_ClassDialog> {
   void initState() {
     super.initState();
     if (widget.classItem != null) {
-      classNameController.text = widget.classItem!['name'];
-      instructorNameController.text = widget.classItem!['instructor'];
-      selectedDay = widget.classItem!['day'];
-      startTime = widget.classItem!['startTime'];
-      endTime = widget.classItem!['endTime'];
-      selectedColor = widget.classItem!['color'];
+      final classItem = widget.classItem!;
+      classNameController.text = classItem['name'];
+      instructorNameController.text = classItem['instructor'];
+      startTime = classItem['startTime'];
+      endTime = classItem['endTime'];
+      selectedDay = classItem['day'];
+      selectedColor = classItem['color'];
     } else {
-      if (widget.initialDay != null) selectedDay = widget.initialDay!;
-      if (widget.initialStartTime != null) startTime = widget.initialStartTime!;
-      if (widget.initialEndTime != null) endTime = widget.initialEndTime!;
+      selectedDay = widget.initialDay ?? 0;
+      startTime = widget.initialStartTime ?? TimeOfDay(hour: 7, minute: 0);
+      endTime = widget.initialEndTime ?? TimeOfDay(hour: 8, minute: 0);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.0),
-      ),
-      title: Text(widget.classItem != null ? 'Edit Class' : 'Add Class'),
+      title: Text(widget.classItem == null ? 'Add Class' : 'Edit Class'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -349,17 +369,17 @@ class __ClassDialogState extends State<_ClassDialog> {
             ),
             TextField(
               controller: instructorNameController,
-              decoration: InputDecoration(labelText: 'Instructor Name'),
+              decoration: InputDecoration(labelText: 'Instructor'),
             ),
             DropdownButton<int>(
               value: selectedDay,
-              onChanged: (int? newValue) {
+              onChanged: (value) {
                 setState(() {
-                  selectedDay = newValue!;
+                  selectedDay = value!;
                 });
               },
               items: List.generate(7, (index) {
-                return DropdownMenuItem<int>(
+                return DropdownMenuItem(
                   value: index,
                   child: Text([
                     'Sunday',
@@ -373,96 +393,93 @@ class __ClassDialogState extends State<_ClassDialog> {
                 );
               }),
             ),
-            ListTile(
-              title: Text('Start Time'),
-              trailing: TextButton(
-                onPressed: () async {
-                  TimeOfDay? picked = await showTimePicker(
-                    context: context,
-                    initialTime: startTime,
-                  );
-                  if (picked != null && picked != startTime) {
-                    setState(() {
-                      startTime = picked;
-                    });
-                  }
-                },
-                child: Text(formatTimeWithoutMinutes(context, startTime)),
-              ),
-            ),
-            ListTile(
-              title: Text('End Time'),
-              trailing: TextButton(
-                onPressed: () async {
-                  TimeOfDay? picked = await showTimePicker(
-                    context: context,
-                    initialTime: endTime,
-                  );
-                  if (picked != null && picked != endTime) {
-                    setState(() {
-                      endTime = picked;
-                    });
-                  }
-                },
-                child: Text(formatTimeWithoutMinutes(context, endTime)),
-              ),
-            ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Class Color'),
-                IconButton(
-                  icon: Icon(
-                    Icons.color_lens,
-                    color: Colors.red,
+                Expanded(
+                  child: ListTile(
+                    title: Text('Start Time'),
+                    subtitle: Text(startTime.format(context)),
+                    onTap: () async {
+                      final time = await showTimePicker(
+                        context: context,
+                        initialTime: startTime,
+                      );
+                      if (time != null) {
+                        setState(() {
+                          startTime = time;
+                        });
+                      }
+                    },
                   ),
-                  onPressed: () async {
-                    final pickedColor = await showDialog<Color>(
-                      context: context,
-                      builder: (context) {
-                        Color tempColor = selectedColor;
-                        return AlertDialog(
-                          title: Text('Pick a color'),
-                          content: SingleChildScrollView(
-                            child: BlockPicker(
-                              pickerColor: selectedColor,
-                              onColorChanged: (color) {
-                                tempColor = color;
-                              },
-                            ),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop(tempColor);
-                              },
-                              child: Text('Select'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-
-                    if (pickedColor != null) {
-                      setState(() {
-                        selectedColor = pickedColor;
-                      });
-                    }
-                  },
+                ),
+                Expanded(
+                  child: ListTile(
+                    title: Text('End Time'),
+                    subtitle: Text(endTime.format(context)),
+                    onTap: () async {
+                      final time = await showTimePicker(
+                        context: context,
+                        initialTime: endTime,
+                      );
+                      if (time != null) {
+                        setState(() {
+                          endTime = time;
+                        });
+                      }
+                    },
+                  ),
                 ),
               ],
             ),
+            ListTile(
+              title: Text('Color'),
+              trailing: Container(
+                width: 24,
+                height: 24,
+                color: selectedColor,
+              ),
+              onTap: () async {
+                Color pickedColor = selectedColor;
+                await showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: Text('Pick a color'),
+                      content: SingleChildScrollView(
+                        child: BlockPicker(
+                          pickerColor: selectedColor,
+                          onColorChanged: (color) {
+                            pickedColor = color;
+                          },
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text('OK'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+                setState(() {
+                  selectedColor = pickedColor;
+                });
+              },
+            ),
+            if (widget.classItem != null)
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop({'delete': true});
+                },
+                child: Text('Delete Class'),
+              ),
           ],
         ),
       ),
       actions: [
-        if (widget.classItem != null)
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop({'delete': true});
-            },
-            child: Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
         TextButton(
           onPressed: () {
             Navigator.of(context).pop();
@@ -471,16 +488,17 @@ class __ClassDialogState extends State<_ClassDialog> {
         ),
         TextButton(
           onPressed: () {
-            Navigator.of(context).pop({
+            final newClass = {
               'name': classNameController.text,
               'instructor': instructorNameController.text,
-              'day': selectedDay,
               'startTime': startTime,
               'endTime': endTime,
+              'day': selectedDay,
               'color': selectedColor,
-            });
+            };
+            Navigator.of(context).pop(newClass);
           },
-          child: Text(widget.classItem != null ? 'Save' : 'Add'),
+          child: Text('Save'),
         ),
       ],
     );
