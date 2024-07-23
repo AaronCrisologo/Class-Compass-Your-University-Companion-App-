@@ -1,9 +1,39 @@
+import 'package:final_project/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'calendar_screen.dart';
 import 'resources.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatelessWidget {
+  // Sample data for upcoming classes
+  final List<Map<String, String>> upcomingClasses = [
+    {
+      'name': 'Application Development',
+      'dateTime': 'August 10, 10:00 AM',
+      'location': 'Software Lab 2, CICS Building'
+    },
+    {
+      'name': 'Integrative Programming',
+      'dateTime': 'August 10, 2:00 PM',
+      'location': 'Room 104, CICS Building'
+    },
+    {
+      'name': 'System Quality Assurance',
+      'dateTime': 'August 12, 7:00 AM',
+      'location': 'CISCO Lab, CICS Building'
+    },
+    {
+      'name': 'Human-computer interaction',
+      'dateTime': 'August 12, 10:00 AM',
+      'location': 'Room 106, CICS Building'
+    },
+    {
+      'name': 'Social Issues and Professional Practice',
+      'dateTime': 'August 14, 4:00 PM',
+      'location': 'Room 106, CICS Building'
+    },
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,8 +69,9 @@ class HomeScreen extends StatelessWidget {
                   height: 150,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    itemCount: 5, // Replace with the actual number of classes
+                    itemCount: upcomingClasses.length, // Number of classes
                     itemBuilder: (context, index) {
+                      final classInfo = upcomingClasses[index];
                       return Card(
                         elevation: 4,
                         margin: EdgeInsets.only(right: 16),
@@ -51,7 +82,7 @@ class HomeScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Class Name', // Replace with actual class name
+                                classInfo['name']!, // Class name
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -59,7 +90,7 @@ class HomeScreen extends StatelessWidget {
                               ),
                               SizedBox(height: 8),
                               Text(
-                                'Date & Time', // Replace with actual date & time
+                                classInfo['dateTime']!, // Date & time
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Colors.grey[600],
@@ -67,7 +98,7 @@ class HomeScreen extends StatelessWidget {
                               ),
                               SizedBox(height: 8),
                               Text(
-                                'Location', // Replace with actual location
+                                classInfo['location']!, // Location
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Colors.grey[600],
@@ -120,10 +151,18 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 10),
-                // Replace with actual announcements
-                _buildAnnouncementCard('Announcement 1'),
-                _buildAnnouncementCard('Announcement 2'),
-                _buildAnnouncementCard('Announcement 3'),
+                _buildAnnouncementCard(
+                    'ACADEMIC BREAK: NO CLASSES on August 2-6, 2024. In light of the ongoing challenge caused by the Typhoon, the University Student Council stands with you in providing assistance and support to students and their families who were severely affected by the typhoon in order to assist them in recovering completely from the chaos.',
+                    'CABEIHM Student Council',
+                    'assets/cabeihm.jpg'),
+                _buildAnnouncementCard(
+                    '#WalangPasokAdvisory: Malacañang declares Monday, Jul 17, a regular holiday in observance of Eidl Adha. Proclamation No. 579 signed by Executive Secretary Lucas Bersamin was released yesterday, June 5, 2024.',
+                    'Walang Pasok Advisory',
+                    'assets/wpa.jpg'),
+                _buildAnnouncementCard(
+                    'Upon the recommendation of the Provincial Disaster Risk Reduction and Management Office, and in view of the continuing inclement weather due to the effects of TS Florita, classes in private and public schools, from kindergarten to senior high school, are suspended tomorrow, 24 August 2022, in the whole Province of Batangas. Stay safe Batangueños!',
+                    'Batangas PIO',
+                    'assets/batspio.jpg'),
                 SizedBox(height: 20),
                 // Events and Holidays
                 Text(
@@ -135,9 +174,10 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 10),
-                // Replace with actual events and holidays
-                _buildEventCard('Event 1', 'Date & Time'),
-                _buildEventCard('Holiday 1', 'Date'),
+                _buildEventCard('Tech Workshop', 'July 28, 2:00 PM - 5:00 PM'),
+                _buildEventCard('Ninoy Aquino Day', 'August 21'),
+                _buildEventCard('National Heroes Day', 'August 26'),
+                _buildEventCard('School Intramurals', 'August 5 - 7:00 AM'),
                 SizedBox(height: 20),
                 // Quick Links
                 _buildSectionTitle('Quick Links'),
@@ -176,7 +216,7 @@ class HomeScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => ResourceScreen()),
+                              builder: (context) => ProfileScreen()),
                         );
                       },
                     ),
@@ -185,7 +225,8 @@ class HomeScreen extends StatelessWidget {
                       icon: Icons.cloud,
                       title: 'Weather Alerts',
                       onTap: () async {
-                        const url = 'https://www.weather.com/';
+                        const url =
+                            'https://www.accuweather.com/en/ph/batangas-city/262266/weather-forecast/262266';
                         if (await canLaunch(url)) {
                           await launch(url);
                         } else {
@@ -203,7 +244,8 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAnnouncementCard(String announcement) {
+  Widget _buildAnnouncementCard(
+      String announcement, String userName, String userImage) {
     return Card(
       elevation: 4,
       margin: EdgeInsets.only(bottom: 16),
@@ -215,12 +257,11 @@ class HomeScreen extends StatelessWidget {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: Colors.red,
-                  child: Icon(Icons.person, color: Colors.white),
+                  backgroundImage: NetworkImage(userImage),
                 ),
                 SizedBox(width: 10),
                 Text(
-                  'User Name',
+                  userName,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
