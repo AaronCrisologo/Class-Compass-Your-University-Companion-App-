@@ -29,30 +29,38 @@ class _CalendarScreenState extends State<CalendarScreen> {
         onPressed: () {
           _showDatePickerAndAddDetails(context);
         },
+        backgroundColor: Colors.red[100],
         child: Icon(Icons.add),
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(10, 30, 10, 30),
+              padding: const EdgeInsets.fromLTRB(10, 30, 10, 15),
               child: Column(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-                        .map((day) => Expanded(
-                              child: Center(
-                                child: Text(
-                                  day,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.red[800],
-                                  ),
-                                ),
-                              ),
-                            ))
-                        .toList(),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      double fontSize = constraints.maxWidth * 0.035;
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children:
+                            ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+                                .map((day) => Expanded(
+                                      child: Center(
+                                        child: Text(
+                                          day,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.red[800],
+                                            fontSize: fontSize,
+                                          ),
+                                        ),
+                                      ),
+                                    ))
+                                .toList(),
+                      );
+                    },
                   ),
                   GridView.builder(
                     physics:
@@ -89,7 +97,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       }
 
                       Color getBackgroundColor() {
-                        if (isCurrentDate) return Colors.red[100]!;
+                        if (isCurrentDate) return Colors.blue[100]!;
                         if (isHoliday ||
                             isWeatherDisturbance ||
                             isUserNoClassDay) {
@@ -103,7 +111,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
                       return LayoutBuilder(
                         builder: (context, constraints) {
-                          double iconSize = constraints.maxWidth * 0.3;
+                          double iconSize = constraints.maxWidth * 0.25;
                           return GestureDetector(
                             onTap: () {
                               _showDayDetails(
@@ -264,7 +272,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Details for ${day.day}/${day.month}/${day.year}'),
+          title: Text('Editing Date ${day.day}/${day.month}/${day.year}'),
           content: Container(
             width: double.maxFinite,
             child: Column(
@@ -294,7 +302,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   },
                 ),
                 CheckboxListTile(
-                  title: Text('Mark as partial asynchronous'),
+                  title: Text('Mark as partial class cancellation'),
                   value: partialNoClass,
                   onChanged: (bool? value) {
                     setState(() {
@@ -314,22 +322,28 @@ class _CalendarScreenState extends State<CalendarScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
                 setState(() {
-                  if (noteController.text.isNotEmpty) {
-                    userNotes[day] = noteController.text;
+                  userNotes[day] = noteController.text;
+                  if (noClassDay) {
+                    userNoClassDays.add(day);
                   } else {
-                    userNotes.remove(day);
+                    userNoClassDays.remove(day);
+                  }
+                  if (partialNoClass) {
+                    partialNoClassDays.add(day);
+                  } else {
+                    partialNoClassDays.remove(day);
                   }
                 });
                 Navigator.of(context).pop();
               },
               child: Text('Save'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
             ),
           ],
         );
@@ -338,17 +352,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   void _showDatePickerAndAddDetails(BuildContext context) {
-    DateTime selectedDate = DateTime.now();
-
     showDatePicker(
       context: context,
-      initialDate: selectedDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
     ).then((pickedDate) {
       if (pickedDate != null) {
-        selectedDate = pickedDate;
-        _showDayDetails(context, selectedDate, false, false, false, false);
+        _showDayDetails(context, pickedDate, false, false, false, false);
       }
     });
   }
