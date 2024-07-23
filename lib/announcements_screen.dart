@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'dart:math';
 
 class AnnouncementsScreen extends StatefulWidget {
@@ -42,7 +43,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
       'profilePicture': 'assets/batspio.jpg',
       'accountName': 'Batangas PIO',
       'message':
-          'Upon the  recommendation of the Provincial Disaster Risk Reduction and Management Office, and in view of the continuing inclement weather due to the effects of TS Florita (moderate to heavy rains) the Provincial Government of Batangas, as per Gov. DoDo Mandanas, declares that classes, in private and public schools, from kindergarten to senior high school, are suspended tomorrow, 24 August 2022, in the whole Province of Batangas. Stay safe Batangueños! God bless.',
+          'Upon the recommendation of the Provincial Disaster Risk Reduction and Management Office, and in view of the continuing inclement weather due to the effects of TS Florita (moderate to heavy rains) the Provincial Government of Batangas, as per Gov. DoDo Mandanas, declares that classes, in private and public schools, from kindergarten to senior high school, are suspended tomorrow, 24 August 2022, in the whole Province of Batangas. Stay safe Batangueños! God bless.',
       'likes': 0,
       'dislikes': 0,
       'notifications': false,
@@ -261,6 +262,11 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
     setState(() {
       announcements[index]['notifications'] =
           !announcements[index]['notifications'];
+      if (announcements[index]['notifications']) {
+        _showCustomToast(context, "Added to Notifications");
+      } else {
+        _showCustomToast(context, "Removed from Notifications");
+      }
     });
   }
 
@@ -361,12 +367,24 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
     });
   }
 
+  String truncateText(String text, int maxChars) {
+    if (text.length <= maxChars) {
+      return text;
+    } else {
+      return text.substring(0, maxChars) + '...';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: ListView.builder(
         itemCount: announcements.length,
         itemBuilder: (context, index) {
+          final isExpanded = announcements[index]['expanded'];
+          final message = announcements[index]['message'];
+          final truncatedMessage = truncateText(message, 100);
+
           return Card(
             margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             child: Padding(
@@ -389,6 +407,8 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                               announcements[index]['accountName'],
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
+                                fontSize:
+                                    16, // Match font size with message text
                               ),
                               overflow: TextOverflow.visible,
                             ),
@@ -445,23 +465,32 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                     ],
                   ),
                   SizedBox(height: 10.0),
-                  announcements[index]['expanded']
-                      ? Text(announcements[index]['message'])
-                      : Text(
-                          announcements[index]['message'],
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
+                  RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: isExpanded ? message : truncatedMessage,
+                          style: TextStyle(
+                            color: const Color.fromARGB(255, 60, 60, 60),
+                            fontSize: 15,
+                            fontWeight: FontWeight.normal,
+                            height: 1.5,
+                          ),
                         ),
-                  SizedBox(height: 5.0),
-                  if (!announcements[index]['expanded'] &&
-                      announcements[index]['message'].length > 100)
-                    InkWell(
-                      onTap: () => _toggleExpanded(index),
-                      child: Text(
-                        'Read more',
-                        style: TextStyle(color: Colors.blue),
-                      ),
+                        if (!isExpanded && message.length > 100)
+                          TextSpan(
+                            text: ' Read more',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => _toggleExpanded(index),
+                          ),
+                      ],
                     ),
+                  ),
                   SizedBox(height: 10.0),
                   Row(
                     children: [
@@ -494,7 +523,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                       IconButton(
                         icon: Icon(
                           announcements[index]['notifications']
-                              ? Icons.notifications
+                              ? Icons.notifications_active
                               : Icons.notifications_none,
                           color: announcements[index]['notifications']
                               ? Colors.blue
