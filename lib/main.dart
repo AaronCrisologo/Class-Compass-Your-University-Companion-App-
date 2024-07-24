@@ -21,7 +21,25 @@ class ClassCompassApp extends StatelessWidget {
       title: 'Class Compass',
       theme: ThemeData(
         primarySwatch: Colors.red,
+        textTheme: TextTheme(
+          bodyLarge: TextStyle(fontSize: 16.0, color: Colors.black),
+          bodyMedium: TextStyle(fontSize: 14.0, color: Colors.black),
+          headlineLarge: TextStyle(
+              fontSize: 24.0,
+              fontWeight: FontWeight.bold,
+              color: Colors.red[800]),
+        ),
         visualDensity: VisualDensity.adaptivePlatformDensity,
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.red,
+          foregroundColor: Colors.white,
+          elevation: 0,
+        ),
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          selectedItemColor: Colors.red,
+          unselectedItemColor: Colors.grey,
+          backgroundColor: Colors.red,
+        ),
       ),
       home: LoginScreen(),
     );
@@ -33,8 +51,12 @@ class MainScreen extends StatefulWidget {
   _MainScreenState createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen>
+    with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
   static final List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
     CalendarScreen(),
@@ -43,9 +65,28 @@ class _MainScreenState extends State<MainScreen> {
     ScheduleScreen(),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 750),
+      vsync: this,
+    );
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      _controller.reset();
+      _controller.forward();
     });
   }
 
@@ -80,35 +121,57 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  Route _createRoute(Widget page) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(1.0, 0.0);
+        const end = Offset.zero;
+        const curve = Curves.easeInOut;
+
+        final tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        final offsetAnimation = animation.drive(tween);
+
+        return SlideTransition(
+          position: offsetAnimation,
+          child: child,
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
           _getAppBarTitle(_selectedIndex),
-          style: const TextStyle(
-              fontSize: 20.0, fontWeight: FontWeight.bold, color: Colors.white),
+          style: Theme.of(context)
+              .textTheme
+              .headlineLarge!
+              .copyWith(color: Colors.white),
         ),
-        backgroundColor: Colors.red,
         centerTitle: false,
         elevation: 0,
-        iconTheme: IconThemeData(color: Colors.red[50]),
         actions: [
           IconButton(
             icon: Icon(
               Icons.settings,
-              color: Colors.red[50],
             ),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => SettingsScreen()),
+                _createRoute(SettingsScreen()),
               );
             },
           ),
         ],
       ),
-      body: _widgetOptions.elementAt(_selectedIndex),
+      body: FadeTransition(
+        opacity: _animation,
+        child: _widgetOptions.elementAt(_selectedIndex),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -135,10 +198,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.red,
-        unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
-        backgroundColor: Colors.red,
       ),
       drawer: Drawer(
         child: ListView(
