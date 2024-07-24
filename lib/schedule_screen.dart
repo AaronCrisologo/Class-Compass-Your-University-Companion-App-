@@ -177,7 +177,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                               Text(
                                                 classForTimeSlot['name'],
                                                 style: TextStyle(
-                                                  fontSize: 14,
+                                                  fontSize:
+                                                      constraints.maxWidth *
+                                                          0.024,
                                                   fontWeight: FontWeight.bold,
                                                   color: Colors.white,
                                                 ),
@@ -186,7 +188,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                               Text(
                                                 classForTimeSlot['instructor'],
                                                 style: TextStyle(
-                                                  fontSize: 12,
+                                                  fontSize:
+                                                      constraints.maxWidth *
+                                                          0.019,
                                                   color: Colors.white70,
                                                 ),
                                                 textAlign: TextAlign.center,
@@ -433,10 +437,13 @@ class __ClassDialogState extends State<_ClassDialog> {
             ),
             ListTile(
               title: Text('Color'),
-              trailing: Container(
-                width: 24,
-                height: 24,
-                color: selectedColor,
+              trailing: Padding(
+                padding: const EdgeInsets.only(right: 5.0),
+                child: Icon(
+                  Icons.color_lens,
+                  color: Colors.red,
+                  size: 26.0,
+                ),
               ),
               onTap: () async {
                 Color pickedColor = selectedColor;
