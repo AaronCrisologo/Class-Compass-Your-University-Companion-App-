@@ -471,7 +471,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                         TextSpan(
                           text: isExpanded ? message : truncatedMessage,
                           style: TextStyle(
-                            color: const Color.fromARGB(255, 60, 60, 60),
+                            color: const Color.fromARGB(255, 50, 50, 50),
                             fontSize: 14,
                             fontWeight: FontWeight.normal,
                             height: 1.5,

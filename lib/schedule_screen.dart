@@ -462,6 +462,8 @@ class __ClassDialogState extends State<_ClassDialog> {
                       ),
                       actions: [
                         TextButton(
+                          style:
+                              TextButton.styleFrom(foregroundColor: Colors.red),
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
@@ -478,6 +480,7 @@ class __ClassDialogState extends State<_ClassDialog> {
             ),
             if (widget.classItem != null)
               TextButton(
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
                 onPressed: () {
                   Navigator.of(context).pop({'delete': true});
                 },
@@ -488,12 +491,14 @@ class __ClassDialogState extends State<_ClassDialog> {
       ),
       actions: [
         TextButton(
+          style: TextButton.styleFrom(foregroundColor: Colors.red),
           onPressed: () {
             Navigator.of(context).pop();
           },
           child: Text('Cancel'),
         ),
         TextButton(
+          style: TextButton.styleFrom(foregroundColor: Colors.red),
           onPressed: () {
             final newClass = {
               'name': classNameController.text,

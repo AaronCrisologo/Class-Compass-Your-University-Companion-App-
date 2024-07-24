@@ -18,6 +18,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Map<DateTime, String> userNotes = {};
   List<DateTime> userNoClassDays = [];
   List<DateTime> partialNoClassDays = []; // New list for partial no class days
+  List<DateTime> reminders = []; // New list for reminders
 
   DateTime currentDate = DateTime(2024, 8, 9);
   DateTime nextNoClassDay = DateTime(2024, 8, 15);
@@ -87,12 +88,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           userNoClassDays.contains(currentDay);
                       bool isPartialNoClassDay =
                           partialNoClassDays.contains(currentDay);
+                      bool isReminder = reminders.contains(currentDay);
                       bool isCurrentDate = currentDay == currentDate;
 
                       IconData? getIcon() {
                         if (isHoliday) return Icons.event;
                         if (isWeatherDisturbance) return Icons.cloud;
                         if (isUserNoClassDay) return Icons.person;
+                        if (isReminder) return Icons.event_note;
                         return null;
                       }
 
@@ -105,6 +108,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         }
                         if (isPartialNoClassDay) {
                           return Colors.yellow[100]!;
+                        }
+                        if (isReminder) {
+                          return Colors.purple[100]!;
                         }
                         return Colors.white;
                       }
@@ -120,7 +126,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   isHoliday,
                                   isWeatherDisturbance,
                                   isUserNoClassDay,
-                                  isPartialNoClassDay);
+                                  isPartialNoClassDay,
+                                  isReminder);
                             },
                             child: Stack(
                               children: [
@@ -151,7 +158,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 if (isHoliday ||
                                     isWeatherDisturbance ||
                                     isUserNoClassDay ||
-                                    isPartialNoClassDay)
+                                    isPartialNoClassDay ||
+                                    isReminder)
                                   Positioned(
                                     top: 4,
                                     right: 4,
@@ -247,7 +255,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
       bool isHoliday,
       bool isWeatherDisturbance,
       bool isUserNoClassDay,
-      bool isPartialNoClassDay) {
+      bool isPartialNoClassDay,
+      bool isReminder) {
     String reason = '';
     String holidayName = '';
     if (isHoliday) {
@@ -257,9 +266,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
     } else if (isWeatherDisturbance) {
       reason = 'Weather Disturbance';
     } else if (isUserNoClassDay) {
-      reason = 'Asynchronous Class (User Defined)';
+      reason = 'Asynchronous Class';
     } else if (isPartialNoClassDay) {
       reason = 'Partial Class Cancellation';
+    } else if (isReminder) {
+      reason = 'Reminder';
     }
 
     TextEditingController noteController = TextEditingController(
@@ -267,6 +278,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
     bool noClassDay = isUserNoClassDay;
     bool partialNoClass = isPartialNoClassDay;
+    bool reminder = isReminder;
 
     showDialog(
       context: context,
@@ -279,51 +291,112 @@ class _CalendarScreenState extends State<CalendarScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (reason.isNotEmpty)
-                  Text(
-                      'Reason: $reason${holidayName.isNotEmpty ? ' - $holidayName' : ''}'),
-                TextField(
+                  Text('$reason${isHoliday ? ' - $holidayName' : ''}'),
+                TextFormField(
                   controller: noteController,
-                  decoration: InputDecoration(labelText: 'Add a note'),
-                  maxLines: 5, // Increase height for better note-taking
+                  decoration: InputDecoration(
+                    labelText: 'Add Note',
+                  ),
                 ),
                 CheckboxListTile(
-                  title: Text('Mark as asynchronous class'),
+                  title: Text('Asynchronous Class'),
+                  checkColor: Colors.white,
+                  activeColor: Colors.red,
                   value: noClassDay,
-                  onChanged: (bool? value) {
+                  onChanged: (newValue) {
                     setState(() {
-                      noClassDay = value ?? false;
+                      noClassDay = newValue ?? false;
                       if (noClassDay) {
-                        userNoClassDays.add(day);
-                        partialNoClassDays.remove(day);
-                      } else {
-                        userNoClassDays.remove(day);
+                        partialNoClass = false;
+                        reminder = false;
                       }
                     });
+                    Navigator.of(context).pop();
+                    _showDayDetails(
+                      context,
+                      day,
+                      isHoliday,
+                      isWeatherDisturbance,
+                      noClassDay,
+                      partialNoClass,
+                      reminder,
+                    );
                   },
                 ),
                 CheckboxListTile(
-                  title: Text('Mark as partial class cancellation'),
+                  title: Text('Partial Class Cancellation'),
+                  checkColor: Colors.white,
+                  activeColor: Colors.red,
                   value: partialNoClass,
-                  onChanged: (bool? value) {
+                  onChanged: (newValue) {
                     setState(() {
-                      partialNoClass = value ?? false;
+                      partialNoClass = newValue ?? false;
                       if (partialNoClass) {
-                        partialNoClassDays.add(day);
-                        userNoClassDays.remove(day);
-                      } else {
-                        partialNoClassDays.remove(day);
+                        noClassDay = false;
+                        reminder = false;
                       }
                     });
+                    Navigator.of(context).pop();
+                    _showDayDetails(
+                      context,
+                      day,
+                      isHoliday,
+                      isWeatherDisturbance,
+                      noClassDay,
+                      partialNoClass,
+                      reminder,
+                    );
+                  },
+                ),
+                CheckboxListTile(
+                  title: Text('Reminder'),
+                  checkColor: Colors.white,
+                  activeColor: Colors.red,
+                  value: reminder,
+                  onChanged: (newValue) {
+                    setState(() {
+                      reminder = newValue ?? false;
+                      if (reminder) {
+                        noClassDay = false;
+                        partialNoClass = false;
+                      }
+                    });
+                    Navigator.of(context).pop();
+                    _showDayDetails(
+                      context,
+                      day,
+                      isHoliday,
+                      isWeatherDisturbance,
+                      noClassDay,
+                      partialNoClass,
+                      reminder,
+                    );
                   },
                 ),
               ],
             ),
           ),
           actions: [
-            TextButton(
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red[50],
+                foregroundColor: Colors.red,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red[50], foregroundColor: Colors.red),
               onPressed: () {
                 setState(() {
-                  userNotes[day] = noteController.text;
+                  if (noteController.text.isNotEmpty) {
+                    userNotes[day] = noteController.text;
+                  } else {
+                    userNotes.remove(day);
+                  }
                   if (noClassDay) {
                     userNoClassDays.add(day);
                   } else {
@@ -334,16 +407,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   } else {
                     partialNoClassDays.remove(day);
                   }
+                  if (reminder) {
+                    reminders.add(day);
+                  } else {
+                    reminders.remove(day);
+                  }
                 });
                 Navigator.of(context).pop();
               },
               child: Text('Save'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
             ),
           ],
         );
@@ -352,15 +424,37 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   void _showDatePickerAndAddDetails(BuildContext context) {
+    DateTime selectedDate = DateTime.now();
     showDatePicker(
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Colors.red,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.redAccent,
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     ).then((pickedDate) {
-      if (pickedDate != null) {
-        _showDayDetails(context, pickedDate, false, false, false, false);
+      if (pickedDate == null) {
+        return;
       }
+      setState(() {
+        selectedDate = pickedDate;
+      });
+      _showDayDetails(context, selectedDate, false, false, false, false, false);
     });
   }
 }
