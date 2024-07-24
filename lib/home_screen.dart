@@ -270,7 +270,7 @@ class HomeScreen extends StatelessWidget {
             SizedBox(height: 10),
             Text(
               announcement,
-              style: TextStyle(fontSize: 16),
+              style: TextStyle(fontSize: 14),
             ),
           ],
         ),

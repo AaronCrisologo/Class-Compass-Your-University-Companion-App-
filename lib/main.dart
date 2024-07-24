@@ -25,7 +25,7 @@ class ClassCompassApp extends StatelessWidget {
           bodyLarge: TextStyle(fontSize: 16.0, color: Colors.black),
           bodyMedium: TextStyle(fontSize: 14.0, color: Colors.black),
           headlineLarge: TextStyle(
-              fontSize: 24.0,
+              fontSize: 20.0,
               fontWeight: FontWeight.bold,
               color: Colors.red[800]),
         ),

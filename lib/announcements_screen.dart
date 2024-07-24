@@ -472,7 +472,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                           text: isExpanded ? message : truncatedMessage,
                           style: TextStyle(
                             color: const Color.fromARGB(255, 60, 60, 60),
-                            fontSize: 15,
+                            fontSize: 14,
                             fontWeight: FontWeight.normal,
                             height: 1.5,
                           ),
@@ -482,7 +482,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                             text: ' Read more',
                             style: TextStyle(
                               color: Colors.red,
-                              fontSize: 15,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
                             ),
                             recognizer: TapGestureRecognizer()

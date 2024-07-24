@@ -131,7 +131,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 class NotificationCard extends StatelessWidget {
   final Map<String, dynamic> notification;
   final VoidCallback onToggleExpanded;
-  final int maxChars = 100; // Max characters before showing "Read More"
+  final int maxChars = 100;
 
   NotificationCard({
     required this.notification,
@@ -185,16 +185,20 @@ class NotificationCard extends StatelessWidget {
                 child: Icon(icon, color: Colors.white),
               ),
         title: Text(notification['title'],
-            style: TextStyle(fontWeight: FontWeight.bold)),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             notification['expanded']
-                ? Text(notification['description'])
+                ? Text(
+                    notification['description'],
+                    style: TextStyle(fontSize: 14),
+                  )
                 : Text(
                     notification['description'],
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 14),
                   ),
             if (!notification['expanded'] &&
                 notification['description'].length > maxChars)
@@ -202,7 +206,10 @@ class NotificationCard extends StatelessWidget {
                 onTap: onToggleExpanded,
                 child: Text(
                   'Read more',
-                  style: TextStyle(color: Colors.blue),
+                  style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14),
                 ),
               ),
             SizedBox(height: 5),
