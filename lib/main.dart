@@ -25,7 +25,7 @@ class ClassCompassApp extends StatelessWidget {
           bodyLarge: TextStyle(fontSize: 16.0, color: Colors.black),
           bodyMedium: TextStyle(fontSize: 14.0, color: Colors.black),
           headlineLarge: TextStyle(
-              fontSize: 20.0,
+              fontSize: 22.0,
               fontWeight: FontWeight.bold,
               color: Colors.red[800]),
         ),
@@ -38,8 +38,8 @@ class ClassCompassApp extends StatelessWidget {
         bottomNavigationBarTheme: BottomNavigationBarThemeData(
           selectedItemColor: Colors.red,
           unselectedItemColor: Colors.grey,
-          backgroundColor: Colors.red,
         ),
+        iconTheme: IconThemeData(size: 26),
       ),
       home: LoginScreen(),
     );
@@ -189,6 +189,7 @@ class _MainScreenState extends State<MainScreen>
           BottomNavigationBarItem(
             icon: Icon(
               FontAwesomeIcons.bullhorn,
+              size: 22,
             ),
             label: 'Posts',
           ),
@@ -199,6 +200,10 @@ class _MainScreenState extends State<MainScreen>
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        type: BottomNavigationBarType.fixed,
+        iconSize: Theme.of(context).iconTheme.size ?? 24,
       ),
       drawer: Drawer(
         child: ListView(
