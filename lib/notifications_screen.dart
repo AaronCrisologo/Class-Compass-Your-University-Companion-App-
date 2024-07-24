@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 
 class NotificationScreen extends StatefulWidget {
   @override
@@ -194,24 +195,28 @@ class NotificationCard extends StatelessWidget {
                     notification['description'],
                     style: TextStyle(fontSize: 14),
                   )
-                : Text(
-                    notification['description'],
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 14),
+                : RichText(
+                    text: TextSpan(
+                      text: notification['description'].length > 100
+                          ? notification['description'].substring(0, 100) +
+                              '...'
+                          : notification['description'],
+                      style: TextStyle(fontSize: 14, color: Colors.black),
+                      children: notification['description'].length > 100
+                          ? [
+                              TextSpan(
+                                text: ' Read more',
+                                style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = onToggleExpanded,
+                              ),
+                            ]
+                          : [],
+                    ),
                   ),
-            if (!notification['expanded'] &&
-                notification['description'].length > maxChars)
-              InkWell(
-                onTap: onToggleExpanded,
-                child: Text(
-                  'Read more',
-                  style: TextStyle(
-                      color: Colors.red,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14),
-                ),
-              ),
             SizedBox(height: 5),
             Text(
               '${notification['date'].day}/${notification['date'].month}/${notification['date'].year} at ${notification['date'].hour}:${notification['date'].minute.toString().padLeft(2, '0')}',
