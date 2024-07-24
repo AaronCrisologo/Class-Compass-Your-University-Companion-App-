@@ -1,4 +1,4 @@
-import 'package:final_project/profile_screen.dart';
+import 'profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'calendar_screen.dart';
 import 'resources.dart';
@@ -203,8 +203,7 @@ class HomeScreen extends StatelessWidget {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                              builder: (context) => ResourceScreen()),
+                          _createRoute(ResourceScreen()),
                         );
                       },
                     ),
@@ -215,8 +214,7 @@ class HomeScreen extends StatelessWidget {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                              builder: (context) => ProfileScreen()),
+                          _createRoute(ProfileScreen()),
                         );
                       },
                     ),
@@ -321,12 +319,27 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildVerticalList(BuildContext context,
+      {required List<Widget> items}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: items
+          .map(
+            (item) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: item,
+            ),
+          )
+          .toList(),
+    );
+  }
+
   Widget _buildQuickLinkCard(BuildContext context,
       {required IconData icon,
       required String title,
-      required VoidCallback onTap}) {
+      required Function onTap}) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () => onTap(),
       child: Container(
         width: double.infinity,
         child: Card(
@@ -366,11 +379,23 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildVerticalList(BuildContext context,
-      {required List<Widget> items}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: items,
+  Route _createRoute(Widget page) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(0.0, 1.0);
+        const end = Offset.zero;
+        const curve = Curves.easeInOut;
+
+        final tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        final offsetAnimation = animation.drive(tween);
+
+        return SlideTransition(
+          position: offsetAnimation,
+          child: child,
+        );
+      },
     );
   }
 }
