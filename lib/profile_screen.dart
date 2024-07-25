@@ -73,17 +73,17 @@ class ProfileScreen extends StatelessWidget {
               ListTile(
                 leading: Icon(Icons.email),
                 title: Text('Email'),
-                subtitle: Text('21-08166@g.batstate-u.edu.ph'),
+                subtitle: Text('21-09226@g.batstate-u.edu.ph'),
               ),
               ListTile(
                 leading: Icon(Icons.phone),
                 title: Text('Phone'),
-                subtitle: Text('+123 456 7890'),
+                subtitle: Text('+63 912 345 6789'),
               ),
               ListTile(
                 leading: Icon(Icons.location_city),
                 title: Text('Address'),
-                subtitle: Text('Banaybanay, Lipa City, Batangas'),
+                subtitle: Text('Golden Country Hoems, Alangilan, Batangas City'),
               ),
               SizedBox(height: 20),
               ElevatedButton(

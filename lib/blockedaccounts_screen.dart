@@ -9,16 +9,16 @@ class _BlockedAccountsScreenState extends State<BlockedAccountsScreen> {
   final List<Map<String, dynamic>> blockedAccounts = [
     // Mock data for blocked accounts
     {
+      'name': 'Batangas State University Library - Alangilan',
+      'profilePic': 'assets/bsulib.jpg',
+    },
+    {
       'name': 'CABEIHM Student Council',
-      'profilePic': 'https://via.placeholder.com/150',
+      'profilePic': 'assets/cabeihm.jpg',
     },
     {
-      'name': 'Supreme Student Council - BatStateU Alangilan Campus',
-      'profilePic': 'assets/BSUSSC.png',
-    },
-    {
-      'name': 'Alice Johnson',
-      'profilePic': 'https://via.placeholder.com/150',
+      'name': 'Batangas PIO',
+      'profilePic': 'assets/batspio.jpg',
     },
   ];
 
