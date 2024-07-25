@@ -10,11 +10,19 @@ class _NotificationScreenState extends State<NotificationScreen> {
   final List<Map<String, dynamic>> notifications = [
     // Announcement Screen Data
     {
+      'title': 'Reminder',
+      'description':
+          'Final project presentation in Application Development, make sure to finish the project before this date.',
+      'type': 'reminder',
+      'date': DateTime(2024, 7, 25),
+      'expanded': false,
+    },
+    {
       'title': 'Class Announcement',
       'description':
           'Please be advised that a power outage is scheduled to occur on August 14 from 10:00 am to 12:00pm. Due to this outage, all classes scheduled during this time may be canceled or rescheduled.',
       'type': 'class',
-      'date': DateTime.now().add(Duration(days: 5)),
+      'date': DateTime.now().subtract(Duration(days: 1)),
       'expanded': false,
     },
     {
@@ -161,8 +169,8 @@ class NotificationCard extends StatelessWidget {
         icon = Icons.event;
         iconColor = Colors.orangeAccent;
         break;
-      case 'announcement':
-        icon = Icons.announcement;
+      case 'reminder':
+        icon = Icons.event_note;
         iconColor = Colors.purpleAccent;
         break;
       default:

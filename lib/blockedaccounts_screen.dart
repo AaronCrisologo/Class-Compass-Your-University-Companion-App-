@@ -50,6 +50,12 @@ class _BlockedAccountsScreenState extends State<BlockedAccountsScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.red,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20.0),
+                ),
+              ),
               child: Text('Cancel'),
             ),
             ElevatedButton(
@@ -58,7 +64,7 @@ class _BlockedAccountsScreenState extends State<BlockedAccountsScreen> {
                 Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+                foregroundColor: Colors.red,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20.0),
                 ),

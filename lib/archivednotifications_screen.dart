@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 
 class ArchivedNotificationsScreen extends StatefulWidget {
   @override
@@ -16,16 +17,16 @@ class _ArchivedNotificationsScreenState
           'The campus library will be closed on July 24 for a staff training event. Please plan your visits accordingly. Online resources will still be available during this time.',
       'type': 'announcement',
       'date': DateTime(2024, 7, 24),
-      'profilePic': 'https://via.placeholder.com/150',
+      'profilePic': 'assets/bsulib.jpg',
       'expanded': false,
     },
     {
-      'title': 'Career Fair Announcement',
+      'title': 'Reminder',
       'description':
           'A career fair will be held on July 25 from 9:00 AM to 4:00 PM in the main hall. Students are encouraged to bring their resumes and meet with potential employers. Don’t miss this opportunity to network and explore job opportunities.',
       'type': 'announcement',
       'date': DateTime(2024, 7, 25),
-      'profilePic': 'https://via.placeholder.com/150',
+      'profilePic': 'Icons.notification',
       'expanded': false,
     },
   ];
@@ -109,6 +110,7 @@ class ArchivedNotificationCard extends StatelessWidget {
     IconData icon;
     Color iconColor;
 
+    // Set icon and color based on notification type
     switch (notification['type']) {
       case 'holiday':
         icon = Icons.celebration;
@@ -147,35 +149,56 @@ class ArchivedNotificationCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListTile(
-              leading: notification['type'] == 'announcement'
+              leading: notification['title'] == 'Reminder'
                   ? CircleAvatar(
-                      backgroundImage: NetworkImage(notification['profilePic']),
+                      backgroundColor: Colors.purple,
+                      child: Icon(Icons.event_note, color: Colors.white),
                     )
-                  : CircleAvatar(
-                      backgroundColor: iconColor,
-                      child: Icon(icon, color: Colors.white),
-                    ),
-              title: Text(notification['title'],
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+                  : notification['type'] == 'announcement'
+                      ? CircleAvatar(
+                          backgroundImage:
+                              AssetImage(notification['profilePic']),
+                        )
+                      : CircleAvatar(
+                          backgroundColor: iconColor,
+                          child: Icon(icon, color: Colors.white),
+                        ),
+              title: Text(
+                notification['title'],
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   notification['expanded']
                       ? Text(notification['description'])
-                      : Text(
-                          notification['description'],
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
+                      : RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: notification['description'].length >
+                                        maxChars
+                                    ? '${notification['description'].substring(0, maxChars)}...'
+                                    : notification['description'],
+                                style: TextStyle(
+                                  color: Colors.black,
+                                ),
+                              ),
+                              if (notification['description'].length > maxChars)
+                                TextSpan(
+                                  text: 'Read more',
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = onToggleExpanded,
+                                ),
+                            ],
+                          ),
                         ),
-                  if (!notification['expanded'] &&
-                      notification['description'].length > maxChars)
-                    InkWell(
-                      onTap: onToggleExpanded,
-                      child: Text(
-                        'Read more',
-                        style: TextStyle(color: Colors.blue),
-                      ),
-                    ),
                   SizedBox(height: 5),
                   Text(
                     '${notification['date'].day}/${notification['date'].month}/${notification['date'].year} at ${notification['date'].hour}:${notification['date'].minute.toString().padLeft(2, '0')}',

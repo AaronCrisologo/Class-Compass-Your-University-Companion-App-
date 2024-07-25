@@ -25,9 +25,7 @@ class ResourceScreen extends StatelessWidget {
             buildSectionTitle('Important Links'),
             buildHyperlink(Icons.calendar_today, 'School Calendar',
                 'https://batstateu.edu.ph/academic-calendar/2023-2024/'),
-            buildHyperlink(
-                Icons.calendar_view_day,
-                'Non-working Holiday Calendar',
+            buildHyperlink(Icons.calendar_view_day, 'Holiday Calendar',
                 'https://www.timeanddate.com/holidays/philippines/2024'),
             buildHyperlink(FontAwesomeIcons.globe, 'School Website',
                 'https://batstateu.edu.ph/'),
@@ -35,32 +33,37 @@ class ResourceScreen extends StatelessWidget {
                 'https://www.facebook.com/BatStateUTheNEU'),
             buildHyperlink(FontAwesomeIcons.twitter, 'School Twitter Page',
                 'https://twitter.com/BatStateUTheNEU'),
-            buildHyperlink(
-                Icons.web, 'Student Portal', 'https://dione.batstate-u.edu.ph/student/#/'),
+            buildHyperlink(Icons.web, 'Student Portal',
+                'https://dione.batstate-u.edu.ph/student/#/'),
             SizedBox(height: 30),
-            buildSectionTitle('Contact Information'),
-            buildContactInfo(Icons.email, 'Email', 'tao.alangilan@g.batstate-u.edu.ph'),
+            buildSectionTitle('School Contact Information'),
+            buildContactInfo(
+                Icons.email, 'Email', 'tao.alangilan@g.batstate-u.edu.ph'),
             buildContactInfo(Icons.phone, 'Telephone', '425-0139'),
             buildContactInfo(Icons.phone, 'Mobile', '+63 907 847 8442'),
             SizedBox(height: 30),
             buildSectionTitle('Emergency Hotlines'),
-            buildContactInfo(FontAwesomeIcons.phoneSquare, 'Mayors Action Center', '723-1511'),
-            buildContactInfo(FontAwesomeIcons.phoneSquare, 'PNP Batangas City', '723-2030'),
+            buildContactInfo(
+                FontAwesomeIcons.phoneSquare, 'Action Center', '723-1511'),
+            buildContactInfo(
+                FontAwesomeIcons.phoneSquare, 'PNP Batangas City', '723-2030'),
             buildContactInfo(
                 FontAwesomeIcons.phoneSquare, 'BFP Batangas City', '425-7163'),
-            buildContactInfo(FontAwesomeIcons.phoneSquare, 'Batangas Medical Center', '723-0911'),
-            buildContactInfo(FontAwesomeIcons.phoneSquare, 'MERALCO ', '16211'),
-            buildContactInfo(FontAwesomeIcons.phoneSquare, 'PrimeWater Batangas City', '980-6928'),
             buildContactInfo(
-                FontAwesomeIcons.phoneSquare, 'City Disaster Risk Reduction and Management Office', '702-3902'),
+                FontAwesomeIcons.phoneSquare, 'Batangas Medical', '723-0911'),
+            buildContactInfo(FontAwesomeIcons.phoneSquare, 'MERALCO ', '16211'),
+            buildContactInfo(
+                FontAwesomeIcons.phoneSquare, 'PrimeWater', '980-6928'),
+            buildContactInfo(
+                FontAwesomeIcons.phoneSquare, 'CDRRMO', '702-3902'),
             SizedBox(height: 30),
             buildSectionTitle('Additional Resources'),
             buildHyperlink(FontAwesomeIcons.book, 'Library Catalog',
                 'https://library.batstate-u.edu.ph/#/main/home'),
             buildHyperlink(FontAwesomeIcons.laptop, 'Online Courses',
                 'https://batstateu.edu.ph/global/courses/'),
-            buildHyperlink(Icons.library_books, 'Curriculum (BSIT)',
-                'https://batstateu.edu.ph/wp-content/uploads/2024/06/NEU-BSIT-Curriculum-18-19.pdf#toolbar=0'), 
+            buildHyperlink(Icons.library_books, 'Course Curriculum (BSIT)',
+                'https://batstateu.edu.ph/wp-content/uploads/2024/06/NEU-BSIT-Curriculum-18-19.pdf#toolbar=0'),
             buildHyperlink(FontAwesomeIcons.infoCircle, 'Help Desk',
                 'https://batstateu.edu.ph/contact-us/'),
           ],
@@ -116,6 +119,7 @@ class ResourceScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Icon(icon, color: Colors.red[700]),
           SizedBox(width: 10),
@@ -127,11 +131,14 @@ class ResourceScreen extends StatelessWidget {
               color: Colors.black,
             ),
           ),
-          Text(
-            info,
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.black54,
+          Flexible(
+            child: Text(
+              info,
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.black54,
+              ),
+              overflow: TextOverflow.visible,
             ),
           ),
         ],

@@ -83,7 +83,8 @@ class ProfileScreen extends StatelessWidget {
               ListTile(
                 leading: Icon(Icons.location_city),
                 title: Text('Address'),
-                subtitle: Text('Golden Country Hoems, Alangilan, Batangas City'),
+                subtitle:
+                    Text('Golden Country Homes, Alangilan, Batangas City'),
               ),
               SizedBox(height: 20),
               ElevatedButton(
