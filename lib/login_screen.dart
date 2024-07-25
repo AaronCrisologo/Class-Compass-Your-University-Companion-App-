@@ -12,10 +12,20 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   String? _validateEmail(String? value) {
+    const pattern = r'^[^@]+@[^@]+\.[^@]+';
+    final regex = RegExp(pattern);
+    if (!regex.hasMatch(value!)) {
+      return 'Enter a valid email address';
+    }
     return null;
   }
 
   String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Enter a password';
+    } else if (value.length < 6) {
+      return 'Password must be at least 6 characters';
+    }
     return null;
   }
 
