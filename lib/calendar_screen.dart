@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:table_calendar/table_calendar.dart';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
-extension DateTimeFormatting on DateTime {
-  String toShortDateString() {
-    return "${this.year}-${this.month.toString().padLeft(2, '0')}-${this.day.toString().padLeft(2, '0')}";
-  }
-}
 
 class CalendarScreen extends StatefulWidget {
   @override
@@ -14,14 +11,8 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  List<Map<String, dynamic>> holidays = [];
-  List<DateTime> weatherDisturbances = []; // Replace with API call for weather
-  Map<DateTime, String> userNotes = {};
-  List<DateTime> userNoClassDays = [];
-  List<DateTime> partialNoClassDays = [];
-  List<DateTime> reminders = [];
-  DateTime currentDate = DateTime.now();
-  DateTime nextNoClassDay = DateTime.now();
+  Map<DateTime, List<String>> events = {};
+  DateTime focusedDate = DateTime.now();
 
   @override
   void initState() {
@@ -30,330 +21,285 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Future<void> fetchData() async {
-    await fetchCurrentTime();
     await fetchHolidays();
-    await fetchUserNotes();
-    await fetchMarkedDays();
-  }
-
-  Future<void> fetchCurrentTime() async {
-    final response = await http.get(Uri.parse('http://localhost:3000/calendar/time'));
-    if (response.statusCode == 200) {
-      setState(() {
-        currentDate = DateTime.parse(json.decode(response.body)['datetime']);
-      });
-    }
+    await fetchWeatherDisturbances();
+    await fetchCombinedNotesAndMarkedDays(); // Combined function call
+    setState(() {});
   }
 
   Future<void> fetchHolidays() async {
-    final response = await http.get(Uri.parse('http://localhost:3000/calendar/holidays'));
-    if (response.statusCode == 200) {
-      final List<dynamic> holidaysData = json.decode(response.body);
-      setState(() {
-        holidays = holidaysData.map((holiday) {
-          return {
-            'date': DateTime.parse(holiday['holiday_date']),
-            'name': holiday['holiday_name']
-          };
-        }).toList();
-      });
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/calendar/holidays'));
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        data.forEach((holiday) {
+          DateTime date = DateTime.parse(holiday['holiday_date']).toLocal();
+          String name = holiday['holiday_name'];
+
+          events[DateTime(date.year, date.month, date.day)] = events[DateTime(date.year, date.month, date.day)] ?? [];
+          events[DateTime(date.year, date.month, date.day)]!.add("Holiday: $name");
+          print("Holiday added: $name on $date (local)");
+        });
+      }
+    } catch (e) {
+      print("Error fetching holidays: $e");
     }
   }
 
-  Future<void> fetchUserNotes() async {
-    final response = await http.get(Uri.parse('http://localhost:3000/calendar/notes'));
-    if (response.statusCode == 200) {
-      final List<dynamic> notesData = json.decode(response.body);
-      setState(() {
-        userNotes = {
-          for (var note in notesData)
-            DateTime.parse(note['note_date']): note['note_text']
-        };
-      });
+  Future<void> fetchWeatherDisturbances() async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/calendar/weather-disturbances'));
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        data.forEach((disturbance) {
+          DateTime date = DateTime.parse(disturbance['date']).toLocal();
+
+          events[DateTime(date.year, date.month, date.day)] = events[DateTime(date.year, date.month, date.day)] ?? [];
+          events[DateTime(date.year, date.month, date.day)]!.add("Weather Alert: ${disturbance['description']}");
+          print("Weather alert added on $date (local)");
+        });
+      }
+    } catch (e) {
+      print("Error fetching weather disturbances: $e");
     }
   }
 
-  Future<void> fetchMarkedDays() async {
-    final response = await http.get(Uri.parse('http://localhost:3000/calendar/marked-days'));
-    if (response.statusCode == 200) {
-      final List<dynamic> daysData = json.decode(response.body);
-      setState(() {
-        userNoClassDays = daysData
-            .where((day) => day['day_type'] == 'no_class')
-            .map((day) => DateTime.parse(day['marked_date']))
-            .toList();
-        partialNoClassDays = daysData
-            .where((day) => day['day_type'] == 'partial_no_class')
-            .map((day) => DateTime.parse(day['marked_date']))
-            .toList();
-        reminders = daysData
-            .where((day) => day['day_type'] == 'reminder')
-            .map((day) => DateTime.parse(day['marked_date']))
-            .toList();
-      });
+  Future<void> fetchCombinedNotesAndMarkedDays() async {
+    try {
+      // Fetch marked days
+      final markedDaysResponse = await http.get(Uri.parse('http://localhost:3000/calendar/marked-days'));
+      if (markedDaysResponse.statusCode == 200) {
+        List<dynamic> markedDaysData = jsonDecode(markedDaysResponse.body);
+        markedDaysData.forEach((markedDay) {
+          DateTime date = DateTime.parse(markedDay['marked_date']).toLocal();
+          String type = markedDay['day_type'];
+
+          events[DateTime(date.year, date.month, date.day)] = events[DateTime(date.year, date.month, date.day)] ?? [];
+          print("Marked Day added on $date (local): $type");
+        });
+      }
+
+      // Fetch user notes
+      final notesResponse = await http.get(Uri.parse('http://localhost:3000/calendar/notes'));
+      if (notesResponse.statusCode == 200) {
+        List<dynamic> notesData = jsonDecode(notesResponse.body);
+        notesData.forEach((note) {
+          DateTime date = DateTime.parse(note['note_date']).toLocal();
+
+          events[DateTime(date.year, date.month, date.day)]!.add("Note: ${note['note_text']}");
+          print("Note added on $date (local)");
+        });
+      }
+    } catch (e) {
+      print("Error fetching combined notes and marked days: $e");
     }
   }
 
-  Future<void> addNoteAndMarkedDay(DateTime day, String note, String dayType) async {
-    await http.post(
-      Uri.parse('http://localhost:3000/calendar/notes'),
-      body: json.encode({'note_date': day.toIso8601String(), 'note_text': note}),
-      headers: {'Content-Type': 'application/json'},
+  Future<void> _addCustomMarkedDay() async {
+    DateTime? selectedDate = await showDatePicker(
+      context: context,
+      initialDate: focusedDate,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.utc(2030, 12, 31),
     );
 
-    await http.post(
-      Uri.parse('http://localhost:3000/calendar/marked-days'),
-      body: json.encode({'marked_date': day.toIso8601String(), 'day_type': dayType}),
-      headers: {'Content-Type': 'application/json'},
-    );
+    if (selectedDate != null) {
+      String? dayType = await showDialog<String>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Select Day Type'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: Text('No Class'),
+                  onTap: () => Navigator.of(context).pop('no_class'),
+                ),
+                ListTile(
+                  title: Text('Reminder'),
+                  onTap: () => Navigator.of(context).pop('reminder'),
+                ),
+              ],
+            ),
+          );
+        },
+      );
 
-    await fetchUserNotes();
-    await fetchMarkedDays();
+      if (dayType != null) {
+        String? userInputNote = await showDialog<String>(
+          context: context,
+          builder: (BuildContext context) {
+            TextEditingController controller = TextEditingController();
+            return AlertDialog(
+              title: Text('Enter Note'),
+              content: TextField(
+                controller: controller,
+                decoration: InputDecoration(hintText: "Enter your note here"),
+                maxLines: 3,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(controller.text); // Pass the entered note
+                  },
+                  child: Text('Submit'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(null); // Cancel input
+                  },
+                  child: Text('Cancel'),
+                ),
+              ],
+            );
+          },
+        );
+
+        if (userInputNote != null && userInputNote.isNotEmpty) {
+          // Send marked day to the backend
+          await http.post(
+            Uri.parse('http://localhost:3000/calendar/marked-days'),
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+            },
+            body: jsonEncode(<String, dynamic>{
+              'marked_date': selectedDate.toIso8601String(),
+              'day_type': dayType,
+            }),
+          );
+
+          // Send user input note to the backend
+          await http.post(
+            Uri.parse('http://localhost:3000/calendar/notes'),
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+            },
+            body: jsonEncode(<String, dynamic>{
+              'note_date': selectedDate.toIso8601String(),
+              'note_text': userInputNote,
+            }),
+          );
+
+          // Update local events map
+          events[DateTime(selectedDate.year, selectedDate.month, selectedDate.day)] =
+              events[DateTime(selectedDate.year, selectedDate.month, selectedDate.day)] ?? [];
+          events[DateTime(selectedDate.year, selectedDate.month, selectedDate.day)]!.add("Note: $userInputNote");
+
+          setState(() {});
+        }
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _showDatePickerAndAddDetails(context);
-        },
-        backgroundColor: Colors.red[100],
-        child: Icon(Icons.add),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 30, 10, 15),
-              child: Column(
-                children: [
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      double fontSize = constraints.maxWidth * 0.035;
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-                            .map((day) => Expanded(
-                                  child: Center(
-                                    child: Text(
-                                      day,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.red[800],
-                                        fontSize: fontSize,
-                                      ),
-                                    ),
-                                  ),
-                                ))
-                            .toList(),
-                      );
-                    },
-                  ),
-                  GridView.builder(
-                    physics: NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 7,
-                      childAspectRatio: 1.0,
-                    ),
-                    itemCount: daysInMonth(currentDate) + 4,
-                    itemBuilder: (context, index) {
-                      DateTime currentDay;
-                      if (index < 4) {
-                        currentDay = DateTime(currentDate.year, currentDate.month - 1, 28 + index);
-                      } else {
-                        currentDay = DateTime(currentDate.year, currentDate.month, index - 3);
-                      }
-                      bool isHoliday = holidays.any((holiday) => holiday['date'] == currentDay);
-                      bool isWeatherDisturbance = weatherDisturbances.contains(currentDay);
-                      bool isUserNoClassDay = userNoClassDays.contains(currentDay);
-                      bool isPartialNoClassDay = partialNoClassDays.contains(currentDay);
-                      bool isReminder = reminders.contains(currentDay);
-                      bool isCurrentDate = currentDay == currentDate;
-
-                      return buildCalendarCell(
-                        context,
-                        currentDay,
-                        isHoliday,
-                        isWeatherDisturbance,
-                        isUserNoClassDay,
-                        isPartialNoClassDay,
-                        isReminder,
-                        isCurrentDate,
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget buildCalendarCell(
-      BuildContext context,
-      DateTime currentDay,
-      bool isHoliday,
-      bool isWeatherDisturbance,
-      bool isUserNoClassDay,
-      bool isPartialNoClassDay,
-      bool isReminder,
-      bool isCurrentDate) {
-    IconData? getIcon() {
-      if (isHoliday) return Icons.event;
-      if (isWeatherDisturbance) return Icons.cloud;
-      if (isUserNoClassDay) return Icons.person;
-      if (isReminder) return Icons.event_note;
-      return null;
-    }
-
-    Color getBackgroundColor() {
-      if (isCurrentDate) return Colors.blue[100]!;
-      if (isHoliday || isWeatherDisturbance || isUserNoClassDay) {
-        return Colors.red[100]!;
-      }
-      if (isPartialNoClassDay) return Colors.yellow[100]!;
-      if (isReminder) return Colors.purple[100]!;
-      return Colors.white;
-    }
-
-    return GestureDetector(
-      onTap: () {
-        _showDayDetails(context, currentDay, isHoliday, isWeatherDisturbance, isUserNoClassDay, isPartialNoClassDay, isReminder);
-      },
-      child: Stack(
+      body: Column(
         children: [
-          Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              color: getBackgroundColor(),
-              borderRadius: BorderRadius.circular(10),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.5),
-                  spreadRadius: 2,
-                  blurRadius: 5,
-                  offset: Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                '${currentDay.day}',
-                style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+          TableCalendar(
+            firstDay: DateTime.utc(2020, 1, 1),
+            lastDay: DateTime.utc(2030, 12, 31),
+            focusedDay: focusedDate,
+            calendarFormat: CalendarFormat.month,
+            eventLoader: (date) {
+              return events[DateTime(date.year, date.month, date.day)] ?? [];
+            },
+            calendarStyle: CalendarStyle(
+              todayDecoration: BoxDecoration(
+                color: Colors.teal,
+                shape: BoxShape.circle,
+              ),
+              selectedDecoration: BoxDecoration(
+                color: Colors.tealAccent,
+                shape: BoxShape.circle,
+              ),
+              markerDecoration: BoxDecoration(
+                color: Colors.orange,
+                shape: BoxShape.circle,
               ),
             ),
+            onDaySelected: (selectedDay, focusedDay) {
+              setState(() {
+                focusedDate = focusedDay;
+              });
+              if (events[DateTime(selectedDay.year, selectedDay.month, selectedDay.day)] != null) {
+                showEventDetails(context, selectedDay);
+              }
+            },
           ),
-          if (getIcon() != null)
-            Positioned(
-              top: 4,
-              right: 4,
-              child: Icon(
-                getIcon(),
-                color: Colors.red,
-                size: 16.0,
-              ),
-            ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addCustomMarkedDay,
+        tooltip: 'Add Custom Marked Day',
+        child: Icon(Icons.add),
+      ),
     );
   }
 
-  int daysInMonth(DateTime date) {
-    var firstDayThisMonth = DateTime(date.year, date.month, 1);
-    var firstDayNextMonth = DateTime(date.year, date.month + 1, 1);
-    return firstDayNextMonth.difference(firstDayThisMonth).inDays;
-  }
+void showEventDetails(BuildContext context, DateTime date) {
+  String formattedDate = DateFormat.yMMMMd().format(date);
+  
+  // Check if the selected date is a holiday
+  bool isHoliday = events[DateTime(date.year, date.month, date.day)]?.any((event) => event.startsWith("Holiday: ")) ?? false;
 
-  void _showDayDetails(
-      BuildContext context,
-      DateTime day,
-      bool isHoliday,
-      bool isWeatherDisturbance,
-      bool isUserNoClassDay,
-      bool isPartialNoClassDay,
-      bool isReminder) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Details for ${day.toLocal().toShortDateString()}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isHoliday) Text("This day is a holiday!"),
-              if (isWeatherDisturbance) Text("There is a weather disturbance."),
-              if (isUserNoClassDay) Text("No classes on this day."),
-              if (isPartialNoClassDay) Text("Partial class cancellation."),
-              if (isReminder) Text("Reminder scheduled for this day."),
-              Text("Notes: ${userNotes[day] ?? 'No notes for this day.'}"),
-            ],
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text("Events on $formattedDate"),
+      content: SingleChildScrollView(
+        child: ListBody(
+          children: events[DateTime(date.year, date.month, date.day)]
+                  ?.map((event) => Text(event))
+                  .toList() ??
+              [Text("No events")],
+        ),
+      ),
+      actions: [
+        if (!isHoliday) // Only show delete button if it's not a holiday
+          TextButton(
+            child: Text("Delete"),
+            onPressed: () async {
+              // Call delete function
+              await deleteDate(date);
+              Navigator.of(context).pop();
+            },
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+        TextButton(
+          child: Text("Close"),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
+    ),
+  );
+}
 
-  void _showDatePickerAndAddDetails(BuildContext context) {
-    showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2101),
-    ).then((pickedDate) {
-      if (pickedDate != null) {
-        _showAddNoteDialog(context, pickedDate);
-      }
+Future<void> deleteDate(DateTime date) async {
+  // Format the date to 'YYYY-MM-DD'
+  String formattedDate = DateFormat('yyyy-MM-dd').format(date);
+  
+  try {
+    // Delete user notes
+    final noteResponse = await http.delete(Uri.parse('http://localhost:3000/calendar/notes/$formattedDate'));
+    if (noteResponse.statusCode != 200) {
+      print("Failed to delete note: ${noteResponse.body}");
+    }
+
+    // Delete custom marked day
+    final markedDayResponse = await http.delete(Uri.parse('http://localhost:3000/calendar/marked-days/$formattedDate'));
+    if (markedDayResponse.statusCode != 200) {
+      print("Failed to delete marked day: ${markedDayResponse.body}");
+    }
+
+    // Remove events from local state
+    setState(() {
+      events.remove(DateTime(date.year, date.month, date.day));
     });
+  } catch (e) {
+    print("Error deleting date: $e");
   }
-
-  void _showAddNoteDialog(BuildContext context, DateTime day) {
-    final noteController = TextEditingController();
-    String? selectedType;
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Add Note for ${day.toLocal().toShortDateString()}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: noteController,
-                decoration: InputDecoration(hintText: 'Enter note'),
-              ),
-              DropdownButtonFormField<String>(
-                items: [
-                  DropdownMenuItem(value: 'no_class', child: Text('No Class Day')),
-                  DropdownMenuItem(value: 'partial_no_class', child: Text('Partial No Class Day')),
-                  DropdownMenuItem(value: 'reminder', child: Text('Reminder')),
-                ],
-                onChanged: (value) => selectedType = value,
-                decoration: InputDecoration(hintText: 'Select Day Type'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                addNoteAndMarkedDay(day, noteController.text, selectedType!);
-                Navigator.of(context).pop();
-              },
-              child: Text('Add'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+}
 }

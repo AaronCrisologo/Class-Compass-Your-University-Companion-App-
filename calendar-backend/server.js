@@ -80,3 +80,21 @@ app.get('/calendar/marked-days', (req, res) => {
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
+
+// Delete a User Note
+app.delete('/calendar/notes/:date', (req, res) => {
+    const noteDate = req.params.date;
+    db.query('DELETE FROM user_notes WHERE note_date = ?', [noteDate], (err) => {
+        if (err) return res.status(500).send(err);
+        res.status(200).send('Note deleted successfully');
+    });
+});
+
+// Delete a Custom Marked Day
+app.delete('/calendar/marked-days/:date', (req, res) => {
+    const markedDate = req.params.date;
+    db.query('DELETE FROM custom_days WHERE marked_date = ?', [markedDate], (err) => {
+        if (err) return res.status(500).send(err);
+        res.status(200).send('Marked day deleted successfully');
+    });
+});
