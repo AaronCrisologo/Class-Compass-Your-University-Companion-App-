@@ -95,102 +95,123 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
   }
 
-  Future<void> _addCustomMarkedDay() async {
-    DateTime? selectedDate = await showDatePicker(
+Future<void> _addCustomMarkedDay() async {
+  DateTime? selectedDate = await showDatePicker(
+    context: context,
+    initialDate: focusedDate,
+    firstDate: DateTime.now(),
+    lastDate: DateTime.utc(2030, 12, 31),
+  );
+
+  if (selectedDate != null) {
+    // Check if the selected date already has a marked day
+    if (events[DateTime(selectedDate.year, selectedDate.month, selectedDate.day)] != null) {
+      // Show dialog informing user to delete existing mark first
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Marked Day Already Exists'),
+          content: Text('You already have a marked day for this date. Please delete the current mark before adding a new one.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return; // Exit function without adding a new mark
+    }
+
+    // Prompt the user for day type if no mark exists for this date
+    String? dayType = await showDialog<String>(
       context: context,
-      initialDate: focusedDate,
-      firstDate: DateTime.now(),
-      lastDate: DateTime.utc(2030, 12, 31),
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Select Day Type'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: Text('No Class'),
+                onTap: () => Navigator.of(context).pop('no_class'),
+              ),
+              ListTile(
+                title: Text('Reminder'),
+                onTap: () => Navigator.of(context).pop('reminder'),
+              ),
+            ],
+          ),
+        );
+      },
     );
 
-    if (selectedDate != null) {
-      String? dayType = await showDialog<String>(
+    if (dayType != null) {
+      String? userInputNote = await showDialog<String>(
         context: context,
         builder: (BuildContext context) {
+          TextEditingController controller = TextEditingController();
           return AlertDialog(
-            title: Text('Select Day Type'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  title: Text('No Class'),
-                  onTap: () => Navigator.of(context).pop('no_class'),
-                ),
-                ListTile(
-                  title: Text('Reminder'),
-                  onTap: () => Navigator.of(context).pop('reminder'),
-                ),
-              ],
+            title: Text('Enter Note'),
+            content: TextField(
+              controller: controller,
+              decoration: InputDecoration(hintText: "Enter your note here"),
+              maxLines: 3,
             ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(controller.text); // Pass the entered note
+                },
+                child: Text('Submit'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(null); // Cancel input
+                },
+                child: Text('Cancel'),
+              ),
+            ],
           );
         },
       );
 
-      if (dayType != null) {
-        String? userInputNote = await showDialog<String>(
-          context: context,
-          builder: (BuildContext context) {
-            TextEditingController controller = TextEditingController();
-            return AlertDialog(
-              title: Text('Enter Note'),
-              content: TextField(
-                controller: controller,
-                decoration: InputDecoration(hintText: "Enter your note here"),
-                maxLines: 3,
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(controller.text); // Pass the entered note
-                  },
-                  child: Text('Submit'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(null); // Cancel input
-                  },
-                  child: Text('Cancel'),
-                ),
-              ],
-            );
+      if (userInputNote != null && userInputNote.isNotEmpty) {
+        // Send marked day and note to the backend
+        await http.post(
+          Uri.parse('http://localhost:3000/calendar/marked-days'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
           },
+          body: jsonEncode(<String, dynamic>{
+            'marked_date': selectedDate.toIso8601String(),
+            'day_type': dayType,
+          }),
         );
 
-        if (userInputNote != null && userInputNote.isNotEmpty) {
-          // Send marked day to the backend
-          await http.post(
-            Uri.parse('http://localhost:3000/calendar/marked-days'),
-            headers: <String, String>{
-              'Content-Type': 'application/json; charset=UTF-8',
-            },
-            body: jsonEncode(<String, dynamic>{
-              'marked_date': selectedDate.toIso8601String(),
-              'day_type': dayType,
-            }),
-          );
+        await http.post(
+          Uri.parse('http://localhost:3000/calendar/notes'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode(<String, dynamic>{
+            'note_date': selectedDate.toIso8601String(),
+            'note_text': userInputNote,
+          }),
+        );
 
-          // Send user input note to the backend
-          await http.post(
-            Uri.parse('http://localhost:3000/calendar/notes'),
-            headers: <String, String>{
-              'Content-Type': 'application/json; charset=UTF-8',
-            },
-            body: jsonEncode(<String, dynamic>{
-              'note_date': selectedDate.toIso8601String(),
-              'note_text': userInputNote,
-            }),
-          );
+        // Update local events map
+        events[DateTime(selectedDate.year, selectedDate.month, selectedDate.day)] =
+            events[DateTime(selectedDate.year, selectedDate.month, selectedDate.day)] ?? [];
+        events[DateTime(selectedDate.year, selectedDate.month, selectedDate.day)]!.add("Note: $userInputNote");
 
-          // Update local events map
-          events[DateTime(selectedDate.year, selectedDate.month, selectedDate.day)] =
-              events[DateTime(selectedDate.year, selectedDate.month, selectedDate.day)] ?? [];
-          events[DateTime(selectedDate.year, selectedDate.month, selectedDate.day)]!.add("Note: $userInputNote");
-
-          setState(() {});
-        }
+        setState(() {});
       }
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {

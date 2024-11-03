@@ -36,7 +36,7 @@ dependencies:
   url_launcher: ^6.0.20
   http: ^0.13.4
   table_calendar: ^3.1.2
-  intl: ^0.17.0
+  intl: ^0.19.0
 
 
 
