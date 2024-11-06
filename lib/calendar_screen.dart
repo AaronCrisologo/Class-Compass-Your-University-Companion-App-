@@ -4,14 +4,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
-
 class CalendarScreen extends StatefulWidget {
   @override
   _CalendarScreenState createState() => _CalendarScreenState();
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  Map<DateTime, List<String>> events = {};
+  Map<DateTime, List<Map<String, String>>> events = {};
   DateTime focusedDate = DateTime.now();
 
   @override
@@ -23,7 +22,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Future<void> fetchData() async {
     await fetchHolidays();
     await fetchWeatherDisturbances();
-    await fetchCombinedNotesAndMarkedDays(); // Combined function call
+    await fetchCombinedNotesAndMarkedDays();
     setState(() {});
   }
 
@@ -32,14 +31,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
       final response = await http.get(Uri.parse('http://localhost:3000/calendar/holidays'));
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
-        data.forEach((holiday) {
+        for (var holiday in data) {
           DateTime date = DateTime.parse(holiday['holiday_date']).toLocal();
           String name = holiday['holiday_name'];
 
-          events[DateTime(date.year, date.month, date.day)] = events[DateTime(date.year, date.month, date.day)] ?? [];
-          events[DateTime(date.year, date.month, date.day)]!.add("Holiday: $name");
-          print("Holiday added: $name on $date (local)");
-        });
+          events[date] = events[date] ?? [];
+          events[date]!.add({"type": "Holiday", "description": name});
+        }
       }
     } catch (e) {
       print("Error fetching holidays: $e");
@@ -51,13 +49,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
       final response = await http.get(Uri.parse('http://localhost:3000/calendar/weather-disturbances'));
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
-        data.forEach((disturbance) {
+        for (var disturbance in data) {
           DateTime date = DateTime.parse(disturbance['date']).toLocal();
-
-          events[DateTime(date.year, date.month, date.day)] = events[DateTime(date.year, date.month, date.day)] ?? [];
-          events[DateTime(date.year, date.month, date.day)]!.add("Weather Alert: ${disturbance['description']}");
-          print("Weather alert added on $date (local)");
-        });
+          events[date] = events[date] ?? [];
+          events[date]!.add({"type": "Weather Alert", "description": disturbance['description']});
+        }
       }
     } catch (e) {
       print("Error fetching weather disturbances: $e");
@@ -66,29 +62,25 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   Future<void> fetchCombinedNotesAndMarkedDays() async {
     try {
-      // Fetch marked days
       final markedDaysResponse = await http.get(Uri.parse('http://localhost:3000/calendar/marked-days'));
       if (markedDaysResponse.statusCode == 200) {
         List<dynamic> markedDaysData = jsonDecode(markedDaysResponse.body);
-        markedDaysData.forEach((markedDay) {
+        for (var markedDay in markedDaysData) {
           DateTime date = DateTime.parse(markedDay['marked_date']).toLocal();
           String type = markedDay['day_type'];
-
-          events[DateTime(date.year, date.month, date.day)] = events[DateTime(date.year, date.month, date.day)] ?? [];
-          print("Marked Day added on $date (local): $type");
-        });
+          events[date] = events[date] ?? [];
+          events[date]!.add({"type": type, "description": "Marked Day"});
+        }
       }
 
-      // Fetch user notes
       final notesResponse = await http.get(Uri.parse('http://localhost:3000/calendar/notes'));
       if (notesResponse.statusCode == 200) {
         List<dynamic> notesData = jsonDecode(notesResponse.body);
-        notesData.forEach((note) {
+        for (var note in notesData) {
           DateTime date = DateTime.parse(note['note_date']).toLocal();
-
-          events[DateTime(date.year, date.month, date.day)]!.add("Note: ${note['note_text']}");
-          print("Note added on $date (local)");
-        });
+          events[date] = events[date] ?? [];
+          events[date]!.add({"type": "Note", "description": note['note_text']});
+        }
       }
     } catch (e) {
       print("Error fetching combined notes and marked days: $e");
@@ -104,28 +96,23 @@ Future<void> _addCustomMarkedDay() async {
   );
 
   if (selectedDate != null) {
-    // Check if the selected date already has a marked day
-    if (events[DateTime(selectedDate.year, selectedDate.month, selectedDate.day)] != null) {
-      // Show dialog informing user to delete existing mark first
+    if (events[selectedDate] != null) {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: Text('Marked Day Already Exists'),
-          content: Text('You already have a marked day for this date. Please delete the current mark before adding a new one.'),
+          content: Text('Please delete the current mark before adding a new one.'),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: Text('OK'),
             ),
           ],
         ),
       );
-      return; // Exit function without adding a new mark
+      return;
     }
 
-    // Prompt the user for day type if no mark exists for this date
     String? dayType = await showDialog<String>(
       context: context,
       builder: (BuildContext context) {
@@ -144,6 +131,12 @@ Future<void> _addCustomMarkedDay() async {
               ),
             ],
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(), // Cancel button to close dialog
+              child: Text('Cancel'),
+            ),
+          ],
         );
       },
     );
@@ -162,15 +155,11 @@ Future<void> _addCustomMarkedDay() async {
             ),
             actions: [
               TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(controller.text); // Pass the entered note
-                },
+                onPressed: () => Navigator.of(context).pop(controller.text),
                 child: Text('Submit'),
               ),
               TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(null); // Cancel input
-                },
+                onPressed: () => Navigator.of(context).pop(null),
                 child: Text('Cancel'),
               ),
             ],
@@ -179,34 +168,20 @@ Future<void> _addCustomMarkedDay() async {
       );
 
       if (userInputNote != null && userInputNote.isNotEmpty) {
-        // Send marked day and note to the backend
         await http.post(
           Uri.parse('http://localhost:3000/calendar/marked-days'),
-          headers: <String, String>{
-            'Content-Type': 'application/json; charset=UTF-8',
-          },
-          body: jsonEncode(<String, dynamic>{
-            'marked_date': selectedDate.toIso8601String(),
-            'day_type': dayType,
-          }),
+          headers: {'Content-Type': 'application/json; charset=UTF-8'},
+          body: jsonEncode({'marked_date': selectedDate.toIso8601String(), 'day_type': dayType}),
         );
 
         await http.post(
           Uri.parse('http://localhost:3000/calendar/notes'),
-          headers: <String, String>{
-            'Content-Type': 'application/json; charset=UTF-8',
-          },
-          body: jsonEncode(<String, dynamic>{
-            'note_date': selectedDate.toIso8601String(),
-            'note_text': userInputNote,
-          }),
+          headers: {'Content-Type': 'application/json; charset=UTF-8'},
+          body: jsonEncode({'note_date': selectedDate.toIso8601String(), 'note_text': userInputNote}),
         );
 
-        // Update local events map
-        events[DateTime(selectedDate.year, selectedDate.month, selectedDate.day)] =
-            events[DateTime(selectedDate.year, selectedDate.month, selectedDate.day)] ?? [];
-        events[DateTime(selectedDate.year, selectedDate.month, selectedDate.day)]!.add("Note: $userInputNote");
-
+        events[selectedDate] = events[selectedDate] ?? [];
+        events[selectedDate]!.add({"type": dayType, "description": userInputNote});
         setState(() {});
       }
     }
@@ -224,7 +199,7 @@ Future<void> _addCustomMarkedDay() async {
             focusedDay: focusedDate,
             calendarFormat: CalendarFormat.month,
             eventLoader: (date) {
-              return events[DateTime(date.year, date.month, date.day)] ?? [];
+              return events[DateTime(date.year, date.month, date.day)]?.map((e) => e["description"] ?? "").toList() ?? [];
             },
             calendarStyle: CalendarStyle(
               todayDecoration: BoxDecoration(
@@ -236,9 +211,10 @@ Future<void> _addCustomMarkedDay() async {
                 shape: BoxShape.circle,
               ),
               markerDecoration: BoxDecoration(
-                color: Colors.orange,
+                color: Colors.orange, 
                 shape: BoxShape.circle,
               ),
+              markerSize: 5.0,
             ),
             onDaySelected: (selectedDay, focusedDay) {
               setState(() {
@@ -248,6 +224,34 @@ Future<void> _addCustomMarkedDay() async {
                 showEventDetails(context, selectedDay);
               }
             },
+            calendarBuilders: CalendarBuilders(
+              markerBuilder: (context, date, eventsList) {
+                final eventTypes = events[DateTime(date.year, date.month, date.day)]?.map((e) => e['type']).toSet() ?? {};
+
+                Color markerColor;
+                if (eventTypes.contains("Holiday")) {
+                  markerColor = Colors.blue;
+                } else if (eventTypes.contains("no_class")) {
+                  markerColor = Colors.grey;
+                } else if (eventTypes.contains("reminder")) {
+                  markerColor = Colors.orange;
+                } else {
+                  markerColor = Colors.teal;
+                }
+
+                return eventsList.isNotEmpty
+                    ? Container(
+                        decoration: BoxDecoration(
+                          color: markerColor,
+                          shape: BoxShape.circle,
+                        ),
+                        width: 6,
+                        height: 6,
+                        margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                      )
+                    : null;
+              },
+            ),
           ),
         ],
       ),
@@ -260,38 +264,38 @@ Future<void> _addCustomMarkedDay() async {
   }
 
 void showEventDetails(BuildContext context, DateTime date) {
-  String formattedDate = DateFormat.yMMMMd().format(date);
+  final DateTime normalizedDate = DateTime(date.year, date.month, date.day);
+  final eventDetails = events[normalizedDate] ?? [];
+  bool isHoliday = eventDetails.any((event) => event["type"] == "Holiday");
   
-  // Check if the selected date is a holiday
-  bool isHoliday = events[DateTime(date.year, date.month, date.day)]?.any((event) => event.startsWith("Holiday: ")) ?? false;
+// Filter out items with "Marked Day" as the description
+  final filteredEvents = eventDetails.where((event) => event["description"] != "Marked Day").toList();
 
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text("Events on $formattedDate"),
-      content: SingleChildScrollView(
-        child: ListBody(
-          children: events[DateTime(date.year, date.month, date.day)]
-                  ?.map((event) => Text(event))
-                  .toList() ??
-              [Text("No events")],
-        ),
+      title: Text("Events on ${DateFormat.yMMMd().format(date)}"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: filteredEvents.map((event) {
+          return ListTile(
+            title: Text(event["type"] ?? ""),
+            subtitle: Text(event["description"] ?? ""),
+          );
+        }).toList(),
       ),
       actions: [
-        if (!isHoliday) // Only show delete button if it's not a holiday
+        if (!isHoliday) // Only show delete option if it's not a holiday
           TextButton(
             child: Text("Delete"),
             onPressed: () async {
-              // Call delete function
-              await deleteDate(date);
+              await deleteDate(normalizedDate);
               Navigator.of(context).pop();
             },
           ),
         TextButton(
           child: Text("Close"),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ],
     ),
@@ -299,7 +303,6 @@ void showEventDetails(BuildContext context, DateTime date) {
 }
 
 Future<void> deleteDate(DateTime date) async {
-  // Format the date to 'YYYY-MM-DD'
   String formattedDate = DateFormat('yyyy-MM-dd').format(date);
   
   try {
@@ -317,7 +320,7 @@ Future<void> deleteDate(DateTime date) async {
 
     // Remove events from local state
     setState(() {
-      events.remove(DateTime(date.year, date.month, date.day));
+      events.remove(date);
     });
   } catch (e) {
     print("Error deleting date: $e");
