@@ -1,100 +1,144 @@
-const express = require('express');
-const mysql = require('mysql2');
-const cors = require('cors');
-const axios = require('axios');
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert'; // For parsing JSON
+import 'package:intl/intl.dart'; // For formatting dates
 
-const app = express();
-const port = 3000;
+class AnnouncementsScreen extends StatefulWidget {
+    @override
+  _AnnouncementsScreenState createState() => _AnnouncementsScreenState();
+}
 
-app.use(cors());
-app.use(express.json());
+class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
+    // The list of announcements fetched from a server
+    List<Map<String, dynamic>> announcements =[];
+  DateTime _fetchedDate = DateTime.now(); // Default to current date
 
-// MySQL Connection
-const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root', // Replace with your MySQL username
-    password: 'password', // Replace with your MySQL password
-    database: 'class_compass',
-});
+@override
+void initState() {
+    super.initState();
+    _fetchAnnouncements();
+}
 
-db.connect(err => {
-    if (err) throw err;
-    console.log('Connected to MySQL database.');
-});
+// Fetch the list of announcements from the API
+Future < void> _fetchAnnouncements() async {
+    final url = 'http://localhost:3000/scrape/gma-suspensions';
 
-// API Endpoints
-
-// Get Current Time in the Philippines
-app.get('/calendar/time', async (req, res) => {
     try {
-        const response = await axios.get('http://worldtimeapi.org/api/timezone/Asia/Manila');
-        res.json(response.data);
+      final response = await http.get(Uri.parse(url));
+
+        if (response.statusCode == 200) {
+        // Decode the response body into a Map
+        final data = json.decode(response.body);
+
+            // Ensure the response has the expected structure (with 'message' key)
+            if (data is Map < String, dynamic > && data.containsKey('message')) {
+          final message = data['message'];
+
+          // Format the message to insert line breaks
+          final formattedMessage = _formatMessage(message);
+
+                // Add the formatted message to the list
+                setState(() {
+                    announcements = [
+                        {
+                            'message': formattedMessage,
+                            'accountName': 'GMA News',
+                            'expanded': false,
+                            'image': 'assets/gma.png', // Add the image path here
+                        }
+                    ];
+                });
+            } else {
+                print('Error: Invalid response structure. Expected key "message".');
+            }
+        } else {
+            throw Exception('Failed to load suspensions');
+        }
     } catch (error) {
-        res.status(500).send('Error fetching time');
+        print('Error fetching announcements: $error');
     }
-});
+}
 
-// Get National Holidays
-app.get('/calendar/holidays', (req, res) => {
-    db.query('SELECT * FROM holidays', (err, results) => {
-        if (err) return res.status(500).send(err);
-        res.json(results);
-    });
-});
+  // Function to format the message and insert line breaks where necessary
+  String _formatMessage(String message) {
+    // Split the message at commas and insert line breaks where needed
+    final formattedMessage = message.replaceAllMapped(
+    RegExp(r'(province - .+?)(?= (?:,|$))'),
+    (match) => '${match.group(0)}\n');
 
-// Add a User Note
-app.post('/calendar/notes', (req, res) => {
-    const { note_date, note_text } = req.body;
-    db.query('INSERT INTO user_notes (note_date, note_text) VALUES (?, ?)', [note_date, note_text], (err) => {
-        if (err) return res.status(500).send(err);
-        res.status(201).send('Note added successfully');
-    });
-});
+    return formattedMessage;
+}
 
-// Get User Notes
-app.get('/calendar/notes', (req, res) => {
-    db.query('SELECT * FROM user_notes', (err, results) => {
-        if (err) return res.status(500).send(err);
-        res.json(results);
-    });
-});
-
-// Add a Custom Marked Day
-app.post('/calendar/marked-days', (req, res) => {
-    const { marked_date, day_type } = req.body;
-    db.query('INSERT INTO custom_days (marked_date, day_type) VALUES (?, ?)', [marked_date, day_type], (err) => {
-        if (err) return res.status(500).send(err);
-        res.status(201).send('Marked day added successfully');
-    });
-});
-
-// Get Custom Marked Days
-app.get('/calendar/marked-days', (req, res) => {
-    db.query('SELECT * FROM custom_days', (err, results) => {
-        if (err) return res.status(500).send(err);
-        res.json(results);
-    });
-});
-
-// Start the Server
-app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
-});
-
-// Delete a User Note
-app.delete('/calendar/notes/:date', (req, res) => {
-    const noteDate = req.params.date;
-    db.query('DELETE FROM user_notes WHERE note_date = ?', [noteDate], (err) => {
-        if (err) return res.status(500).send(err);
-        res.status(200).send('Note deleted successfully');
-    });
-});
-
-// Delete a Custom Marked Day
-app.delete('/calendar/marked-days/:date', (req, res) => {
-    const markedDate = req.params.date;
-    db.query('DELETE FROM custom_days WHERE marked_date = ?', [markedDate], (err) => {
-        if (err) return res.status(500).send(err);
-        res.status(200).send('Marked day deleted successfully');
-    });
-});
+@override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+            title: Text(
+                'Class Suspension Announcements as of ${DateFormat('MMMM d, yyyy').format(_fetchedDate)}',
+                style: TextStyle(fontSize: 16),
+            ),
+        ),
+        body: ListView.builder(
+            itemCount: announcements.length,
+            itemBuilder: (context, index) {
+          final announcement = announcements[index];
+                return Card(
+                    margin: EdgeInsets.all(10),
+                    child: Padding(
+                        padding: const EdgeInsets.all(10.0),
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                Row(
+                                    children: [
+                                    // Profile picture
+                                    CircleAvatar(
+                                        radius: 20,
+                                        backgroundImage: AssetImage(announcement['image']),
+                                    ),
+                                    SizedBox(width: 10),
+                                    // Account name
+                                    Text(
+                                        announcement['accountName'],
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold, fontSize: 16),
+                                    ),
+                                ],
+                                ),
+                                SizedBox(height: 10),
+                                // Display the formatted message
+                                Text(
+                                    announcement['message'],
+                                    style: TextStyle(fontSize: 14),
+                                    softWrap: true,
+                                    overflow: TextOverflow.visible,
+                                ),
+                                SizedBox(height: 10),
+                                Row(
+                                    children: [
+                                    Spacer(),
+                                    IconButton(
+                                        icon: Icon(
+                                            announcement['expanded']
+                                                ? Icons.expand_less
+                                                : Icons.expand_more,
+                                            color: Colors.blue,
+                                        ),
+                                        onPressed: () {
+                                            setState(() {
+                                                announcement['expanded'] =
+                                                    !announcement['expanded'];
+                                            });
+                                        },
+                                    ),
+                                ],
+                                ),
+                            ],
+                            ),
+            ),
+    );
+},
+      ),
+    );
+  }
+}
