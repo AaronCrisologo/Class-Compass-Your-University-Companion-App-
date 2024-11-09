@@ -12,17 +12,77 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
   Map<DateTime, List<Map<String, String>>> events = {};
   DateTime focusedDate = DateTime.now();
+  String currentTime = '';
+  List<Map<String, String>> upcomingEvents = [];
 
   @override
   void initState() {
     super.initState();
     fetchData();
+    fetchCurrentTime();
+    fetchUpcomingEvents();
   }
 
-  Future<void> fetchData() async {
-    await fetchHolidays();
-    await fetchWeatherDisturbances();
-    await fetchCombinedNotesAndMarkedDays();
+Future<void> fetchData() async {
+  await fetchHolidays();
+  await fetchWeatherDisturbances();
+  await fetchCombinedNotesAndMarkedDays();
+  
+  filterUpcomingEvents();
+  setState(() {});
+}
+
+void filterUpcomingEvents() {
+  DateTime today = DateTime.now();
+  upcomingEvents = [];
+  
+  events.forEach((date, eventList) {
+    if (date.isAfter(today)) {  // Check for upcoming events only
+      for (var event in eventList) {
+        upcomingEvents.add({
+          "date": DateFormat.yMMMd().format(date),
+          "type": event["type"] ?? "",
+          "description": event["description"] ?? "",
+        });
+      }
+    }
+  });
+
+  // Sort upcoming events by date
+  upcomingEvents.sort((a, b) {
+    DateTime dateA = DateFormat.yMMMd().parse(a["date"]!);
+    DateTime dateB = DateFormat.yMMMd().parse(b["date"]!);
+    return dateA.compareTo(dateB);
+  });
+}
+
+
+  Future<void> fetchCurrentTime() async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/calendar/time'));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          currentTime = data['datetime'];
+        });
+      }
+    } catch (e) {
+      print("Error fetching current time: $e");
+    }
+  }
+
+  Future<void> fetchUpcomingEvents() async {
+    final today = DateTime.now();
+    final nextWeek = today.add(Duration(days: 7));
+
+    upcomingEvents.clear(); // Clear existing events
+    events.forEach((date, eventList) {
+      if (date.isAfter(today) && date.isBefore(nextWeek)) {
+        eventList.forEach((event) {
+          upcomingEvents.add({"date": DateFormat.yMMMd().format(date), "description": event["description"] ?? ""});
+        });
+      }
+    });
     setState(() {});
   }
 
@@ -251,6 +311,42 @@ Future<void> _addCustomMarkedDay() async {
                       )
                     : null;
               },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Current Time in Philippines",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  currentTime.isNotEmpty ? DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.parse(currentTime)) : "Loading...",
+                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  "Upcoming Events & Holidays",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                ...upcomingEvents
+                    .where((event) => event["description"] != "Marked Day")
+                    .map((event) => ListTile(
+                          leading: Icon(Icons.event, color: Colors.teal),
+                          title: Text(event["description"] ?? ""),
+                          subtitle: Text(event["date"] ?? ""),
+                        )),
+                if (upcomingEvents.isEmpty || !upcomingEvents.any((event) => event["description"] != "Marked Day"))
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text(
+                      "No upcoming events in the next 7 days.",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+              ],
             ),
           ),
         ],
