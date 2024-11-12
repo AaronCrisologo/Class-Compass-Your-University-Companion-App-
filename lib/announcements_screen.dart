@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert'; // For parsing JSON
-import 'package:intl/intl.dart'; // For formatting dates
+import 'dart:convert';
+import 'package:intl/intl.dart';
 
 class AnnouncementsScreen extends StatefulWidget {
   @override
@@ -9,17 +9,18 @@ class AnnouncementsScreen extends StatefulWidget {
 }
 
 class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
-  // The list of announcements fetched from a server
   List<Map<String, dynamic>> announcements = [];
-  DateTime _fetchedDate = DateTime.now(); // Default to current date
+  DateTime _fetchedDate = DateTime.now();
 
   @override
   void initState() {
     super.initState();
     _fetchAnnouncements();
+    _fetchWeatherUpdates();
+    _fetchVolcanoAnnouncements();
   }
 
-  // Fetch the list of announcements from the API
+  // Fetch suspension announcements from the API
   Future<void> _fetchAnnouncements() async {
     final url = 'http://localhost:3000/scrape/gma-suspensions';
 
@@ -27,26 +28,18 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
-        // Decode the response body into a Map
         final data = json.decode(response.body);
 
-        // Ensure the response has the expected structure (with 'message' key)
         if (data is Map<String, dynamic> && data.containsKey('message')) {
           final message = data['message'];
-
-          // Format the message to insert line breaks
           final formattedMessage = _formatMessage(message);
 
-          // Add the formatted message to the list
           setState(() {
-            announcements = [
-              {
-                'message': formattedMessage,
-                'accountName': 'GMA News',
-                'expanded': false,
-                'image': 'assets/gma.png', // Add the image path here
-              }
-            ];
+            announcements.add({
+              'message': formattedMessage,
+              'accountName': 'GMA News (Suspensions)',
+              'image': 'assets/gma.png',
+            });
           });
         } else {
           print('Error: Invalid response structure. Expected key "message".');
@@ -59,13 +52,76 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
     }
   }
 
-  // Function to format the message and insert line breaks where necessary
-  String _formatMessage(String message) {
-    // Split the message into separate provinces and suspension details
-    final formattedMessage = message.replaceAllMapped(
-        RegExp(r'(province - .+?)(?= (?:,|$))'),
-        (match) => '${match.group(0)}\n');
+  Future<void> _fetchVolcanoAnnouncements() async {
+    final url = 'http://localhost:3000/scrape/gma-volcano';
 
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (data is Map<String, dynamic> && data.containsKey('message')) {
+          final message = data['message'];
+          final formattedMessage = _formatMessage(message);
+
+          setState(() {
+            announcements.add({
+              'message': formattedMessage,
+              'accountName': 'GMA News (Taal Volcano)',
+              'image': 'assets/gma.png',
+            });
+          });
+        } else {
+          print('Error: Invalid response structure. Expected key "message".');
+        }
+      } else {
+        throw Exception('Failed to load suspensions');
+      }
+    } catch (error) {
+      print('Error fetching announcements: $error');
+    }
+  }
+
+  // Fetch weather updates from the API
+  Future<void> _fetchWeatherUpdates() async {
+    final url = 'http://localhost:3000/scrape/gma-weather';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (data is Map<String, dynamic> && data.containsKey('message')) {
+          final message = data['message'];
+          final formattedMessage = _formatMessage(message);
+
+          setState(() {
+            announcements.add({
+              'message': formattedMessage,
+              'accountName': 'GMA News (Weather Updates)',
+              'image': 'assets/gma.png'
+            });
+          });
+        } else {
+          print('Error: Invalid response structure. Expected key "message".');
+        }
+      } else {
+        throw Exception('Failed to load weather updates');
+      }
+    } catch (error) {
+      print('Error fetching weather updates: $error');
+    }
+  }
+
+  // Fetch date from API
+
+  String _formatMessage(String message) {
+    final regExp = RegExp(r'(\b\w+\s?\w*)\s*-\s*');
+    final formattedMessage = message.replaceAllMapped(regExp, (match) {
+      return '${match.group(1)}\n- ';
+    });
     return formattedMessage;
   }
 
@@ -74,7 +130,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Class Suspension Announcements as of ${DateFormat('MMMM d, yyyy').format(_fetchedDate)}',
+          'Announcements as of ${DateFormat('MMMM d, yyyy').format(_fetchedDate)}',
           style: TextStyle(fontSize: 16),
         ),
       ),
@@ -91,13 +147,11 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                 children: [
                   Row(
                     children: [
-                      // Profile picture
                       CircleAvatar(
                         radius: 20,
                         backgroundImage: AssetImage(announcement['image']),
                       ),
                       SizedBox(width: 10),
-                      // Account name
                       Text(
                         announcement['accountName'],
                         style: TextStyle(
@@ -106,38 +160,13 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                     ],
                   ),
                   SizedBox(height: 10),
-                  // Display the formatted message
-                  Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: announcement['message'],
-                          style: TextStyle(fontSize: 14),
-                        ),
-                      ],
+                  SingleChildScrollView(
+                    child: Text(
+                      announcement['message'],
+                      style: TextStyle(fontSize: 14),
+                      maxLines: null,
+                      softWrap: true,
                     ),
-                    softWrap: true,
-                    overflow: TextOverflow.visible,
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Spacer(),
-                      IconButton(
-                        icon: Icon(
-                          announcement['expanded']
-                              ? Icons.expand_less
-                              : Icons.expand_more,
-                          color: Colors.blue,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            announcement['expanded'] =
-                                !announcement['expanded'];
-                          });
-                        },
-                      ),
-                    ],
                   ),
                 ],
               ),

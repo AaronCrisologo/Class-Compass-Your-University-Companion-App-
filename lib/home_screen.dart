@@ -1,38 +1,60 @@
-import 'profile_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'profile_screen.dart';
 import 'calendar_screen.dart';
 import 'resources.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class HomeScreen extends StatelessWidget {
-  // Sample data for upcoming classes
-  final List<Map<String, String>> upcomingClasses = [
-    {
-      'name': 'Application Development',
-      'dateTime': 'August 10, 10:00 AM',
-      'location': 'Software Lab 2, CICS Building'
-    },
-    {
-      'name': 'Integrative Programming',
-      'dateTime': 'August 10, 2:00 PM',
-      'location': 'Room 104, CICS Building'
-    },
-    {
-      'name': 'System Quality Assurance',
-      'dateTime': 'August 12, 7:00 AM',
-      'location': 'CISCO Lab, CICS Building'
-    },
-    {
-      'name': 'Human-computer interaction',
-      'dateTime': 'August 12, 10:00 AM',
-      'location': 'Room 106, CICS Building'
-    },
-    {
-      'name': 'Social Issues and Professional Practice',
-      'dateTime': 'August 14, 4:00 PM',
-      'location': 'Room 106, CICS Building'
-    },
-  ];
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<Map<String, String>> announcements = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAnnouncements();
+  }
+
+  Future<void> _fetchAnnouncements() async {
+    final url = 'http://localhost:3000/scrape/gma-suspensions';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (data is Map<String, dynamic> && data.containsKey('message')) {
+          final message = data['message'];
+          final formattedMessage = _formatMessage(message);
+
+          setState(() {
+            announcements.add({
+              'message': formattedMessage,
+              'accountName': 'GMA News (Suspensions)',
+              'image': 'assets/gma.png',
+            });
+          });
+        } else {
+          print('Error: Invalid response structure. Expected key "message".');
+        }
+      } else {
+        throw Exception('Failed to load suspensions');
+      }
+    } catch (error) {
+      print('Error fetching announcements: $error');
+    }
+  }
+
+  String _formatMessage(String message) {
+    // Customize message formatting if needed
+    return message;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,92 +77,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 20),
-                // Upcoming Classes
-                Text(
-                  'Upcoming Classes',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                SizedBox(height: 10),
-                Container(
-                  height: 150,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: upcomingClasses.length, // Number of classes
-                    itemBuilder: (context, index) {
-                      final classInfo = upcomingClasses[index];
-                      return Card(
-                        elevation: 4,
-                        margin: EdgeInsets.only(right: 16),
-                        child: Container(
-                          width: 250,
-                          padding: EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                classInfo['name']!, // Class name
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                classInfo['dateTime']!, // Date & time
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                classInfo['location']!, // Location
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(height: 20),
-                // New Notifications Indicator
-                Row(
-                  children: [
-                    Icon(
-                      Icons.notifications,
-                      color: Colors.red[700],
-                    ),
-                    SizedBox(width: 10),
-                    Text(
-                      'New Notifications',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    // Replace this with actual logic to check for new notifications
-                    Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 20),
                 // Latest Announcements
                 Text(
                   'Latest Announcements',
@@ -151,33 +87,13 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 10),
-                _buildAnnouncementCard(
-                    'ACADEMIC BREAK: NO CLASSES on August 2-6, 2024. In light of the ongoing challenge caused by the Typhoon, the University Student Council stands with you in providing assistance and support to students and their families who were severely affected by the typhoon in order to assist them in recovering completely from the chaos.',
-                    'CABEIHM Student Council',
-                    'assets/cabeihm.jpg'),
-                _buildAnnouncementCard(
-                    '#WalangPasokAdvisory: Malacañang declares Monday, Jul 17, a regular holiday in observance of Eidl Adha. Proclamation No. 579 signed by Executive Secretary Lucas Bersamin was released yesterday, June 5, 2024.',
-                    'Walang Pasok Advisory',
-                    'assets/wpa.jpg'),
-                _buildAnnouncementCard(
-                    'Upon the recommendation of the Provincial Disaster Risk Reduction and Management Office, and in view of the continuing inclement weather due to the effects of TS Florita, classes in private and public schools, from kindergarten to senior high school, are suspended tomorrow, 24 August 2022, in the whole Province of Batangas. Stay safe Batangueños!',
-                    'Batangas PIO',
-                    'assets/batspio.jpg'),
-                SizedBox(height: 20),
-                // Events and Holidays
-                Text(
-                  'Events and Holidays',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                SizedBox(height: 10),
-                _buildEventCard('Tech Workshop', 'July 28, 2:00 PM - 5:00 PM'),
-                _buildEventCard('Ninoy Aquino Day', 'August 21'),
-                _buildEventCard('National Heroes Day', 'August 26'),
-                _buildEventCard('School Intramurals', 'August 5 - 7:00 AM'),
+                announcements.isNotEmpty
+                    ? _buildAnnouncementCard(
+                        announcements[0]['message']!,
+                        announcements[0]['accountName']!,
+                        announcements[0]['image']!,
+                      )
+                    : Center(child: CircularProgressIndicator()),
                 SizedBox(height: 20),
                 // Quick Links
                 _buildSectionTitle('Quick Links'),
@@ -255,7 +171,7 @@ class HomeScreen extends StatelessWidget {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundImage: NetworkImage(userImage),
+                  backgroundImage: AssetImage(userImage),
                 ),
                 SizedBox(width: 10),
                 Text(
@@ -271,36 +187,6 @@ class HomeScreen extends StatelessWidget {
             Text(
               announcement,
               style: TextStyle(fontSize: 14),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEventCard(String event, String dateTime) {
-    return Card(
-      elevation: 4,
-      margin: EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              event,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              dateTime,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
             ),
           ],
         ),
