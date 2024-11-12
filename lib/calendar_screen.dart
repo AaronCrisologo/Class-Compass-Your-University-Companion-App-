@@ -12,17 +12,77 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
   Map<DateTime, List<Map<String, String>>> events = {};
   DateTime focusedDate = DateTime.now();
+  String currentTime = '';
+  List<Map<String, String>> upcomingEvents = [];
 
   @override
   void initState() {
     super.initState();
     fetchData();
+    fetchCurrentTime();
+    fetchUpcomingEvents();
   }
 
-  Future<void> fetchData() async {
-    await fetchHolidays();
-    await fetchWeatherDisturbances();
-    await fetchCombinedNotesAndMarkedDays();
+Future<void> fetchData() async {
+  await fetchHolidays();
+  await fetchWeatherDisturbances();
+  await fetchCombinedNotesAndMarkedDays();
+  
+  filterUpcomingEvents();
+  setState(() {});
+}
+
+void filterUpcomingEvents() {
+  DateTime today = DateTime.now();
+  upcomingEvents = [];
+  
+  events.forEach((date, eventList) {
+    if (date.isAfter(today)) {  // Check for upcoming events only
+      for (var event in eventList) {
+        upcomingEvents.add({
+          "date": DateFormat.yMMMd().format(date),
+          "type": event["type"] ?? "",
+          "description": event["description"] ?? "",
+        });
+      }
+    }
+  });
+
+  // Sort upcoming events by date
+  upcomingEvents.sort((a, b) {
+    DateTime dateA = DateFormat.yMMMd().parse(a["date"]!);
+    DateTime dateB = DateFormat.yMMMd().parse(b["date"]!);
+    return dateA.compareTo(dateB);
+  });
+}
+
+
+  Future<void> fetchCurrentTime() async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/calendar/time'));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          currentTime = data['datetime'];
+        });
+      }
+    } catch (e) {
+      print("Error fetching current time: $e");
+    }
+  }
+
+  Future<void> fetchUpcomingEvents() async {
+    final today = DateTime.now();
+    final nextWeek = today.add(Duration(days: 7));
+
+    upcomingEvents.clear(); // Clear existing events
+    events.forEach((date, eventList) {
+      if (date.isAfter(today) && date.isBefore(nextWeek)) {
+        eventList.forEach((event) {
+          upcomingEvents.add({"date": DateFormat.yMMMd().format(date), "description": event["description"] ?? ""});
+        });
+      }
+    });
     setState(() {});
   }
 
@@ -193,66 +253,179 @@ Future<void> _addCustomMarkedDay() async {
     return Scaffold(
       body: Column(
         children: [
-          TableCalendar(
-            firstDay: DateTime.utc(2020, 1, 1),
-            lastDay: DateTime.utc(2030, 12, 31),
-            focusedDay: focusedDate,
-            calendarFormat: CalendarFormat.month,
-            eventLoader: (date) {
-              return events[DateTime(date.year, date.month, date.day)]?.map((e) => e["description"] ?? "").toList() ?? [];
-            },
-            calendarStyle: CalendarStyle(
-              todayDecoration: BoxDecoration(
-                color: Colors.teal,
-                shape: BoxShape.circle,
-              ),
-              selectedDecoration: BoxDecoration(
-                color: Colors.tealAccent,
-                shape: BoxShape.circle,
-              ),
-              markerDecoration: BoxDecoration(
-                color: Colors.orange, 
-                shape: BoxShape.circle,
-              ),
-              markerSize: 5.0,
-            ),
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                focusedDate = focusedDay;
-              });
-              if (events[DateTime(selectedDay.year, selectedDay.month, selectedDay.day)] != null) {
-                showEventDetails(context, selectedDay);
-              }
-            },
-            calendarBuilders: CalendarBuilders(
-              markerBuilder: (context, date, eventsList) {
-                final eventTypes = events[DateTime(date.year, date.month, date.day)]?.map((e) => e['type']).toSet() ?? {};
+TableCalendar(
+  firstDay: DateTime.utc(2020, 1, 1),
+  lastDay: DateTime.utc(2030, 12, 31),
+  focusedDay: focusedDate,
+  calendarFormat: CalendarFormat.month,
+  eventLoader: (date) {
+    return events[DateTime(date.year, date.month, date.day)]?.map((e) => e["description"] ?? "").toList() ?? [];
+  },
+  calendarStyle: CalendarStyle(
+    todayDecoration: BoxDecoration(
+      color: Colors.teal,
+      shape: BoxShape.circle,
+    ),
+    selectedDecoration: BoxDecoration(
+      color: Colors.tealAccent,
+      shape: BoxShape.circle,
+    ),
+    markerDecoration: BoxDecoration(
+      color: Colors.orange, // Default color, will be overridden below
+      shape: BoxShape.circle,
+    ),
+    markerSize: 5.0,
+  ),
+  onDaySelected: (selectedDay, focusedDay) {
+    setState(() {
+      focusedDate = focusedDay;
+    });
 
-                Color markerColor;
-                if (eventTypes.contains("Holiday")) {
-                  markerColor = Colors.blue;
-                } else if (eventTypes.contains("no_class")) {
-                  markerColor = Colors.grey;
-                } else if (eventTypes.contains("reminder")) {
-                  markerColor = Colors.orange;
-                } else {
-                  markerColor = Colors.teal;
-                }
+    // Check if there are events on the selected date
+    if (events[DateTime(selectedDay.year, selectedDay.month, selectedDay.day)] != null) {
+      // Get the appropriate title based on marker color
+      String title = getEventTitle(selectedDay);
+      showEventDetails(context, selectedDay, title);
+    }
+  },
+  calendarBuilders: CalendarBuilders(
+    markerBuilder: (context, date, eventsList) {
+      final eventTypes = events[DateTime(date.year, date.month, date.day)]?.map((e) => e['type']).toSet() ?? {};
 
-                return eventsList.isNotEmpty
-                    ? Container(
-                        decoration: BoxDecoration(
-                          color: markerColor,
-                          shape: BoxShape.circle,
-                        ),
-                        width: 6,
-                        height: 6,
-                        margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                      )
-                    : null;
-              },
+      Color markerColor;
+      if (eventTypes.contains("Holiday")) {
+        markerColor = Colors.blue;
+      } else if (eventTypes.contains("no_class")) {
+        markerColor = Colors.grey;
+      } else if (eventTypes.contains("reminder")) {
+        markerColor = Colors.orange;
+      } else {
+        markerColor = Colors.teal;
+      }
+
+      return eventsList.isNotEmpty
+          ? Container(
+              decoration: BoxDecoration(
+                color: markerColor,
+                shape: BoxShape.circle,
+              ),
+              width: 6,
+              height: 6,
+              margin: const EdgeInsets.symmetric(horizontal: 1.5),
+            )
+          : null;
+    },
+  ),
+),
+// Legend for the calendar markers
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.teal, // Today's color
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Text("Today", style: TextStyle(fontSize: 12)),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.blue, // Selected day color
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Text("Holiday", style: TextStyle(fontSize: 12)),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.orange, // Marker color
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Text("Reminder", style: TextStyle(fontSize: 12)),
+                  ],
+                ),
+                                Row(
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.grey, // Today's color
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Text("Asynchronous", style: TextStyle(fontSize: 12)),
+                  ],
+                ),
+              ],
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Current Time in Philippines",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  currentTime.isNotEmpty ? DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.parse(currentTime)) : "Loading...",
+                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  "Upcoming Events & Holidays",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(
+                  height: 200, // Set a fixed height for the scrollable area
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: upcomingEvents
+                        .where((event) => event["description"] != "Marked Day")
+                        .map((event) => ListTile(
+                              leading: Icon(Icons.event, color: Colors.teal),
+                              title: Text(event["description"] ?? ""),
+                              subtitle: Text(event["date"] ?? ""),
+                            ))
+                        .toList(),
+                    ),
+                  ),
+                ),
+                if (upcomingEvents.isEmpty || !upcomingEvents.any((event) => event["description"] != "Marked Day"))
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text(
+                      "No upcoming events in the next 7 days.",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+              ],
+            ),
+          )
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -263,18 +436,18 @@ Future<void> _addCustomMarkedDay() async {
     );
   }
 
-void showEventDetails(BuildContext context, DateTime date) {
+void showEventDetails(BuildContext context, DateTime date, String title) {
   final DateTime normalizedDate = DateTime(date.year, date.month, date.day);
   final eventDetails = events[normalizedDate] ?? [];
   bool isHoliday = eventDetails.any((event) => event["type"] == "Holiday");
-  
-// Filter out items with "Marked Day" as the description
+
+  // Filter out items with "Marked Day" as the description
   final filteredEvents = eventDetails.where((event) => event["description"] != "Marked Day").toList();
 
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text("Events on ${DateFormat.yMMMd().format(date)}"),
+      title: Text("$title on ${DateFormat.yMMMd().format(date)}"),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: filteredEvents.map((event) {
@@ -326,4 +499,17 @@ Future<void> deleteDate(DateTime date) async {
     print("Error deleting date: $e");
   }
 }
+
+String getEventTitle(DateTime date) {
+  final eventTypes = events[DateTime(date.year, date.month, date.day)]?.map((e) => e['type']).toSet() ?? {};
+
+  if (eventTypes.contains("reminder")) {
+    return "Reminder";
+  } else if (eventTypes.contains("no_class")) {
+    return "Asynchronous";
+  } else {
+    return "Note"; // Default title if no specific color matches
+  }
+}
+
 }
