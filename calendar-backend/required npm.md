@@ -9,3 +9,6 @@ npm install playwright
 npm install bcrypt
 npm install email-validator
 npm install jsonwebtoken
+
+optional:
+npm install -g nodemon

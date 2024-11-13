@@ -13,11 +13,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, String>> announcements = [];
+  String nextMarkedDay = "";
+  String nextHoliday = "";
 
   @override
   void initState() {
     super.initState();
     _fetchAnnouncements();
+    _fetchNextEvents();
   }
 
   Future<void> _fetchAnnouncements() async {
@@ -51,8 +54,33 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _fetchNextEvents() async {
+    final url = 'http://localhost:3000/calendar/next-events';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        
+        setState(() {
+          nextMarkedDay = data['nextMarkedDay'] != null
+              ? "Next Marked Day: ${data['nextMarkedDay']['marked_date']} (${data['nextMarkedDay']['day_type']})"
+              : "No marked day";
+          nextHoliday = data['nextHoliday'] != null
+              ? "Next Holiday: ${data['nextHoliday']['holiday_date']} (${data['nextHoliday']['holiday_name']})"
+              : "No upcoming holiday";
+        });
+      } else {
+        throw Exception('Failed to load next events');
+      }
+    } catch (error) {
+      print('Error fetching next events: $error');
+    }
+  }
+
   String _formatMessage(String message) {
-    // Customize message formatting if needed
+    // Customize message
     return message;
   }
 
@@ -77,6 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 SizedBox(height: 20),
+
                 // Latest Announcements
                 Text(
                   'Latest Announcements',
@@ -95,6 +124,39 @@ class _HomeScreenState extends State<HomeScreen> {
                       )
                     : Center(child: CircularProgressIndicator()),
                 SizedBox(height: 20),
+
+                Text(
+                  'Next Events',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Next Marked Day Card
+                    _buildEventCard(
+                      context,
+                      title: 'Next Marked Day',
+                      date: nextMarkedDay,
+                      icon: Icons.event_note,
+                      color: Colors.blueAccent,
+                    ),
+                    // Next Holiday Card
+                    _buildEventCard(
+                      context,
+                      title: 'Next Holiday',
+                      date: nextHoliday,
+                      icon: Icons.card_giftcard,
+                      color: Colors.greenAccent,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 40),
+
                 // Quick Links
                 _buildSectionTitle('Quick Links'),
                 _buildVerticalList(
@@ -192,6 +254,78 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildEventCard(
+    BuildContext context, {
+    required String title,
+    required String date,
+    required IconData icon,
+    required Color color,
+  }) {
+    // Format the date to only show the day without other text
+    String formattedDate = _formatDate(date);
+
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.45,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 10,
+            offset: Offset(2, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              icon,
+              size: 40,
+              color: Colors.white,
+            ),
+            SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              formattedDate,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(String date) {
+
+    // Remove unwanted prefixes
+    date = date.replaceAll("Next Marked Day: ", "").replaceAll("Next Holiday: ", "");
+
+    // If the date is of type (no_class) or (reminder), replace it accordingly
+    if (date.contains("(no_class)")) {
+      return date.replaceAll("(no_class)", "(Asynchronous)");
+    } else if (date.contains("(reminder)")) {
+      return date.replaceAll("(reminder)", "(Reminder)");
+    } else {
+      return date; // Return the date as is if no special cases
+    }
   }
 
   Widget _buildSectionTitle(String title) {

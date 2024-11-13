@@ -4,15 +4,17 @@ const mysql = require('mysql2');
 const cors = require('cors');
 const axios = require('axios');
 const puppeteer = require('puppeteer');
-const { chromium } = require('playwright'); // Using Playwright for GMA scraping
-const bcrypt = require('bcrypt'); //npm install bcrypt
-const emailValidator = require('email-validator'); //npm install email-validator
-const jwt = require('jsonwebtoken');//npm install jsonwebtoken
+const { chromium } = require('playwright');
+const bcrypt = require('bcrypt');
+const emailValidator = require('email-validator');
+const jwt = require('jsonwebtoken');
+
 
 
 
 
 const app = express();
+const moment = require('moment');
 const port = 3000;
 
 app.use(cors());
@@ -148,6 +150,68 @@ app.delete('/calendar/marked-days/:date', (req, res) => {
     });
 });
 
+app.get('/calendar/next-events', (req, res) => {
+    if (!currentUserId) {
+        return res.status(401).send({ message: 'User not logged in' });
+    }
+
+    // Query to get the next marked day for the user
+    const queryMarkedDays = `
+        SELECT marked_date, day_type
+        FROM custom_days
+        WHERE user_id = ?
+        AND marked_date >= CURDATE()  -- Ensure it's a future or today date
+        ORDER BY marked_date ASC
+        LIMIT 1
+    `;
+    
+    // Query to get the next holiday
+    const queryHolidays = `
+        SELECT holiday_date, holiday_name
+        FROM holidays
+        WHERE holiday_date >= CURDATE()  -- Ensure it's a future or today date
+        ORDER BY holiday_date ASC
+        LIMIT 1
+    `;
+    
+    // Run both queries simultaneously using Promise.all
+    Promise.all([
+        new Promise((resolve, reject) => {
+            db.query(queryMarkedDays, [currentUserId], (err, markedResults) => {
+                if (err) return reject(err);
+                resolve(markedResults);
+            });
+        }),
+        new Promise((resolve, reject) => {
+            db.query(queryHolidays, (err, holidayResults) => {
+                if (err) return reject(err);
+                resolve(holidayResults);
+            });
+        })
+    ])
+    .then(([markedDays, holidays]) => {
+        // Convert the dates to the local timezone (Asia/Manila)
+        const nextMarkedDay = markedDays[0] ? {
+            marked_date: moment(markedDays[0].marked_date).local().format('YYYY-MM-DD'),
+            day_type: markedDays[0].day_type
+        } : null;
+
+        const nextHoliday = holidays[0] ? {
+            holiday_date: moment(holidays[0].holiday_date).local().format('YYYY-MM-DD'),
+            holiday_name: holidays[0].holiday_name
+        } : null;
+
+        // Send the response with correct next marked day and holiday
+        res.json({
+            nextMarkedDay,
+            nextHoliday,
+        });
+    })
+    .catch(err => {
+        console.error('Error fetching next events:', err);
+        res.status(500).send('Error fetching next events');
+    });
+});
 
 
 
