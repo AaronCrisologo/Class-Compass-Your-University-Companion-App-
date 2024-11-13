@@ -1,3 +1,5 @@
+CREATE DATABASE  IF NOT EXISTS `class_compass` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `class_compass`;
 -- MySQL dump 10.13  Distrib 8.0.34, for Win64 (x86_64)
 --
 -- Host: localhost    Database: class_compass
@@ -24,8 +26,9 @@ DROP TABLE IF EXISTS `custom_days`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `custom_days` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `marked_date` date NOT NULL,
-  `day_type` enum('no_class','partial_no_class','reminder') NOT NULL,
+  `date` date NOT NULL,
+  `type` varchar(255) NOT NULL,
+  `note` text,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -36,7 +39,7 @@ CREATE TABLE `custom_days` (
 
 LOCK TABLES `custom_days` WRITE;
 /*!40000 ALTER TABLE `custom_days` DISABLE KEYS */;
-INSERT INTO `custom_days` VALUES (1,'2024-10-30','reminder'),(2,'2024-10-23','no_class'),(3,'2024-10-29','no_class'),(4,'2024-10-28','reminder');
+INSERT INTO `custom_days` VALUES (1,'2024-10-30','reminder',NULL),(2,'2024-10-23','no_class',NULL),(3,'2024-10-29','no_class',NULL),(4,'2024-10-28','reminder',NULL);
 /*!40000 ALTER TABLE `custom_days` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -49,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-10-31 17:37:55
+-- Dump completed on 2024-11-13 13:34:22
