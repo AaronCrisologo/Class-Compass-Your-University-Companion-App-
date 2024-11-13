@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'profile_screen.dart';
-import 'calendar_screen.dart';
 import 'resources.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -15,12 +14,15 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, String>> announcements = [];
   String nextMarkedDay = "";
   String nextHoliday = "";
+  String firstName = '';
+  String lastName = '';
 
   @override
   void initState() {
     super.initState();
     _fetchAnnouncements();
     _fetchNextEvents();
+    fetchUserData();
   }
 
   Future<void> _fetchAnnouncements() async {
@@ -84,6 +86,21 @@ class _HomeScreenState extends State<HomeScreen> {
     return message;
   }
 
+  // Function to fetch user data
+  Future<void> fetchUserData() async {
+    final response = await http.get(Uri.parse('http://localhost:3000/get-user'));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      setState(() {
+        firstName = data['firstname'];
+        lastName = data['lastname'];
+      });
+    } else {
+      print('Failed to load user data');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 // Welcome message
                 Text(
-                  'Welcome to Class Compass',
+                  'Welcome, $firstName $lastName',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -128,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   'Next Events',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
                   ),
@@ -164,13 +181,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   items: [
                     _buildQuickLinkCard(
                       context,
-                      icon: Icons.calendar_today,
-                      title: 'Academic Calendar',
+                      icon: Icons.info,
+                      title: 'User Information',
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                              builder: (context) => CalendarScreen()),
+                          _createRoute(ProfileScreen()),
                         );
                       },
                     ),
@@ -182,17 +198,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.push(
                           context,
                           _createRoute(ResourceScreen()),
-                        );
-                      },
-                    ),
-                    _buildQuickLinkCard(
-                      context,
-                      icon: Icons.info,
-                      title: 'User Information',
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          _createRoute(ProfileScreen()),
                         );
                       },
                     ),
