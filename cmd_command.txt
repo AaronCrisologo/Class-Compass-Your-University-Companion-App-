@@ -1,0 +1,3 @@
+cd C:\Users\SSD\Desktop\Projects\Mobile Computing\Class-Compass-Your-University-Companion-App-\calendar-backend
+
+node server.js
