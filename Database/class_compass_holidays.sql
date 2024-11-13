@@ -1,3 +1,5 @@
+CREATE DATABASE  IF NOT EXISTS `class_compass` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `class_compass`;
 -- MySQL dump 10.13  Distrib 8.0.34, for Win64 (x86_64)
 --
 -- Host: localhost    Database: class_compass
@@ -24,8 +26,8 @@ DROP TABLE IF EXISTS `holidays`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `holidays` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `holiday_date` date NOT NULL,
-  `holiday_name` varchar(255) NOT NULL,
+  `date` date NOT NULL,
+  `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -49,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-10-31 17:37:55
+-- Dump completed on 2024-11-13 13:34:22
