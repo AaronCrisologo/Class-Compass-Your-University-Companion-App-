@@ -94,43 +94,43 @@ app.get('/calendar/notes', (req, res) => {
         res.json(notes);
     });
 });
+
 // Add and Retrieve Custom Marked Days
 app.post('/calendar/marked-days', (req, res) => {
+    const { marked_date, day_type } = req.body;
 
     if (!currentUserId) {
         return res.status(400).send({ message: 'User not logged in' });
     }
 
-    const { marked_date, day_type } = req.body;
-    db.query('INSERT INTO custom_days (marked_date, day_type, user_id) VALUES (?, ?)', [marked_date, day_type, currentUserId], (err) => {
-        if (err) return res.status(500).send(err);
-        res.status(201).send('Marked day added successfully');
-    });
+    db.query(
+        'INSERT INTO custom_days (marked_date, day_type, user_id) VALUES (?, ?, ?)',
+        [marked_date, day_type, currentUserId],
+        (err) => {
+            if (err) return res.status(500).send(err);
+            res.status(201).send('Marked day added successfully');
+        }
+    );
 });
 
 app.get('/calendar/marked-days', (req, res) => {
-
     if (!currentUserId) {
         return res.status(401).send({ message: 'User not logged in' });
     }
 
-    const query = 'SELECT marked_date, day_type FROM user_notes WHERE user_id = ?';
-
+    const query = 'SELECT marked_date, day_type FROM custom_days WHERE user_id = ?'; // Corrected query to fetch from custom_days
     db.query(query, [currentUserId], (err, results) => {
         if (err) return res.status(500).send(err);
 
-        // Exclude the user_id from the response and return all notes for that user
-        const notes = results.map(note => {
-            const { user_id, ...noteWithoutUserId } = note; // Remove user_id from the result
-            return noteWithoutUserId; // Return the note without user_id
+        const days = results.map(day => {
+            const { user_id, ...dayWithoutUserId } = day; // Exclude user_id
+            return dayWithoutUserId; // Return only the marked day data
         });
-
-        // Send the filtered notes as JSON
-        res.json(notes);
+        res.json(days);
     });
 });
 
-
+// Delete a Custom Notes
 app.delete('/calendar/notes/:date', (req, res) => {
     const noteDate = req.params.date;
     db.query('DELETE FROM user_notes WHERE note_date = ?', [noteDate], (err) => {
