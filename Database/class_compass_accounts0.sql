@@ -18,29 +18,34 @@ USE `class_compass`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `user_notes`
+-- Table structure for table `accounts`
 --
 
-DROP TABLE IF EXISTS `user_notes`;
+DROP TABLE IF EXISTS `accounts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `user_notes` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `note_date` date NOT NULL,
-  `note_text` text NOT NULL,
-  `user_id` int DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `accounts` (
+  `user_id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `phone` varchar(15) DEFAULT NULL,
+  `address` varchar(255) DEFAULT NULL,
+  `course` varchar(100) DEFAULT NULL,
+  `section` varchar(50) DEFAULT NULL,
+  `firstname` varchar(100) DEFAULT NULL,
+  `lastname` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `user_notes`
+-- Dumping data for table `accounts`
 --
 
-LOCK TABLES `user_notes` WRITE;
-/*!40000 ALTER TABLE `user_notes` DISABLE KEYS */;
-INSERT INTO `user_notes` VALUES (1,'2024-10-30','test',NULL),(2,'2024-10-23','test2',NULL),(4,'2024-11-10','testing this ',6),(5,'2024-11-13','wew',8),(6,'2024-11-22','wow',8);
-/*!40000 ALTER TABLE `user_notes` ENABLE KEYS */;
+LOCK TABLES `accounts` WRITE;
+/*!40000 ALTER TABLE `accounts` DISABLE KEYS */;
+INSERT INTO `accounts` VALUES (1,'nielle','123',NULL,NULL,NULL,NULL,NULL,NULL),(2,'wow','321',NULL,NULL,NULL,NULL,NULL,NULL),(3,'ewe','wew',NULL,NULL,NULL,NULL,NULL,NULL),(4,'ewe','wew',NULL,NULL,NULL,NULL,NULL,NULL),(5,'niellethebest@gmail.com','111',NULL,NULL,NULL,NULL,NULL,NULL),(6,'nielle@gmail.com','111','3333333','Batangas','Computer Science','CS-3103',NULL,NULL),(7,'b@gmail.com','1','23','232','23','23',NULL,NULL),(8,'w@gmail.com','11','09472649840','Batangas City','Computer Science','CS-3103','nielle','barcelona'),(9,'1@gmail.com','1','099999999','Batangas city','Computer shop','12','Nielle','Barcelona');
+/*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
