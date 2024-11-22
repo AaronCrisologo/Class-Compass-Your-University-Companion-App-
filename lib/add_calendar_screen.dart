@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class AddCalendarScreen extends StatefulWidget {
   @override
@@ -46,6 +48,38 @@ class _AddCalendarScreenState extends State<AddCalendarScreen> {
       setState(() {
         _selectedDate = pickedDate;
       });
+    }
+  }
+
+  Future<void> _saveAsynchronousDay() async {
+    final String apiUrl = 'http://localhost:3000/calendar/admin-marked-days-with-notes';
+    final Map<String, dynamic> payload = {
+      'marked_date': _selectedDate.toIso8601String(),
+      'campus': _selectedCampus,
+      'note_text': _notesController.text,
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Asynchronous day saved successfully!')),
+        );
+      } else {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(responseData['message'] ?? 'Error saving asynchronous day')),
+        );
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to connect to the server')),
+      );
     }
   }
 
@@ -96,9 +130,7 @@ class _AddCalendarScreenState extends State<AddCalendarScreen> {
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Asynchronous day saved successfully!')),
-                );
+                _saveAsynchronousDay();
               },
               child: Text('Save' , style: TextStyle(color: Colors.red)),
             ),
@@ -248,7 +280,10 @@ class _AddCalendarScreenState extends State<AddCalendarScreen> {
                   }
                   _showConfirmationDialog(context);
                 },
-                child: Text('Save Asynchronous Day', style: TextStyle(color: Colors.red),),
+                child: Text(
+                  'Save Asynchronous Day',
+                  style: TextStyle(color: Colors.red),
+                ),
               ),
             ),
           ],

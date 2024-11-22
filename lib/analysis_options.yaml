@@ -1,0 +1,5 @@
+analyzer:
+  errors:
+    # Suppress specific lint rules
+    avoid_print: ignore
+    # Add more rules to ignore as needed

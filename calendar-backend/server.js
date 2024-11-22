@@ -213,6 +213,67 @@ app.get('/calendar/next-events', (req, res) => {
     });
 });
 
+//Admin Added Marked date
+app.post('/calendar/admin-marked-days-with-notes', (req, res) => {
+    const { marked_date, campus, note_text } = req.body;
+
+    // Validate inputs
+    if (!marked_date || !campus || !note_text) {
+        return res.status(400).send({ message: 'Marked date, campus, and note text are required' });
+    }
+
+    // Query to get all users from the matching campus
+    const getUsersQuery = 'SELECT user_id FROM accounts WHERE campus = ?';
+    db.query(getUsersQuery, [campus], (err, users) => {
+        if (err) {
+            console.error('Error fetching users:', err);
+            return res.status(500).send({ message: 'Error fetching users' });
+        }
+
+        if (users.length === 0) {
+            return res.status(404).send({ message: 'No users found for the specified campus' });
+        }
+
+        // Prepare insert queries for each user
+        const insertMarkedDayQuery =
+            'INSERT INTO custom_days (marked_date, day_type, user_id) VALUES (?, ?, ?)';
+        const insertNoteQuery =
+            'INSERT INTO user_notes (note_date, note_text, user_id) VALUES (?, ?, ?)';
+
+        const tasks = users.map(user =>
+            new Promise((resolve, reject) => {
+                // Insert into custom_days
+                db.query(insertMarkedDayQuery, [marked_date, 'no_class', user.user_id], (err) => {
+                    if (err) {
+                        console.error(`Error inserting marked day for user ${user.user_id}:`, err);
+                        reject(err);
+                    }
+                });
+
+                // Insert into user_notes
+                db.query(insertNoteQuery, [marked_date, note_text, user.user_id], (err) => {
+                    if (err) {
+                        console.error(`Error inserting note for user ${user.user_id}:`, err);
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                });
+            })
+        );
+
+        // Execute all queries in parallel
+        Promise.all(tasks)
+            .then(() => {
+                res.status(201).send({ message: 'Marked days and notes added successfully' });
+            })
+            .catch(err => {
+                console.error('Error adding marked days and notes:', err);
+                res.status(500).send({ message: 'An error occurred while adding marked days and notes' });
+            });
+    });
+});
+
 
 
 // Scrape first link with class 'story_link story' from GMA News tracking page
