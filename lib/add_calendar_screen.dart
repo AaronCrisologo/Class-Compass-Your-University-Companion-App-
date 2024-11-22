@@ -9,6 +9,8 @@ class AddCalendarScreen extends StatefulWidget {
 class _AddCalendarScreenState extends State<AddCalendarScreen> {
   DateTime _selectedDate = DateTime.now();
   String? _selectedCampus;
+  final TextEditingController _notesController = TextEditingController();
+
   final List<String> _campuses = [
     'All Campuses',
     'Pablo Borbon',
@@ -66,6 +68,15 @@ class _AddCalendarScreenState extends State<AddCalendarScreen> {
               ),
               SizedBox(height: 8),
               Text(getFormattedDate(_selectedDate)),
+              SizedBox(height: 16),
+              Text(
+                'Notes:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              Text(_notesController.text.isNotEmpty
+                  ? _notesController.text
+                  : 'No notes added'),
               SizedBox(height: 16),
               Text(
                 'Campus:',
@@ -152,6 +163,31 @@ class _AddCalendarScreenState extends State<AddCalendarScreen> {
                 ),
                 trailing: Icon(Icons.arrow_drop_down),
                 onTap: () => _pickDate(context),
+              ),
+            ),
+            SizedBox(height: 24),
+
+            // Notes Text Area
+            Text(
+              'Add Notes:',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            SizedBox(height: 8),
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: TextField(
+                  controller: _notesController,
+                  maxLines: 5,
+                  decoration: InputDecoration(
+                    hintText: 'Type your notes here...',
+                    border: InputBorder.none,
+                  ),
+                ),
               ),
             ),
             SizedBox(height: 24),

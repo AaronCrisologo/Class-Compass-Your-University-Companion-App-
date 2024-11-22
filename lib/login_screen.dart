@@ -138,10 +138,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             onPressed: _login,
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.red[700],
+                              backgroundColor: const Color.fromARGB(255, 230, 230, 230),
                               padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
-                                side: BorderSide(color: Colors.grey), // Set the border color to gray
                               ),
                             ),
                             child: Text(
