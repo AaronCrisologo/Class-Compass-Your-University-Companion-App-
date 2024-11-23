@@ -21,12 +21,13 @@ app.use(cors());
 app.use(express.json());
 
 let currentUserId = null;
+let currentCampus = null;
 
 // MySQL Connection
 const db = mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || 'password',
+    password: process.env.DB_PASSWORD || '4122133pogi',
     database: process.env.DB_NAME || 'class_compass',
 });
 
@@ -164,7 +165,7 @@ app.get('/calendar/next-events', (req, res) => {
         ORDER BY marked_date ASC
         LIMIT 1
     `;
-    
+
     // Query to get the next holiday
     const queryHolidays = `
         SELECT holiday_date, holiday_name
@@ -173,7 +174,7 @@ app.get('/calendar/next-events', (req, res) => {
         ORDER BY holiday_date ASC
         LIMIT 1
     `;
-    
+
     // Run both queries simultaneously using Promise.all
     Promise.all([
         new Promise((resolve, reject) => {
@@ -189,28 +190,28 @@ app.get('/calendar/next-events', (req, res) => {
             });
         })
     ])
-    .then(([markedDays, holidays]) => {
-        // Convert the dates to the local timezone (Asia/Manila)
-        const nextMarkedDay = markedDays[0] ? {
-            marked_date: moment(markedDays[0].marked_date).local().format('YYYY-MM-DD'),
-            day_type: markedDays[0].day_type
-        } : null;
+        .then(([markedDays, holidays]) => {
+            // Convert the dates to the local timezone (Asia/Manila)
+            const nextMarkedDay = markedDays[0] ? {
+                marked_date: moment(markedDays[0].marked_date).local().format('YYYY-MM-DD'),
+                day_type: markedDays[0].day_type
+            } : null;
 
-        const nextHoliday = holidays[0] ? {
-            holiday_date: moment(holidays[0].holiday_date).local().format('YYYY-MM-DD'),
-            holiday_name: holidays[0].holiday_name
-        } : null;
+            const nextHoliday = holidays[0] ? {
+                holiday_date: moment(holidays[0].holiday_date).local().format('YYYY-MM-DD'),
+                holiday_name: holidays[0].holiday_name
+            } : null;
 
-        // Send the response with correct next marked day and holiday
-        res.json({
-            nextMarkedDay,
-            nextHoliday,
+            // Send the response with correct next marked day and holiday
+            res.json({
+                nextMarkedDay,
+                nextHoliday,
+            });
+        })
+        .catch(err => {
+            console.error('Error fetching next events:', err);
+            res.status(500).send('Error fetching next events');
         });
-    })
-    .catch(err => {
-        console.error('Error fetching next events:', err);
-        res.status(500).send('Error fetching next events');
-    });
 });
 
 //Admin Added Marked date
@@ -587,8 +588,23 @@ app.post('/login', (req, res) => {
     console.log('Received email:', email);  // Log the email
     console.log('Received password:', password);  // Log the password (don't log passwords in production!)
 
+    // List of admin account emails
+    const adminEmails = [
+        "Pablo Borbon admin",
+        "Alangilan admin",
+        "Arasof-Nasugbu admin",
+        "Balayan admin",
+        "Lemery admin",
+        "Mabini admin",
+        "JPLPC-Malvar admin",
+        "Lipa admin",
+        "Rosario admin",
+        "San Juan admin",
+        "Lobo admin"
+    ];
+
     // Check if the email exists in the database
-    const query = 'SELECT user_id, password FROM accounts WHERE email = ?';
+    const query = 'SELECT user_id, password, section FROM accounts WHERE email = ?';
     db.query(query, [email], (err, results) => {
         if (err) {
             console.error('Database error:', err);
@@ -601,28 +617,38 @@ app.post('/login', (req, res) => {
 
             // Compare passwords directly (since both are plain text)
             if (password === storedPassword) {
-                // Password matches, store user_id locally
+                // Password matches, determine account type
                 currentUserId = results[0].user_id;
-                console.log('Login successful for email:', email);
-                console.log(`user id: ${currentUserId}`);  // Log successful login
+                currentCampus = results[0].section;
 
-                // Return the user_id in the response without a token
-                res.status(200).send({
-                    message: 'Login successful',
-                    user_id: currentUserId  // Send the user_id in the response
-                });
+                if (adminEmails.includes(email)) {
+                    console.log('Login successful for admin email:', email); // Log successful admin login
+                    res.status(200).send({
+                        message: 'Login successful for admin',
+                        user_id: currentUserId,
+                        section: currentCampus // Include section in the response
+                    });
+                } else {
+                    console.log('Login successful for student email:', email); // Log successful student login
+                    res.status(200).send({
+                        message: 'Login successful for student',
+                        user_id: currentUserId,
+                        section: currentCampus // Include section in the response
+                    });
+                }
             } else {
                 // Password doesn't match
-                console.log('Incorrect password attempt for email:', email);  // Log incorrect password attempt
+                console.log('Incorrect password attempt for email:', email); // Log incorrect password attempt
                 res.status(401).send({ message: 'Invalid email or password' });
             }
         } else {
             // No user found with the given email
-            console.log('No user found with email:', email);  // Log no user found
+            console.log('No user found with email:', email); // Log no user found
             res.status(401).send({ message: 'Invalid email or password' });
         }
     });
 });
+
 
 
 

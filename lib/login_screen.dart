@@ -1,3 +1,4 @@
+import 'package:final_project/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'main.dart';
 import 'registration_screen.dart'; // Import the registration screen
@@ -34,7 +35,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      if (data['message'] == 'Login successful' && data['user_id'] != null) {
+      if (data['message'] == 'Login successful for student' &&
+          data['user_id'] != null &&
+          data['section'] != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen()),
+        );
+      } else if (data['message'] == 'Login successful for admin' &&
+          data['user_id'] != null &&
+          data['section'] != null) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => AdminHomeScreen()),
@@ -138,15 +148,20 @@ class _LoginScreenState extends State<LoginScreen> {
                             onPressed: _login,
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.red[700],
-                              backgroundColor: const Color.fromARGB(255, 230, 230, 230),
-                              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                              backgroundColor:
+                                  const Color.fromARGB(255, 230, 230, 230),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 50, vertical: 15),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
                             child: Text(
                               'Login',
-                              style: TextStyle(fontSize: 18, color: Colors.red, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold),
                             ),
                           ),
                           SizedBox(height: 10),
