@@ -1,4 +1,3 @@
-import 'package:final_project/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'main.dart';
 import 'registration_screen.dart'; // Import the registration screen
