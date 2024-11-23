@@ -15,14 +15,16 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchAnnouncements();
-    _fetchWeatherUpdates();
-    _fetchVolcanoAnnouncements();
+    _fetchAnnouncements(); // Fetch suspension announcements
+    _fetchWeatherUpdates(); // Fetch weather updates
+    _fetchVolcanoAnnouncements(); // Fetch volcano updates
+    _fetchCampusAnnouncements(); // Fetch campus-specific announcements
   }
 
   // Fetch suspension announcements from the API
   Future<void> _fetchAnnouncements() async {
-    final url = 'http://localhost:3000/scrape/gma-suspensions';
+    final url =
+        'http://localhost:3000/scrape/gma-suspensions'; // Update with your backend endpoint
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -38,7 +40,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
             announcements.add({
               'message': formattedMessage,
               'accountName': 'GMA News (Suspensions)',
-              'image': 'assets/gma.png',
+              'image': 'assets/gma.png', // Change this if needed
             });
           });
         } else {
@@ -52,8 +54,10 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
     }
   }
 
+  // Fetch volcano announcements from the API
   Future<void> _fetchVolcanoAnnouncements() async {
-    final url = 'http://localhost:3000/scrape/gma-volcano';
+    final url =
+        'http://localhost:3000/scrape/gma-volcano'; // Update with your backend endpoint
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -69,23 +73,24 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
             announcements.add({
               'message': formattedMessage,
               'accountName': 'GMA News (Taal Volcano)',
-              'image': 'assets/gma.png',
+              'image': 'assets/gma.png', // Change this if needed
             });
           });
         } else {
           print('Error: Invalid response structure. Expected key "message".');
         }
       } else {
-        throw Exception('Failed to load suspensions');
+        throw Exception('Failed to load volcano announcements');
       }
     } catch (error) {
-      print('Error fetching announcements: $error');
+      print('Error fetching volcano announcements: $error');
     }
   }
 
   // Fetch weather updates from the API
   Future<void> _fetchWeatherUpdates() async {
-    final url = 'http://localhost:3000/scrape/gma-weather';
+    final url =
+        'http://localhost:3000/scrape/gma-weather'; // Update with your backend endpoint
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -101,7 +106,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
             announcements.add({
               'message': formattedMessage,
               'accountName': 'GMA News (Weather Updates)',
-              'image': 'assets/gma.png'
+              'image': 'assets/gma.png', // Change this if needed
             });
           });
         } else {
@@ -115,8 +120,45 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
     }
   }
 
-  // Fetch date from API
+  // Fetch campus-specific announcements
+  Future<void> _fetchCampusAnnouncements() async {
+    final url = 'http://localhost:3000/get-announcements'; // New endpoint
 
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (data is Map<String, dynamic> && data.containsKey('announcements')) {
+          final campusAnnouncements = data['announcements'];
+
+          setState(() {
+            for (var announcement in campusAnnouncements) {
+              final message = announcement['message'] ?? 'No message';
+              final formattedMessage = _formatMessage(message);
+
+              announcements.add({
+                'message': formattedMessage,
+                'accountName': 'Admin Announcements (Campus)',
+                'image':
+                    'assets/school.png', // Adjust image based on your needs
+              });
+            }
+          });
+        } else {
+          print(
+              'Error: Invalid response structure. Expected key "announcements".');
+        }
+      } else {
+        throw Exception('Failed to load campus announcements');
+      }
+    } catch (error) {
+      print('Error fetching campus announcements: $error');
+    }
+  }
+
+  // Helper function to format message text
   String _formatMessage(String message) {
     final regExp = RegExp(r'(\b\w+\s?\w*)\s*-\s*');
     final formattedMessage = message.replaceAllMapped(regExp, (match) {

@@ -622,8 +622,8 @@ app.post('/login', (req, res) => {
             // Compare passwords directly (since both are plain text)
             if (password === storedPassword) {
                 // Password matches, determine account type
-                const currentUserId = results[0].user_id;
-                const currentCampus = results[0].section;
+                currentUserId = results[0].user_id;
+                currentCampus = results[0].section;
 
                 if (adminEmails.includes(normalizedEmail)) {
                     console.log('Login successful for admin email:', email); // Log successful admin login
@@ -829,6 +829,33 @@ app.post('/add-announcement', (req, res) => {
             message: 'Announcement added successfully!',
             announcementId: result.insertId, // Return the ID of the newly added announcement
         });
+    });
+});
+
+
+app.get('/get-announcements', (req, res) => {
+    // Assuming currentCampus is set globally or through the login process
+    if (!currentCampus) {
+        return res.status(400).send({ message: 'Current campus is not set' });
+    }
+
+    // Query the admin_announcements table based on the currentCampus value
+    const query = 'SELECT * FROM admin_announcements WHERE campus = ?';
+    db.query(query, [currentCampus], (err, results) => {
+        if (err) {
+            console.error('Error fetching data from admin_announcements:', err);
+            return res.status(500).send({ message: 'Failed to retrieve announcements' });
+        }
+
+        // Check if results were found
+        if (results.length > 0) {
+            res.status(200).send({
+                message: 'Announcements retrieved successfully',
+                announcements: results, // Return the retrieved announcements as an array
+            });
+        } else {
+            res.status(404).send({ message: 'No announcements found for the current campus' });
+        }
     });
 });
 
