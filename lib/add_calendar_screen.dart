@@ -13,21 +13,6 @@ class _AddCalendarScreenState extends State<AddCalendarScreen> {
   String? _selectedCampus;
   final TextEditingController _notesController = TextEditingController();
 
-  final List<String> _campuses = [
-    'All Campuses',
-    'Pablo Borbon',
-    'Alangilan',
-    'Nasugbu',
-    'Balayan',
-    'Lemery',
-    'Mabini',
-    'Malvar',
-    'Lipa',
-    'Rosario',
-    'San-Juan',
-    'Lobo',
-  ];
-
   String getFormattedDate(DateTime date) {
     return DateFormat('EEEE, MMMM d, yyyy').format(date);
   }
@@ -55,7 +40,6 @@ class _AddCalendarScreenState extends State<AddCalendarScreen> {
     final String apiUrl = 'http://localhost:3000/calendar/admin-marked-days-with-notes';
     final Map<String, dynamic> payload = {
       'marked_date': _selectedDate.toIso8601String(),
-      'campus': _selectedCampus,
       'note_text': _notesController.text,
     };
 
@@ -224,42 +208,6 @@ class _AddCalendarScreenState extends State<AddCalendarScreen> {
             ),
             SizedBox(height: 24),
 
-            // Campus Dropdown
-            Text(
-              'Select Campus:',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            SizedBox(height: 8),
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: DropdownButtonFormField<String>(
-                  isExpanded: true,
-                  value: _selectedCampus,
-                  hint: Text('Choose a campus'),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      _selectedCampus = newValue;
-                    });
-                  },
-                  items: _campuses.map((String campus) {
-                    return DropdownMenuItem<String>(
-                      value: campus,
-                      child: Text(campus),
-                    );
-                  }).toList(),
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 32),
-
             // Save Button
             Center(
               child: ElevatedButton(
@@ -272,12 +220,6 @@ class _AddCalendarScreenState extends State<AddCalendarScreen> {
                   ),
                 ),
                 onPressed: () {
-                  if (_selectedCampus == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Please select a campus')),
-                    );
-                    return;
-                  }
                   _showConfirmationDialog(context);
                 },
                 child: Text(

@@ -1,4 +1,3 @@
-import 'package:final_project/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'main.dart';
 import 'registration_screen.dart'; // Import the registration screen
@@ -40,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
           data['section'] != null) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+          MaterialPageRoute(builder: (context) => MainScreen()),
         );
       } else if (data['message'] == 'Login successful for admin' &&
           data['user_id'] != null &&

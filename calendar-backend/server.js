@@ -28,7 +28,7 @@ let currentCampus = null;
 const db = mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '4122133pogi',
+    password: process.env.DB_PASSWORD || 'password',
     database: process.env.DB_NAME || 'class_compass',
 });
 
@@ -217,16 +217,16 @@ app.get('/calendar/next-events', (req, res) => {
 
 //Admin Added Marked date
 app.post('/calendar/admin-marked-days-with-notes', (req, res) => {
-    const { marked_date, campus, note_text } = req.body;
+    const { marked_date, note_text } = req.body;
 
     // Validate inputs
-    if (!marked_date || !campus || !note_text) {
-        return res.status(400).send({ message: 'Marked date, campus, and note text are required' });
+    if (!marked_date || !note_text) {
+        return res.status(400).send({ message: 'Marked date and note text are required' });
     }
 
     // Query to get all users from the matching campus
-    const getUsersQuery = 'SELECT user_id FROM accounts WHERE campus = ?';
-    db.query(getUsersQuery, [campus], (err, users) => {
+    const getUsersQuery = 'SELECT user_id FROM accounts WHERE section = ?';
+    db.query(getUsersQuery, [currentCampus], (err, users) => {
         if (err) {
             console.error('Error fetching users:', err);
             return res.status(500).send({ message: 'Error fetching users' });
