@@ -15,6 +15,7 @@ const jwt = require('jsonwebtoken');
 
 const app = express();
 const moment = require('moment');
+const bodyParser = require('body-parser');
 const port = 3000;
 
 app.use(cors());
@@ -798,6 +799,35 @@ app.get('/getSchedule', (req, res) => {
     });
 });
 
+
+app.use(bodyParser.json());
+app.post('/add-announcement', (req, res) => {
+    const { title, announcement } = req.body;
+
+    // Validate input
+    if (!title || !announcement) {
+        return res.status(400).json({ error: 'Title and announcement are required.' });
+    }
+
+    // Prepare the SQL query
+    const sql = `
+        INSERT INTO admin_announcements (title, body, campus)
+        VALUES (?, ?, ?)
+    `;
+    const values = [title, announcement, currentCampus];
+
+    // Execute the query
+    db.query(sql, values, (err, result) => {
+        if (err) {
+            console.error('Error inserting data into announcements:', err);
+            return res.status(500).json({ error: 'Failed to add announcement.' });
+        }
+        res.status(200).json({
+            message: 'Announcement added successfully!',
+            announcementId: result.insertId, // Return the ID of the newly added announcement
+        });
+    });
+});
 
 
 
