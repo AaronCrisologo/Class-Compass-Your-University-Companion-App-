@@ -215,6 +215,11 @@ app.get('/calendar/next-events', (req, res) => {
         });
 });
 
+// API to fetch user's email
+app.get('/accounts/get-email', (req, res) => {
+    res.status(200).send({ email: currentCampus });
+  });
+
 //Admin Added Marked date
 app.post('/calendar/admin-marked-days-with-notes', (req, res) => {
     const { marked_date, note_text } = req.body;

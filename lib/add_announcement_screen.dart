@@ -56,7 +56,7 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Title:',
+                'Label:',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
