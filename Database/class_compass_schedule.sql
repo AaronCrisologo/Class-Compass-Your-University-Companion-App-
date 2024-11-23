@@ -18,28 +18,33 @@ USE `class_compass`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `holidays`
+-- Table structure for table `schedule`
 --
 
-DROP TABLE IF EXISTS `holidays`;
+DROP TABLE IF EXISTS `schedule`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `holidays` (
+CREATE TABLE `schedule` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `holiday_date` date NOT NULL,
-  `holiday_name` varchar(255) NOT NULL,
+  `user_id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `instructor` varchar(255) DEFAULT NULL,
+  `starttime` varchar(20) DEFAULT NULL,
+  `endtime` varchar(20) DEFAULT NULL,
+  `day` int NOT NULL,
+  `color` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `holidays`
+-- Dumping data for table `schedule`
 --
 
-LOCK TABLES `holidays` WRITE;
-/*!40000 ALTER TABLE `holidays` DISABLE KEYS */;
-INSERT INTO `holidays` VALUES (1,'2024-01-01','New Year\'s Day'),(2,'2024-02-10','Chinese New Year'),(3,'2024-03-28','Holy Week - Maundy Thursday'),(4,'2024-03-29','Holy Week - Good Friday'),(5,'2024-05-01','Labor Day'),(6,'2024-06-12','Independence Day'),(7,'2024-08-21','Ninoy Aquino Day'),(8,'2024-08-26','National Heroes Day'),(9,'2024-11-01','All Saints\' Day'),(10,'2024-11-30','Bonifacio Day'),(11,'2024-12-25','Christmas Day'),(12,'2024-12-30','Rizal Day'),(13,'2024-10-31','Test Holiday');
-/*!40000 ALTER TABLE `holidays` ENABLE KEYS */;
+LOCK TABLES `schedule` WRITE;
+/*!40000 ALTER TABLE `schedule` DISABLE KEYS */;
+INSERT INTO `schedule` VALUES (7,8,'wew','wew','07:00','17:00',4,'4280391411'),(8,8,'wow','ee','08:00','09:00',4,'4280391411'),(9,8,'Science','tree','06:00','06:00',6,'4280391411'),(10,9,'Science','213','08:00','09:00',3,'4288423856');
+/*!40000 ALTER TABLE `schedule` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -51,4 +56,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-11-13 14:35:47
+-- Dump completed on 2024-11-23 10:13:14

@@ -18,33 +18,29 @@ USE `class_compass`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `schedule`
+-- Table structure for table `user_notes`
 --
 
-DROP TABLE IF EXISTS `schedule`;
+DROP TABLE IF EXISTS `user_notes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `schedule` (
+CREATE TABLE `user_notes` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `instructor` varchar(255) DEFAULT NULL,
-  `starttime` varchar(20) DEFAULT NULL,
-  `endtime` varchar(20) DEFAULT NULL,
-  `day` int NOT NULL,
-  `color` varchar(50) DEFAULT NULL,
+  `note_date` date NOT NULL,
+  `note_text` text NOT NULL,
+  `user_id` int DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `schedule`
+-- Dumping data for table `user_notes`
 --
 
-LOCK TABLES `schedule` WRITE;
-/*!40000 ALTER TABLE `schedule` DISABLE KEYS */;
-INSERT INTO `schedule` VALUES (7,8,'wew','wew','07:00','17:00',4,'4280391411'),(8,8,'wow','ee','08:00','09:00',4,'4280391411'),(9,8,'Science','tree','06:00','06:00',6,'4280391411'),(10,9,'Science','213','08:00','09:00',3,'4288423856');
-/*!40000 ALTER TABLE `schedule` ENABLE KEYS */;
+LOCK TABLES `user_notes` WRITE;
+/*!40000 ALTER TABLE `user_notes` DISABLE KEYS */;
+INSERT INTO `user_notes` VALUES (1,'2024-10-30','test',NULL),(2,'2024-10-23','test2',NULL),(4,'2024-11-10','testing this ',6),(5,'2024-11-13','wew',8),(6,'2024-11-22','wow',8);
+/*!40000 ALTER TABLE `user_notes` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -56,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-11-13 14:35:47
+-- Dump completed on 2024-11-23 10:13:14
