@@ -832,34 +832,34 @@ app.post('/add-announcement', (req, res) => {
     });
 });
 
-
 app.get('/get-announcements', (req, res) => {
-    // Assuming currentCampus is set globally or through the login process
+    console.log('Received request for announcements');
     if (!currentCampus) {
+        console.log('Current campus not set');
         return res.status(400).send({ message: 'Current campus is not set' });
     }
 
-    // Query the admin_announcements table based on the currentCampus value
     const query = 'SELECT * FROM admin_announcements WHERE campus = ?';
+    console.log('Running query:', query, 'with parameters:', [currentCampus]);
+
     db.query(query, [currentCampus], (err, results) => {
         if (err) {
             console.error('Error fetching data from admin_announcements:', err);
             return res.status(500).send({ message: 'Failed to retrieve announcements' });
         }
 
-        // Check if results were found
         if (results.length > 0) {
+            console.log('Announcements found:', results);
             res.status(200).send({
                 message: 'Announcements retrieved successfully',
-                announcements: results, // Return the retrieved announcements as an array
+                announcements: results,
             });
         } else {
+            console.log('No announcements found');
             res.status(404).send({ message: 'No announcements found for the current campus' });
         }
     });
 });
-
-
 
 
 

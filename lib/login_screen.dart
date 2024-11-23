@@ -40,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
           data['section'] != null) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+          MaterialPageRoute(builder: (context) => MainScreen()),
         );
       } else if (data['message'] == 'Login successful for admin' &&
           data['user_id'] != null &&
