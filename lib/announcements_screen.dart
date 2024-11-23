@@ -162,13 +162,15 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                     final body = announcement['body'] ??
                         'No message'; // Safe access to 'body'
                     final formattedMessage = _formatMessage(body);
+                    final campus = announcement['campus'] ?? 'No title';
 
                     // Add the title and message (body) to the announcements list
                     announcements.add({
                       'title': title, // Include the title in the announcement
                       'message': formattedMessage,
-                      'accountName': 'Campus Announcement', // Adjust as needed
-                      'image': 'assets/bsulib.jpg', // Adjust image as needed
+                      'accountName':
+                          '${campus} Announcement', // Adjust as needed
+                      'image': 'assets/bsu logo.png', // Adjust image as needed
                     });
 
                     count++; // Increment the counter
