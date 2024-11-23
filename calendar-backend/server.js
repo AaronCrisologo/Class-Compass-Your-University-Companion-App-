@@ -589,24 +589,27 @@ app.post('/login', (req, res) => {
     console.log('Received email:', email);  // Log the email
     console.log('Received password:', password);  // Log the password (don't log passwords in production!)
 
-    // List of admin account emails
+    // Normalize the email input: trim spaces and convert to lowercase
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // List of admin account emails (in lowercase for consistency)
     const adminEmails = [
-        "Pablo Borbon admin",
-        "Alangilan admin",
-        "Arasof-Nasugbu admin",
-        "Balayan admin",
-        "Lemery admin",
-        "Mabini admin",
-        "JPLPC-Malvar admin",
-        "Lipa admin",
-        "Rosario admin",
-        "San Juan admin",
-        "Lobo admin"
+        "pablo borbon admin",
+        "alangilan admin",
+        "arasof-nasugbu admin",
+        "balayan admin",
+        "lemery admin",
+        "mabini admin",
+        "jplpc-malvar admin",
+        "lipa admin",
+        "rosario admin",
+        "san juan admin",
+        "lobo admin"
     ];
 
     // Check if the email exists in the database
     const query = 'SELECT user_id, password, section FROM accounts WHERE email = ?';
-    db.query(query, [email], (err, results) => {
+    db.query(query, [normalizedEmail], (err, results) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).send({ message: 'Database error' });
@@ -619,10 +622,10 @@ app.post('/login', (req, res) => {
             // Compare passwords directly (since both are plain text)
             if (password === storedPassword) {
                 // Password matches, determine account type
-                currentUserId = results[0].user_id;
-                currentCampus = results[0].section;
+                const currentUserId = results[0].user_id;
+                const currentCampus = results[0].section;
 
-                if (adminEmails.includes(email)) {
+                if (adminEmails.includes(normalizedEmail)) {
                     console.log('Login successful for admin email:', email); // Log successful admin login
                     res.status(200).send({
                         message: 'Login successful for admin',
