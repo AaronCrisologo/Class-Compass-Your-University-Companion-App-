@@ -28,7 +28,7 @@ let currentCampus = null;
 const db = mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '4122133pogi',
+    password: process.env.DB_PASSWORD || 'password',
     database: process.env.DB_NAME || 'class_compass',
 });
 
@@ -724,7 +724,7 @@ app.get('/get-user', (req, res) => {
 
 
 
-app.post('/api/schedule', (req, res) => {
+app.post('/schedule', (req, res) => {
     const { name, instructor, startTime, endTime, day, color } = req.body;
 
     // Debug: Log incoming request data
@@ -808,7 +808,7 @@ app.post('/api/schedule', (req, res) => {
 });
 
 
-app.get('/api/get-schedule', (req, res) => {
+app.get('/get-schedule', (req, res) => {
     // Debugging: Log when the API is hit
     console.log('GET /api/get-schedule endpoint hit');
 
