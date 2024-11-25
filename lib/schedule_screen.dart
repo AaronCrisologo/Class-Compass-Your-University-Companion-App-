@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-String formatTimeWithoutMinutes(BuildContext context, TimeOfDay time) {
-  final formattedTime = time.format(context);
-  return formattedTime
-      .replaceAll(':00', '')
-      .replaceAll('10 AM', '10AM')
-      .replaceAll('11 AM', '11AM')
-      .replaceAll('12 PM', '12PM');
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: ScheduleScreen(),
+    );
+  }
 }
 
 class ScheduleScreen extends StatefulWidget {
@@ -16,503 +22,724 @@ class ScheduleScreen extends StatefulWidget {
 }
 
 class _ScheduleScreenState extends State<ScheduleScreen> {
-  List<Map<String, dynamic>> classes = [];
+  final List<String> days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  final List<String> hours = [
+    '7:00 AM', '7:30 AM',
+    '8:00 AM', '8:30 AM',
+    '9:00 AM', '9:30 AM',
+    '10:00 AM', '10:30 AM',
+    '11:00 AM', '11:30 AM',
+    '12:00 PM', '12:30 PM',
+    '1:00 PM', '1:30 PM',
+    '2:00 PM', '2:30 PM',
+    '3:00 PM', '3:30 PM',
+    '4:00 PM', '4:30 PM',
+    '5:00 PM', '5:30 PM',
+    '6:00 PM', '6:30 PM',
+    '7:00 PM'
+  ];
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.red[10],
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final double padding = 7.0;
-          final double maxScreenWidth =
-              constraints.maxWidth - padding * 2; // Take padding into account
-          final double screenWidth =
-              maxScreenWidth > 600 ? 600 : maxScreenWidth;
-          final double cellWidth = screenWidth / 8;
-          final double cellHeight =
-              cellWidth * 1.4; // Adjust the aspect ratio as needed
+  List<dynamic> scheduleData = [];
+  final ScrollController _horizontalController = ScrollController();
+  final ScrollController _verticalController = ScrollController();
 
-          return SingleChildScrollView(
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                    horizontal: padding), // Add padding here
-                child: Container(
-                  width: screenWidth,
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 30.0),
-                        child: Text(
-                          "Weekly Schedule",
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red[700],
-                            shadows: [
-                              Shadow(
-                                blurRadius: 10.0,
-                                color: Colors.red[300]!,
-                                offset: Offset(3.0, 3.0),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          Container(
-                            width: cellWidth,
-                            height: cellHeight,
-                            child: Center(child: Text('')),
-                          ),
-                          ...List.generate(7, (index) {
-                            return Container(
-                              width: cellWidth,
-                              height: cellHeight,
-                              child: Center(
-                                child: Text(
-                                  [
-                                    'Sun',
-                                    'Mon',
-                                    'Tue',
-                                    'Wed',
-                                    'Thu',
-                                    'Fri',
-                                    'Sat'
-                                  ][index],
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                        ],
-                      ),
-                      ...List.generate(12, (timeIndex) {
-                        final currentTime =
-                            TimeOfDay(hour: 7 + timeIndex, minute: 0);
-                        return Row(
-                          children: [
-                            Container(
-                              width: cellWidth,
-                              height: cellHeight,
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(right: 8.0),
-                                  child: Align(
-                                    alignment: FractionalOffset(1.0,
-                                        -0.1), // Adjust the y-position here
-                                    child: LayoutBuilder(
-                                      builder: (context, constraints) {
-                                        double fontSize = constraints.maxWidth /
-                                            3; // Adjust the divisor as needed
-                                        return Text(
-                                          formatTimeWithoutMinutes(
-                                              context, currentTime),
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: fontSize > 16
-                                                ? 16
-                                                : fontSize, // Set a max font size
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            ...List.generate(7, (dayIndex) {
-                              final classForTimeSlot = classes.firstWhere(
-                                (classItem) =>
-                                    classItem['day'] == dayIndex &&
-                                    classItem['startTime'].hour <=
-                                        currentTime.hour &&
-                                    classItem['endTime'].hour >
-                                        currentTime.hour,
-                                orElse: () => {},
-                              );
-
-                              bool isClassBlock = classForTimeSlot.isNotEmpty;
-                              bool isFirstSlot = classForTimeSlot.isNotEmpty &&
-                                  classForTimeSlot['startTime'].hour ==
-                                      currentTime.hour;
-
-                              return GestureDetector(
-                                onTap: () => isClassBlock
-                                    ? _editClass(classForTimeSlot)
-                                    : _addClass(dayIndex, currentTime),
-                                child: Container(
-                                  width: cellWidth,
-                                  height: cellHeight,
-                                  decoration: BoxDecoration(
-                                    color: isClassBlock
-                                        ? classForTimeSlot['color']
-                                            .withOpacity(0.7)
-                                        : Colors.white,
-                                    border: Border.all(
-                                      color: Colors.red[100]!,
-                                    ),
-                                    borderRadius: BorderRadius.circular(8),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.red[100]!,
-                                        blurRadius: 5,
-                                        offset: Offset(2, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Center(
-                                    child: isFirstSlot
-                                        ? Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                classForTimeSlot['name'],
-                                                style: TextStyle(
-                                                  fontSize:
-                                                      constraints.maxWidth *
-                                                          0.024,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
-                                                ),
-                                                textAlign: TextAlign.center,
-                                              ),
-                                              Text(
-                                                classForTimeSlot['instructor'],
-                                                style: TextStyle(
-                                                  fontSize:
-                                                      constraints.maxWidth *
-                                                          0.019,
-                                                  color: Colors.white70,
-                                                ),
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ],
-                                          )
-                                        : null,
-                                  ),
-                                ),
-                              );
-                            }),
-                          ],
-                        );
-                      }),
-                      // Add the 7:00 PM time as a standalone text widget
-                      Row(
-                        children: [
-                          Container(
-                            width: cellWidth,
-                            height: cellHeight,
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: LayoutBuilder(
-                                  builder: (context, constraints) {
-                                    double fontSize = constraints.maxWidth /
-                                        3; // Adjust the divisor as needed
-                                    return Align(
-                                      alignment: FractionalOffset(1.0,
-                                          -0.2), // Adjust the y-position here
-                                      child: Text(
-                                        '7 PM',
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: fontSize > 16
-                                              ? 16
-                                              : fontSize, // Set a max font size
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                          Spacer(),
-                          ...List.generate(7, (index) => Spacer()),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addClassPrompt,
-        backgroundColor: Colors.red[100],
-        child: Icon(Icons.add),
-      ),
-    );
+  String getFullTimeString(String hour) {
+    if (hour == '-') return '';
+    return hour;
   }
-
-  void _addClassPrompt() async {
-    final newClass = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (context) {
-        return _ClassDialog();
-      },
-    );
-
-    if (newClass != null) {
-      setState(() {
-        classes.add(newClass);
-      });
-    }
-  }
-
-  void _addClass(int dayIndex, TimeOfDay currentTime) async {
-    final newClass = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (context) {
-        return _ClassDialog(
-          initialDay: dayIndex,
-          initialStartTime: currentTime,
-          initialEndTime: TimeOfDay(hour: currentTime.hour + 1, minute: 0),
-        );
-      },
-    );
-
-    if (newClass != null) {
-      setState(() {
-        classes.add(newClass);
-      });
-    }
-  }
-
-  void _editClass(Map<String, dynamic> classItem) async {
-    final editedClass = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (context) {
-        return _ClassDialog(classItem: classItem);
-      },
-    );
-
-    if (editedClass != null) {
-      if (editedClass.containsKey('delete') && editedClass['delete']) {
-        setState(() {
-          classes.remove(classItem);
-        });
-      } else {
-        setState(() {
-          classes = classes.map((c) {
-            if (c == classItem) return editedClass;
-            return c;
-          }).toList();
-        });
-      }
-    }
-  }
-}
-
-class _ClassDialog extends StatefulWidget {
-  final Map<String, dynamic>? classItem;
-  final int? initialDay;
-  final TimeOfDay? initialStartTime;
-  final TimeOfDay? initialEndTime;
-
-  _ClassDialog({
-    this.classItem,
-    this.initialDay,
-    this.initialStartTime,
-    this.initialEndTime,
-  });
-
-  @override
-  __ClassDialogState createState() => __ClassDialogState();
-}
-
-class __ClassDialogState extends State<_ClassDialog> {
-  final classNameController = TextEditingController();
-  final instructorNameController = TextEditingController();
-  TimeOfDay startTime = TimeOfDay(hour: 7, minute: 0);
-  TimeOfDay endTime = TimeOfDay(hour: 8, minute: 0);
-  int selectedDay = 0;
-  Color selectedColor = Colors.blue;
 
   @override
   void initState() {
     super.initState();
-    if (widget.classItem != null) {
-      final classItem = widget.classItem!;
-      classNameController.text = classItem['name'];
-      instructorNameController.text = classItem['instructor'];
-      startTime = classItem['startTime'];
-      endTime = classItem['endTime'];
-      selectedDay = classItem['day'];
-      selectedColor = classItem['color'];
+    fetchScheduleData();
+  }
+
+  Future<void> fetchScheduleData() async {
+    print('Fetching schedule from API...');
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/get-schedule'));
+      if (response.statusCode == 200) {
+        print('Response Body: ${response.body}');
+        print('Schedule updated successfully.');
+        setState(() {
+          scheduleData = json.decode(response.body);
+        });
+      } else {
+        print('Failed to load schedule, status code: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load schedule data'))
+        );
+      }
+    } catch (e) {
+      print('Error during schedule fetch: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error connecting to server'))
+      );
+    }
+  }
+
+  Color getColorFromString(String colorName) {
+    final Map<String, Color> colors = {
+      'red': Color(0xFFFFCACA),
+      'green': Color(0xFFD7FFD9),
+      'blue': Color(0xFFCAE9FF),
+      'yellow': Color(0xFFFFF4CA),
+      'purple': Color(0xFFE9CAFF),
+      'orange': Color(0xFFFFE5CA),
+    };
+    return colors[colorName.toLowerCase()] ?? Color(0xFFF5F5F5);
+  }
+
+  // Improved time parsing function
+  DateTime parseTimeString(String timeStr) {
+    // Split the time string into components
+    final parts = timeStr.split(' ');
+    final timeParts = parts[0].split(':');
+    final period = parts[1];
+    
+    int hours = int.parse(timeParts[0]);
+    int minutes = int.parse(timeParts[1]);
+    
+    // Convert to 24-hour format
+    if (period == 'PM' && hours != 12) {
+      hours += 12;
+    } else if (period == 'AM' && hours == 12) {
+      hours = 0;
+    }
+    
+    return DateTime(2024, 1, 1, hours, minutes);
+  }
+
+  // Improved time comparison function
+  bool isTimeInRange(String currentTimeStr, String startTimeStr, String endTimeStr) {
+    final currentTime = parseTimeString(currentTimeStr);
+    final startTime = parseTimeString(startTimeStr);
+    final endTime = parseTimeString(endTimeStr);
+    
+    return (currentTime.isAtSameMomentAs(startTime) || currentTime.isAfter(startTime)) && 
+           currentTime.isBefore(endTime);
+  }
+
+  // Updated schedule cell builder
+  Set<String> displayedNamesAndTimes = {};
+
+Widget _buildScheduleCell(String timeSlot, String day) {
+  List<dynamic> cellSchedules = scheduleData.where((schedule) {
+    return schedule['day'] == day &&
+          isTimeInRange(timeSlot, schedule['starttime'], schedule['endtime']);
+  }).toList();
+
+  bool isOccupied = cellSchedules.isNotEmpty;
+
+  if (isOccupied) {
+    String name = cellSchedules[0]['name'];
+    String timeRange = '${cellSchedules[0]['starttime']} - ${cellSchedules[0]['endtime']}';
+    String uniqueKey = '$name|$timeRange';
+
+    if (displayedNamesAndTimes.contains(uniqueKey)) {
+      name = '';
+      timeRange = '';
     } else {
-      selectedDay = widget.initialDay ?? 0;
-      startTime = widget.initialStartTime ?? TimeOfDay(hour: 7, minute: 0);
-      endTime = widget.initialEndTime ?? TimeOfDay(hour: 8, minute: 0);
+      displayedNamesAndTimes.add(uniqueKey);
+    }
+
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text('Schedule Details'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: cellSchedules.map((schedule) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Text(
+                      'Subject Name: ${schedule['name']}\n(${schedule['starttime']} - ${schedule['endtime']})\nInstructor: ${schedule['instructor']}\nColor: ${schedule['color']}',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  );
+                }).toList(),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    // Open edit screen or dialog
+                    Navigator.of(context).pop();
+                    _editSchedule(cellSchedules[0]); // Call edit function
+                  },
+                  child: Text('Edit'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    // Confirm and delete schedule
+                    _deleteSchedule(cellSchedules[0]); // Call delete function
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Delete', style: TextStyle(color: Colors.red)),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('Close'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+      child: Container(
+        width: 120,
+        height: 60,
+        decoration: BoxDecoration(
+          color: getColorFromString(cellSchedules[0]['color']),
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (name.isNotEmpty)
+                Text(
+                  name,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              if (timeRange.isNotEmpty)
+                Text(
+                  timeRange,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.black54,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  } else {
+    return Container(
+      width: 120,
+      height: 60,
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+    );
+  }
+}
+
+// Function to handle editing
+void _editSchedule(dynamic schedule) {
+  final _formKey = GlobalKey<FormState>();
+
+  // Provide default empty string values and use null-aware operators
+  final TextEditingController nameController =
+      TextEditingController(text: schedule['name']?.toString() ?? '');
+  final TextEditingController instructorController =
+      TextEditingController(text: schedule['instructor']?.toString() ?? '');
+  final TextEditingController startTimeController =
+      TextEditingController(text: schedule['starttime']?.toString() ?? '');
+  final TextEditingController endTimeController =
+      TextEditingController(text: schedule['endtime']?.toString() ?? '');
+  final TextEditingController dayController =
+      TextEditingController(text: schedule['day']?.toString() ?? '');
+
+  String? selectedColor = schedule['color']?.toString();
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text('Edit Schedule'),
+        content: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: nameController,
+                  decoration: InputDecoration(labelText: 'Subject Name'),
+                  validator: (value) =>
+                      value == null || value.trim().isEmpty
+                          ? 'Enter subject name'
+                          : null,
+                ),
+                TextFormField(
+                  controller: instructorController,
+                  decoration: InputDecoration(labelText: 'Instructor'),
+                  validator: (value) =>
+                      value == null || value.trim().isEmpty
+                          ? 'Enter instructor name'
+                          : null,
+                ),
+                TextFormField(
+                  controller: startTimeController,
+                  decoration: InputDecoration(labelText: 'Start Time'),
+                  validator: (value) =>
+                      value == null || value.trim().isEmpty
+                          ? 'Enter start time'
+                          : null,
+                ),
+                TextFormField(
+                  controller: endTimeController,
+                  decoration: InputDecoration(labelText: 'End Time'),
+                  validator: (value) =>
+                      value == null || value.trim().isEmpty
+                          ? 'Enter end time'
+                          : null,
+                ),
+                TextFormField(
+                  controller: dayController,
+                  decoration: InputDecoration(labelText: 'Day'),
+                  validator: (value) =>
+                      value == null || value.trim().isEmpty
+                          ? 'Enter day'
+                          : null,
+                ),
+                DropdownButtonFormField<String>(
+                  value: selectedColor,
+                  onChanged: (newValue) => setState(() {
+                    selectedColor = newValue;
+                  }),
+                  items: ['Red', 'Green', 'Blue', 'Yellow', 'Purple', 'Orange']
+                      .map((color) => DropdownMenuItem(
+                            value: color,
+                            child: Text(color),
+                          ))
+                      .toList(),
+                  decoration: InputDecoration(labelText: 'Color'),
+                  validator: (value) =>
+                      value == null ? 'Please select a color' : null,
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              if (_formKey.currentState!.validate()) {
+                // Collect data from controllers
+                final updatedSchedule = {
+                  'id': schedule['id'],
+                  'name': nameController.text.trim(),
+                  'instructor': instructorController.text.trim(),
+                  'starttime': startTimeController.text.trim(),
+                  'endtime': endTimeController.text.trim(),
+                  'day': dayController.text.trim(),
+                  'color': selectedColor ?? schedule['color']?.toString() ?? '',
+                };
+
+                try {
+                  // Send updated data to backend
+                  final response = await http.post(
+                    Uri.parse('http://localhost:3000/updateSchedule'),
+                    body: json.encode(updatedSchedule),
+                    headers: {'Content-Type': 'application/json'},
+                  );
+
+                  if (response.statusCode == 200) {
+                    // Update local data and trigger UI rebuild
+                    setState(() {
+                      int index = scheduleData.indexWhere((s) => s['id'] == schedule['id']);
+                      if (index != -1) {
+                        scheduleData[index] = updatedSchedule;
+                      }
+                    });
+                    print('Schedule updated successfully');
+                    Navigator.of(context).pop();
+                  } else {
+                    print('Failed to update schedule: ${response.body}');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to update schedule')),
+                    );
+                  }
+                } catch (error) {
+                  print('Error updating schedule: $error');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error updating schedule')),
+                  );
+                }
+              }
+            },
+            child: Text('Save'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+// Function to handle deleting
+void _deleteSchedule(dynamic schedule) async {
+  // Backend delete logic
+  try {
+    final response = await http.post(
+      Uri.parse('http://localhost:3000/deleteSchedule'),
+      body: json.encode({'id': schedule['id']}),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      // Update local data after deletion
+      setState(() {
+        scheduleData.removeWhere((s) => s['id'] == schedule['id']);
+      });
+      print('Schedule deleted successfully');
+    } else {
+      print('Failed to delete schedule: ${response.body}');
+    }
+  } catch (error) {
+    print('Error deleting schedule: $error');
+  }
+}
+
+void _showAddScheduleDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        elevation: 12,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ScheduleForm(onScheduleAdded: () {
+            fetchScheduleData();
+            Navigator.pop(context);
+          }),
+        ),
+      );
+    },
+  );
+}
+
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Colors.white,
+    appBar: AppBar(
+      elevation: 0,
+      backgroundColor: Colors.white,
+      title: Text(
+        "Weekly Schedule",
+        style: TextStyle(
+          color: Colors.black87,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ),
+    body: Padding(
+      padding: EdgeInsets.all(16),
+      child: SingleChildScrollView(
+        controller: _verticalController,
+        child: Column(
+          children: [
+            SingleChildScrollView(
+              controller: _horizontalController,
+              scrollDirection: Axis.horizontal,
+              child: IntrinsicWidth(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Header Row
+                    Row(
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 60,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey[200]!),
+                            color: Colors.grey[50],
+                          ),
+                        ),
+                        ...days.map((day) => Container(
+                          width: 120,
+                          height: 60,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey[200]!),
+                            color: Colors.blue.withOpacity(0.1),
+                          ),
+                          child: Text(
+                            day,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue[700],
+                            ),
+                          ),
+                        )),
+                      ],
+                    ),
+                    // Time Slots
+                    ...hours.map((hour) => Row(
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 60,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey[200]!),
+                            color: Colors.grey[50],
+                          ),
+                          child: Text(
+                            hour,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ),
+                        ...days.map((day) => _buildScheduleCell(hour, day)),
+                      ],
+                    )),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+    floatingActionButton: FloatingActionButton(
+      onPressed: () => _showAddScheduleDialog(context),
+      backgroundColor: Colors.blue,
+      child: Icon(Icons.add, color: Colors.white),
+    ),
+  );
+}
+}
+
+class ScheduleForm extends StatefulWidget {
+  final VoidCallback onScheduleAdded;
+
+  ScheduleForm({required this.onScheduleAdded});
+
+  @override
+  _ScheduleFormState createState() => _ScheduleFormState();
+}
+
+class _ScheduleFormState extends State<ScheduleForm> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _instructorController = TextEditingController();
+  final List<String> daysOfWeek = [
+    'Sun',
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat'
+  ];
+  final List<String> hourValues = [
+    '7:00 AM',
+    '7:30 AM',
+    '8:00 AM',
+    '8:30 AM',
+    '9:00 AM',
+    '9:30 AM',
+    '10:00 AM',
+    '10:30 AM',
+    '11:00 AM',
+    '11:30 AM',
+    '12:00 PM',
+    '12:30 PM',
+    '1:00 PM',
+    '1:30 PM',
+    '2:00 PM',
+    '2:30 PM',
+    '3:00 PM',
+    '3:30 PM',
+    '4:00 PM',
+    '4:30 PM',
+    '5:00 PM',
+    '5:30 PM',
+    '6:00 PM',
+    '6:30 PM',
+    '7:00 PM',
+    '7:30 PM',
+    '8:00 PM',
+    '8:30 PM',
+    '9:00 PM',
+    '9:30 PM',
+  ];
+  String? selectedDay;
+  String? selectedColor;
+  String? selectedStartTime;
+  String? selectedEndTime;
+
+    Future<void> _submitSchedule() async {
+    if (_formKey.currentState?.validate() ?? false) {
+      final name = _nameController.text;
+      final instructor = _instructorController.text;
+      final startTime = selectedStartTime;
+      final endTime = selectedEndTime;
+      final day = selectedDay;
+      final color = selectedColor;
+
+      if (name.isEmpty ||
+          instructor.isEmpty ||
+          startTime == null ||
+          endTime == null ||
+          day == null ||
+          color == null) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Please fill all fields')));
+        return;
+      }
+
+      try {
+        final response = await http.post(
+          Uri.parse('http://localhost:3000/schedule'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'name': name,
+            'instructor': instructor,
+            'startTime': startTime,
+            'endTime': endTime,
+            'day': day,
+            'color': color,
+          }),
+        );
+
+        if (response.statusCode == 201) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Schedule added successfully')));
+          widget.onScheduleAdded();
+        } else if (response.statusCode == 400) {
+          final responseBody = json.decode(response.body);
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(responseBody['message'])));
+        } else if (response.statusCode == 409) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('Overlap in Scheduling')));
+        } else {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('Failed to add schedule')));
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error connecting to server')));
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.classItem == null ? 'Add Class' : 'Edit Class'),
-      content: SingleChildScrollView(
+    return Padding(
+      padding: EdgeInsets.all(16.0),
+      child: Form(
+        key: _formKey,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              controller: classNameController,
-              decoration: InputDecoration(labelText: 'Class Name'),
+            TextFormField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: 'Schedule Name',
+                filled: true,
+                fillColor: Colors.grey[200],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              validator: (value) =>
+                  value?.isEmpty ?? true ? 'Please enter schedule name' : null,
             ),
-            TextField(
-              controller: instructorNameController,
+            TextFormField(
+              controller: _instructorController,
               decoration: InputDecoration(labelText: 'Instructor'),
+              validator: (value) => value?.isEmpty ?? true
+                  ? 'Please enter instructor name'
+                  : null,
             ),
-            DropdownButton<int>(
-              value: selectedDay,
-              onChanged: (value) {
-                setState(() {
-                  selectedDay = value!;
-                });
-              },
-              items: List.generate(7, (index) {
-                return DropdownMenuItem(
-                  value: index,
-                  child: Text([
-                    'Sunday',
-                    'Monday',
-                    'Tuesday',
-                    'Wednesday',
-                    'Thursday',
-                    'Friday',
-                    'Saturday'
-                  ][index]),
-                );
+            DropdownButtonFormField<String>(
+              value: selectedStartTime,
+              onChanged: (newValue) => setState(() {
+                selectedStartTime = newValue;
               }),
+              items: hourValues
+                  .map((hour) => DropdownMenuItem(
+                        value: hour,
+                        child: Text(hour),
+                      ))
+                  .toList(),
+              decoration: InputDecoration(labelText: 'Start Time'),
+              validator: (value) =>
+                  value == null ? 'Please select a start time' : null,
             ),
-            Row(
-              children: [
-                Expanded(
-                  child: ListTile(
-                    title: Text('Start Time'),
-                    subtitle: Text(startTime.format(context)),
-                    onTap: () async {
-                      final time = await showTimePicker(
-                        context: context,
-                        initialTime: startTime,
-                      );
-                      if (time != null) {
-                        setState(() {
-                          startTime = time;
-                        });
-                      }
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: ListTile(
-                    title: Text('End Time'),
-                    subtitle: Text(endTime.format(context)),
-                    onTap: () async {
-                      final time = await showTimePicker(
-                        context: context,
-                        initialTime: endTime,
-                      );
-                      if (time != null) {
-                        setState(() {
-                          endTime = time;
-                        });
-                      }
-                    },
-                  ),
-                ),
-              ],
+            DropdownButtonFormField<String>(
+              value: selectedEndTime,
+              onChanged: (newValue) => setState(() {
+                selectedEndTime = newValue;
+              }),
+              items: hourValues
+                  .map((hour) => DropdownMenuItem(
+                        value: hour,
+                        child: Text(hour),
+                      ))
+                  .toList(),
+              decoration: InputDecoration(labelText: 'End Time'),
+              validator: (value) =>
+                  value == null ? 'Please select an end time' : null,
             ),
-            ListTile(
-              title: Text('Color'),
-              trailing: Padding(
-                padding: const EdgeInsets.only(right: 5.0),
-                child: Icon(
-                  Icons.color_lens,
-                  color: Colors.red,
-                  size: 26.0,
-                ),
-              ),
-              onTap: () async {
-                Color pickedColor = selectedColor;
-                await showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: Text('Pick a color'),
-                      content: SingleChildScrollView(
-                        child: BlockPicker(
-                          pickerColor: selectedColor,
-                          onColorChanged: (color) {
-                            pickedColor = color;
-                          },
-                        ),
-                      ),
-                      actions: [
-                        TextButton(
-                          style:
-                              TextButton.styleFrom(foregroundColor: Colors.red),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text('OK'),
-                        ),
-                      ],
-                    );
-                  },
-                );
-                setState(() {
-                  selectedColor = pickedColor;
-                });
-              },
+            DropdownButtonFormField<String>(
+              value: selectedDay,
+              onChanged: (newValue) => setState(() {
+                selectedDay = newValue;
+              }),
+              items: daysOfWeek
+                  .map((day) => DropdownMenuItem(
+                        value: day,
+                        child: Text(day),
+                      ))
+                  .toList(),
+              decoration: InputDecoration(labelText: 'Day of the Week'),
+              validator: (value) =>
+                  value == null ? 'Please select a day' : null,
             ),
-            if (widget.classItem != null)
-              TextButton(
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                onPressed: () {
-                  Navigator.of(context).pop({'delete': true});
-                },
-                child: Text('Delete Class'),
-              ),
+            DropdownButtonFormField<String>(
+              value: selectedColor,
+              onChanged: (newValue) => setState(() {
+                selectedColor = newValue;
+              }),
+              items: ['Red', 'Green', 'Blue', 'Yellow', 'Purple', 'Orange']
+                  .map((color) => DropdownMenuItem(
+                        value: color,
+                        child: Text(color),
+                      ))
+                  .toList(),
+              decoration: InputDecoration(labelText: 'Color'),
+              validator: (value) =>
+                  value == null ? 'Please select a color' : null,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _submitSchedule,
+              child: Text('Add Schedule'),
+            ),
           ],
         ),
       ),
-      actions: [
-        TextButton(
-          style: TextButton.styleFrom(foregroundColor: Colors.red),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text('Cancel'),
-        ),
-        TextButton(
-          style: TextButton.styleFrom(foregroundColor: Colors.red),
-          onPressed: () {
-            final newClass = {
-              'name': classNameController.text,
-              'instructor': instructorNameController.text,
-              'startTime': startTime,
-              'endTime': endTime,
-              'day': selectedDay,
-              'color': selectedColor,
-            };
-            Navigator.of(context).pop(newClass);
-          },
-          child: Text('Save'),
-        ),
-      ],
     );
   }
 }

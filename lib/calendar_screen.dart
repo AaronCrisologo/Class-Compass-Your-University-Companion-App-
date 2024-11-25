@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:table_calendar/table_calendar.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class CalendarScreen extends StatefulWidget {
   @override
@@ -6,455 +10,506 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  final List<Map<String, dynamic>> holidays = [
-    {'date': DateTime(2024, 8, 21), 'name': 'Ninoy Aquino Day'},
-    {'date': DateTime(2024, 8, 26), 'name': 'National Heroes Day'},
-  ];
+  Map<DateTime, List<Map<String, String>>> events = {};
+  DateTime focusedDate = DateTime.now();
+  String currentTime = '';
+  List<Map<String, String>> upcomingEvents = [];
 
-  List<DateTime> weatherDisturbances = [
-    DateTime(2024, 8, 15), // Random weather disturbance example
-  ];
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+    fetchCurrentTime();
+    fetchUpcomingEvents();
+  }
 
-  Map<DateTime, String> userNotes = {};
-  List<DateTime> userNoClassDays = [];
-  List<DateTime> partialNoClassDays = []; // New list for partial no class days
-  List<DateTime> reminders = []; // New list for reminders
+Future<void> fetchData() async {
+  await fetchHolidays();
+  await fetchWeatherDisturbances();
+  await fetchCombinedNotesAndMarkedDays();
+  
+  filterUpcomingEvents();
+  setState(() {});
+}
 
-  DateTime currentDate = DateTime(2024, 8, 9);
-  DateTime nextNoClassDay = DateTime(2024, 8, 15);
+void filterUpcomingEvents() {
+  DateTime today = DateTime.now();
+  upcomingEvents = [];
+  
+  events.forEach((date, eventList) {
+    if (date.isAfter(today)) {  // Check for upcoming events only
+      for (var event in eventList) {
+        upcomingEvents.add({
+          "date": DateFormat.yMMMd().format(date),
+          "type": event["type"] ?? "",
+          "description": event["description"] ?? "",
+        });
+      }
+    }
+  });
+
+  // Sort upcoming events by date
+  upcomingEvents.sort((a, b) {
+    DateTime dateA = DateFormat.yMMMd().parse(a["date"]!);
+    DateTime dateB = DateFormat.yMMMd().parse(b["date"]!);
+    return dateA.compareTo(dateB);
+  });
+}
+
+
+  Future<void> fetchCurrentTime() async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/calendar/time'));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          currentTime = data['datetime'];
+        });
+      }
+    } catch (e) {
+      print("Error fetching current time: $e");
+    }
+  }
+
+  Future<void> fetchUpcomingEvents() async {
+    final today = DateTime.now();
+    final nextWeek = today.add(Duration(days: 7));
+
+    upcomingEvents.clear(); // Clear existing events
+    events.forEach((date, eventList) {
+      if (date.isAfter(today) && date.isBefore(nextWeek)) {
+        eventList.forEach((event) {
+          upcomingEvents.add({"date": DateFormat.yMMMd().format(date), "description": event["description"] ?? ""});
+        });
+      }
+    });
+    setState(() {});
+  }
+
+  Future<void> fetchHolidays() async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/calendar/holidays'));
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        for (var holiday in data) {
+          DateTime date = DateTime.parse(holiday['holiday_date']).toLocal();
+          String name = holiday['holiday_name'];
+
+          events[date] = events[date] ?? [];
+          events[date]!.add({"type": "Holiday", "description": name});
+        }
+      }
+    } catch (e) {
+      print("Error fetching holidays: $e");
+    }
+  }
+
+  Future<void> fetchWeatherDisturbances() async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3000/calendar/weather-disturbances'));
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        for (var disturbance in data) {
+          DateTime date = DateTime.parse(disturbance['date']).toLocal();
+          events[date] = events[date] ?? [];
+          events[date]!.add({"type": "Weather Alert", "description": disturbance['description']});
+        }
+      }
+    } catch (e) {
+      print("Error fetching weather disturbances: $e");
+    }
+  }
+
+  Future<void> fetchCombinedNotesAndMarkedDays() async {
+    try {
+      final markedDaysResponse = await http.get(Uri.parse('http://localhost:3000/calendar/marked-days'));
+      if (markedDaysResponse.statusCode == 200) {
+        List<dynamic> markedDaysData = jsonDecode(markedDaysResponse.body);
+        for (var markedDay in markedDaysData) {
+          DateTime date = DateTime.parse(markedDay['marked_date']).toLocal();
+          String type = markedDay['day_type'];
+          events[date] = events[date] ?? [];
+          events[date]!.add({"type": type, "description": "Marked Day"});
+        }
+      }
+
+      final notesResponse = await http.get(Uri.parse('http://localhost:3000/calendar/notes'));
+      if (notesResponse.statusCode == 200) {
+        List<dynamic> notesData = jsonDecode(notesResponse.body);
+        for (var note in notesData) {
+          DateTime date = DateTime.parse(note['note_date']).toLocal();
+          events[date] = events[date] ?? [];
+          events[date]!.add({"type": "Note", "description": note['note_text']});
+        }
+      }
+    } catch (e) {
+      print("Error fetching combined notes and marked days: $e");
+    }
+  }
+
+Future<void> _addCustomMarkedDay() async {
+  DateTime? selectedDate = await showDatePicker(
+    context: context,
+    initialDate: focusedDate,
+    firstDate: DateTime.now(),
+    lastDate: DateTime.utc(2030, 12, 31),
+  );
+
+  if (selectedDate != null) {
+    if (events[selectedDate] != null) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Marked Day Already Exists'),
+          content: Text('Please delete the current mark before adding a new one.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    String? dayType = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Select Day Type'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: Text('No Class'),
+                onTap: () => Navigator.of(context).pop('no_class'),
+              ),
+              ListTile(
+                title: Text('Reminder'),
+                onTap: () => Navigator.of(context).pop('reminder'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(), // Cancel button to close dialog
+              child: Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (dayType != null) {
+      String? userInputNote = await showDialog<String>(
+        context: context,
+        builder: (BuildContext context) {
+          TextEditingController controller = TextEditingController();
+          return AlertDialog(
+            title: Text('Enter Note'),
+            content: TextField(
+              controller: controller,
+              decoration: InputDecoration(hintText: "Enter your note here"),
+              maxLines: 3,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(controller.text),
+                child: Text('Submit'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(null),
+                child: Text('Cancel'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (userInputNote != null && userInputNote.isNotEmpty) {
+        await http.post(
+          Uri.parse('http://localhost:3000/calendar/marked-days'),
+          headers: {'Content-Type': 'application/json; charset=UTF-8'},
+          body: jsonEncode({'marked_date': selectedDate.toIso8601String(), 'day_type': dayType}),
+        );
+
+        await http.post(
+          Uri.parse('http://localhost:3000/calendar/notes'),
+          headers: {'Content-Type': 'application/json; charset=UTF-8'},
+          body: jsonEncode({'note_date': selectedDate.toIso8601String(), 'note_text': userInputNote}),
+        );
+
+        events[selectedDate] = events[selectedDate] ?? [];
+        events[selectedDate]!.add({"type": dayType, "description": userInputNote});
+        setState(() {});
+      }
+    }
+  }
+}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _showDatePickerAndAddDetails(context);
-        },
-        backgroundColor: Colors.red[100],
-        child: Icon(Icons.add),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 30, 10, 15),
-              child: Column(
-                children: [
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      double fontSize = constraints.maxWidth * 0.035;
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children:
-                            ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-                                .map((day) => Expanded(
-                                      child: Center(
-                                        child: Text(
-                                          day,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red[800],
-                                            fontSize: fontSize,
-                                          ),
-                                        ),
-                                      ),
-                                    ))
-                                .toList(),
-                      );
-                    },
-                  ),
-                  GridView.builder(
-                    physics:
-                        NeverScrollableScrollPhysics(), // Disable GridView's own scrolling
-                    shrinkWrap: true, // Take up only the necessary space
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 7,
-                      childAspectRatio: 1.0,
-                    ),
-                    itemCount: daysInMonth(DateTime(2024, 8)) +
-                        4, // Offset for starting on Thursday
-                    itemBuilder: (context, index) {
-                      DateTime currentDay;
-                      if (index < 4) {
-                        currentDay = DateTime(2024, 7, 28 + index);
-                      } else {
-                        currentDay = DateTime(2024, 8, index - 3);
-                      }
-                      bool isHoliday = holidays
-                          .any((holiday) => holiday['date'] == currentDay);
-                      bool isWeatherDisturbance =
-                          weatherDisturbances.contains(currentDay);
-                      bool isUserNoClassDay =
-                          userNoClassDays.contains(currentDay);
-                      bool isPartialNoClassDay =
-                          partialNoClassDays.contains(currentDay);
-                      bool isReminder = reminders.contains(currentDay);
-                      bool isCurrentDate = currentDay == currentDate;
+      body: Column(
+        children: [
+TableCalendar(
+  firstDay: DateTime.utc(2020, 1, 1),
+  lastDay: DateTime.utc(2030, 12, 31),
+  focusedDay: focusedDate,
+  calendarFormat: CalendarFormat.month,
+  eventLoader: (date) {
+    return events[DateTime(date.year, date.month, date.day)]?.map((e) => e["description"] ?? "").toList() ?? [];
+  },
+  calendarStyle: CalendarStyle(
+    todayDecoration: BoxDecoration(
+      color: Colors.teal,
+      shape: BoxShape.circle,
+    ),
+    selectedDecoration: BoxDecoration(
+      color: Colors.tealAccent,
+      shape: BoxShape.circle,
+    ),
+    markerDecoration: BoxDecoration(
+      color: Colors.orange, // Default color, will be overridden below
+      shape: BoxShape.circle,
+    ),
+    markerSize: 5.0,
+  ),
+  onDaySelected: (selectedDay, focusedDay) {
+    setState(() {
+      focusedDate = focusedDay;
+    });
 
-                      IconData? getIcon() {
-                        if (isHoliday) return Icons.event;
-                        if (isWeatherDisturbance) return Icons.cloud;
-                        if (isUserNoClassDay) return Icons.person;
-                        if (isReminder) return Icons.event_note;
-                        return null;
-                      }
-
-                      Color getBackgroundColor() {
-                        if (isCurrentDate) return Colors.blue[100]!;
-                        if (isHoliday ||
-                            isWeatherDisturbance ||
-                            isUserNoClassDay) {
-                          return Colors.red[100]!;
-                        }
-                        if (isPartialNoClassDay) {
-                          return Colors.yellow[100]!;
-                        }
-                        if (isReminder) {
-                          return Colors.purple[100]!;
-                        }
-                        return Colors.white;
-                      }
-
-                      return LayoutBuilder(
-                        builder: (context, constraints) {
-                          double iconSize = constraints.maxWidth * 0.25;
-                          return GestureDetector(
-                            onTap: () {
-                              _showDayDetails(
-                                  context,
-                                  currentDay,
-                                  isHoliday,
-                                  isWeatherDisturbance,
-                                  isUserNoClassDay,
-                                  isPartialNoClassDay,
-                                  isReminder);
-                            },
-                            child: Stack(
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.grey),
-                                    color: getBackgroundColor(),
-                                    borderRadius: BorderRadius.circular(10),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.5),
-                                        spreadRadius: 2,
-                                        blurRadius: 5,
-                                        offset: Offset(
-                                            0, 3), // changes position of shadow
-                                      ),
-                                    ],
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      index < 4 ? '' : '${currentDay.day}',
-                                      style: TextStyle(
-                                          fontSize: 16.0,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ),
-                                if (isHoliday ||
-                                    isWeatherDisturbance ||
-                                    isUserNoClassDay ||
-                                    isPartialNoClassDay ||
-                                    isReminder)
-                                  Positioned(
-                                    top: 4,
-                                    right: 4,
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        if (getIcon() != null)
-                                          Icon(
-                                            getIcon(),
-                                            color: Colors.red,
-                                            size: iconSize,
-                                          ),
-                                        if (isPartialNoClassDay)
-                                          Text(
-                                            '*',
-                                            style: TextStyle(
-                                                color: Colors.red,
-                                                fontSize: iconSize),
-                                          ),
-                                        if (isHoliday ||
-                                            isWeatherDisturbance ||
-                                            isUserNoClassDay)
-                                          Icon(
-                                            Icons.close,
-                                            color: Colors.red,
-                                            size: iconSize,
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return Container(
-                    width: constraints.maxWidth,
-                    padding: EdgeInsets.all(16.0),
-                    decoration: BoxDecoration(
-                      color: Colors.red[50],
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.red, width: 2),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          'Current Date: ${currentDate.day}/${currentDate.month}/${currentDate.year}',
-                          style: TextStyle(
-                            fontSize: constraints.maxWidth * 0.06,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red[800],
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          'Next Asynchronous Date: ${nextNoClassDay.day}/${nextNoClassDay.month}/${nextNoClassDay.year}',
-                          style: TextStyle(
-                            fontSize: constraints.maxWidth * 0.04,
-                            fontStyle: FontStyle.italic,
-                            color: Colors.red[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  int daysInMonth(DateTime date) {
-    var firstDayThisMonth = DateTime(date.year, date.month, 1);
-    var firstDayNextMonth = DateTime(date.year, date.month + 1, 1);
-    return firstDayNextMonth.difference(firstDayThisMonth).inDays;
-  }
-
-  void _showDayDetails(
-      BuildContext context,
-      DateTime day,
-      bool isHoliday,
-      bool isWeatherDisturbance,
-      bool isUserNoClassDay,
-      bool isPartialNoClassDay,
-      bool isReminder) {
-    String reason = '';
-    String holidayName = '';
-    if (isHoliday) {
-      reason = 'Holiday';
-      holidayName =
-          holidays.firstWhere((holiday) => holiday['date'] == day)['name'];
-    } else if (isWeatherDisturbance) {
-      reason = 'Weather Disturbance';
-    } else if (isUserNoClassDay) {
-      reason = 'Asynchronous Class';
-    } else if (isPartialNoClassDay) {
-      reason = 'Partial Class Cancellation';
-    } else if (isReminder) {
-      reason = 'Reminder';
+    // Check if there are events on the selected date
+    if (events[DateTime(selectedDay.year, selectedDay.month, selectedDay.day)] != null) {
+      // Get the appropriate title based on marker color
+      String title = getEventTitle(selectedDay);
+      showEventDetails(context, selectedDay, title);
     }
+  },
+  calendarBuilders: CalendarBuilders(
+    markerBuilder: (context, date, eventsList) {
+      final eventTypes = events[DateTime(date.year, date.month, date.day)]?.map((e) => e['type']).toSet() ?? {};
 
-    TextEditingController noteController = TextEditingController(
-      text: userNotes[day] ?? '',
-    );
-    bool noClassDay = isUserNoClassDay;
-    bool partialNoClass = isPartialNoClassDay;
-    bool reminder = isReminder;
+      Color markerColor;
+      if (eventTypes.contains("Holiday")) {
+        markerColor = Colors.blue;
+      } else if (eventTypes.contains("no_class")) {
+        markerColor = Colors.grey;
+      } else if (eventTypes.contains("reminder")) {
+        markerColor = Colors.orange;
+      } else {
+        markerColor = Colors.teal;
+      }
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Editing Date ${day.day}/${day.month}/${day.year}'),
-          content: Container(
-            width: double.maxFinite,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+      return eventsList.isNotEmpty
+          ? Container(
+              decoration: BoxDecoration(
+                color: markerColor,
+                shape: BoxShape.circle,
+              ),
+              width: 6,
+              height: 6,
+              margin: const EdgeInsets.symmetric(horizontal: 1.5),
+            )
+          : null;
+    },
+  ),
+),
+// Legend for the calendar markers
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                if (reason.isNotEmpty)
-                  Text('$reason${isHoliday ? ' - $holidayName' : ''}'),
-                TextFormField(
-                  controller: noteController,
-                  decoration: InputDecoration(
-                    labelText: 'Add Note',
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.teal, // Today's color
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Text("Today", style: TextStyle(fontSize: 12)),
+                  ],
                 ),
-                CheckboxListTile(
-                  title: Text('Asynchronous Class'),
-                  checkColor: Colors.white,
-                  activeColor: Colors.red,
-                  value: noClassDay,
-                  onChanged: (newValue) {
-                    setState(() {
-                      noClassDay = newValue ?? false;
-                      if (noClassDay) {
-                        partialNoClass = false;
-                        reminder = false;
-                      }
-                    });
-                    Navigator.of(context).pop();
-                    _showDayDetails(
-                      context,
-                      day,
-                      isHoliday,
-                      isWeatherDisturbance,
-                      noClassDay,
-                      partialNoClass,
-                      reminder,
-                    );
-                  },
+                Row(
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.blue, // Selected day color
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Text("Holiday", style: TextStyle(fontSize: 12)),
+                  ],
                 ),
-                CheckboxListTile(
-                  title: Text('Partial Class Cancellation'),
-                  checkColor: Colors.white,
-                  activeColor: Colors.red,
-                  value: partialNoClass,
-                  onChanged: (newValue) {
-                    setState(() {
-                      partialNoClass = newValue ?? false;
-                      if (partialNoClass) {
-                        noClassDay = false;
-                        reminder = false;
-                      }
-                    });
-                    Navigator.of(context).pop();
-                    _showDayDetails(
-                      context,
-                      day,
-                      isHoliday,
-                      isWeatherDisturbance,
-                      noClassDay,
-                      partialNoClass,
-                      reminder,
-                    );
-                  },
+                Row(
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.orange, // Marker color
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Text("Reminder", style: TextStyle(fontSize: 12)),
+                  ],
                 ),
-                CheckboxListTile(
-                  title: Text('Reminder'),
-                  checkColor: Colors.white,
-                  activeColor: Colors.red,
-                  value: reminder,
-                  onChanged: (newValue) {
-                    setState(() {
-                      reminder = newValue ?? false;
-                      if (reminder) {
-                        noClassDay = false;
-                        partialNoClass = false;
-                      }
-                    });
-                    Navigator.of(context).pop();
-                    _showDayDetails(
-                      context,
-                      day,
-                      isHoliday,
-                      isWeatherDisturbance,
-                      noClassDay,
-                      partialNoClass,
-                      reminder,
-                    );
-                  },
+                                Row(
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: Colors.grey, // Today's color
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Text("Asynchronous", style: TextStyle(fontSize: 12)),
+                  ],
                 ),
               ],
             ),
           ),
-          actions: [
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red[50],
-                foregroundColor: Colors.red,
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Current Time in Philippines",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  currentTime.isNotEmpty ? DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.parse(currentTime)) : "Loading...",
+                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  "Upcoming Events & Holidays",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(
+                  height: 200, // Set a fixed height for the scrollable area
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: upcomingEvents
+                        .where((event) => event["description"] != "Marked Day")
+                        .map((event) => ListTile(
+                              leading: Icon(Icons.event, color: Colors.teal),
+                              title: Text(event["description"] ?? ""),
+                              subtitle: Text(event["date"] ?? ""),
+                            ))
+                        .toList(),
+                    ),
+                  ),
+                ),
+                if (upcomingEvents.isEmpty || !upcomingEvents.any((event) => event["description"] != "Marked Day"))
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text(
+                      "No upcoming events in the next 7 days.",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+              ],
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red[50], foregroundColor: Colors.red),
-              onPressed: () {
-                setState(() {
-                  if (noteController.text.isNotEmpty) {
-                    userNotes[day] = noteController.text;
-                  } else {
-                    userNotes.remove(day);
-                  }
-                  if (noClassDay) {
-                    userNoClassDays.add(day);
-                  } else {
-                    userNoClassDays.remove(day);
-                  }
-                  if (partialNoClass) {
-                    partialNoClassDays.add(day);
-                  } else {
-                    partialNoClassDays.remove(day);
-                  }
-                  if (reminder) {
-                    reminders.add(day);
-                  } else {
-                    reminders.remove(day);
-                  }
-                });
-                Navigator.of(context).pop();
-              },
-              child: Text('Save'),
-            ),
-          ],
-        );
-      },
+          )
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addCustomMarkedDay,
+        tooltip: 'Add Custom Marked Day',
+        child: Icon(Icons.add),
+      ),
     );
   }
 
-  void _showDatePickerAndAddDetails(BuildContext context) {
-    DateTime selectedDate = DateTime.now();
-    showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
-      builder: (BuildContext context, Widget? child) {
-        return Theme(
-          data: ThemeData.light().copyWith(
-            colorScheme: ColorScheme.light(
-              primary: Colors.red,
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
-            ),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.redAccent,
-              ),
-            ),
+void showEventDetails(BuildContext context, DateTime date, String title) {
+  final DateTime normalizedDate = DateTime(date.year, date.month, date.day);
+  final eventDetails = events[normalizedDate] ?? [];
+  bool isHoliday = eventDetails.any((event) => event["type"] == "Holiday");
+
+  // Filter out items with "Marked Day" as the description
+  final filteredEvents = eventDetails.where((event) => event["description"] != "Marked Day").toList();
+
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text("$title on ${DateFormat.yMMMd().format(date)}"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: filteredEvents.map((event) {
+          return ListTile(
+            title: Text(event["type"] ?? ""),
+            subtitle: Text(event["description"] ?? ""),
+          );
+        }).toList(),
+      ),
+      actions: [
+        if (!isHoliday) // Only show delete option if it's not a holiday
+          TextButton(
+            child: Text("Delete"),
+            onPressed: () async {
+              await deleteDate(normalizedDate);
+              Navigator.of(context).pop();
+            },
           ),
-          child: child!,
-        );
-      },
-    ).then((pickedDate) {
-      if (pickedDate == null) {
-        return;
-      }
-      setState(() {
-        selectedDate = pickedDate;
-      });
-      _showDayDetails(context, selectedDate, false, false, false, false, false);
+        TextButton(
+          child: Text("Close"),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
+    ),
+  );
+}
+
+Future<void> deleteDate(DateTime date) async {
+  String formattedDate = DateFormat('yyyy-MM-dd').format(date);
+  
+  try {
+    // Delete user notes
+    final noteResponse = await http.delete(Uri.parse('http://localhost:3000/calendar/notes/$formattedDate'));
+    if (noteResponse.statusCode != 200) {
+      print("Failed to delete note: ${noteResponse.body}");
+    }
+
+    // Delete custom marked day
+    final markedDayResponse = await http.delete(Uri.parse('http://localhost:3000/calendar/marked-days/$formattedDate'));
+    if (markedDayResponse.statusCode != 200) {
+      print("Failed to delete marked day: ${markedDayResponse.body}");
+    }
+
+    // Remove events from local state
+    setState(() {
+      events.remove(date);
     });
+  } catch (e) {
+    print("Error deleting date: $e");
   }
+}
+
+String getEventTitle(DateTime date) {
+  final eventTypes = events[DateTime(date.year, date.month, date.day)]?.map((e) => e['type']).toSet() ?? {};
+
+  if (eventTypes.contains("reminder")) {
+    return "Reminder";
+  } else if (eventTypes.contains("no_class")) {
+    return "Asynchronous";
+  } else {
+    return "Note"; // Default title if no specific color matches
+  }
+}
+
 }
