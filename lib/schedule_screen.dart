@@ -165,6 +165,22 @@ Widget _buildScheduleCell(String timeSlot, String day) {
               ),
               actions: [
                 TextButton(
+                  onPressed: () {
+                    // Open edit screen or dialog
+                    Navigator.of(context).pop();
+                    _editSchedule(cellSchedules[0]); // Call edit function
+                  },
+                  child: Text('Edit'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    // Confirm and delete schedule
+                    _deleteSchedule(cellSchedules[0]); // Call delete function
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Delete', style: TextStyle(color: Colors.red)),
+                ),
+                TextButton(
                   onPressed: () => Navigator.of(context).pop(),
                   child: Text('Close'),
                 ),
@@ -221,6 +237,151 @@ Widget _buildScheduleCell(String timeSlot, String day) {
   }
 }
 
+// Function to handle editing
+void _editSchedule(dynamic schedule) {
+  final _formKey = GlobalKey<FormState>();
+
+  final TextEditingController nameController =
+      TextEditingController(text: schedule['name']?.toString() ?? '');
+  final TextEditingController instructorController =
+      TextEditingController(text: schedule['instructor']?.toString() ?? '');
+  final TextEditingController startTimeController =
+      TextEditingController(text: schedule['starttime']?.toString() ?? '');
+  final TextEditingController endTimeController =
+      TextEditingController(text: schedule['endtime']?.toString() ?? '');
+  final TextEditingController dayController =
+      TextEditingController(text: schedule['day']?.toString() ?? '');
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text('Edit Schedule'),
+        content: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: nameController,
+                  decoration: InputDecoration(labelText: 'Subject Name'),
+                  validator: (value) =>
+                      value == null || value.trim().isEmpty
+                          ? 'Enter subject name'
+                          : null,
+                ),
+                TextFormField(
+                  controller: instructorController,
+                  decoration: InputDecoration(labelText: 'Instructor'),
+                  validator: (value) =>
+                      value == null || value.trim().isEmpty
+                          ? 'Enter instructor name'
+                          : null,
+                ),
+                TextFormField(
+                  controller: startTimeController,
+                  decoration: InputDecoration(labelText: 'Start Time'),
+                  validator: (value) =>
+                      value == null || value.trim().isEmpty
+                          ? 'Enter start time'
+                          : null,
+                ),
+                TextFormField(
+                  controller: endTimeController,
+                  decoration: InputDecoration(labelText: 'End Time'),
+                  validator: (value) =>
+                      value == null || value.trim().isEmpty
+                          ? 'Enter end time'
+                          : null,
+                ),
+                TextFormField(
+                  controller: dayController,
+                  decoration: InputDecoration(labelText: 'Day'),
+                  validator: (value) =>
+                      value == null || value.trim().isEmpty
+                          ? 'Enter day'
+                          : null,
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              if (_formKey.currentState!.validate()) {
+                // Collect data from controllers
+                final updatedSchedule = {
+                  'id': schedule['id'],
+                  'name': nameController.text.trim(),
+                  'instructor': instructorController.text.trim(),
+                  'starttime': startTimeController.text.trim(),
+                  'endtime': endTimeController.text.trim(),
+                  'day': dayController.text.trim(),
+                };
+
+                try {
+                  // Send updated data to backend
+                  final response = await http.post(
+                    Uri.parse('http://localhost:3000/updateSchedule'),
+                    body: json.encode(updatedSchedule),
+                    headers: {'Content-Type': 'application/json'},
+                  );
+
+                  if (response.statusCode == 200) {
+                    // Update local data and trigger UI rebuild
+                    setState(() {
+                      int index = scheduleData.indexWhere((s) => s['id'] == schedule['id']);
+                      if (index != -1) {
+                        scheduleData[index] = updatedSchedule;
+                      }
+                    });
+                    print('Schedule updated successfully');
+                    Navigator.of(context).pop();
+                  } else {
+                    print('Failed to update schedule: ${response.body}');
+                  }
+                } catch (error) {
+                  print('Error updating schedule: $error');
+                }
+              }
+            },
+            child: Text('Save'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+// Function to handle deleting
+void _deleteSchedule(dynamic schedule) async {
+  // Backend delete logic
+  try {
+    final response = await http.post(
+      Uri.parse('http://localhost:3000/deleteSchedule'),
+      body: json.encode({'id': schedule['id']}),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      // Update local data after deletion
+      setState(() {
+        scheduleData.removeWhere((s) => s['id'] == schedule['id']);
+      });
+      print('Schedule deleted successfully');
+    } else {
+      print('Failed to delete schedule: ${response.body}');
+    }
+  } catch (error) {
+    print('Error deleting schedule: $error');
+  }
+}
 
 void _showAddScheduleDialog(BuildContext context) {
   showDialog(

@@ -846,7 +846,38 @@ app.get('/get-schedule', (req, res) => {
     });
 });
 
+app.post('/deleteSchedule', (req, res) => {
+  const { id } = req.body;
 
+  const query = 'DELETE FROM schedules WHERE id = ?';
+  db.query(query, [id], (err, result) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('Error deleting schedule');
+    } else {
+      res.status(200).send('Schedule deleted successfully');
+    }
+  });
+});
+
+app.post('/updateSchedule', (req, res) => {
+    const { id, name, instructor, starttime, endtime, day } = req.body;
+  
+    const query = `
+      UPDATE schedule
+      SET name = ?, instructor = ?, starttime = ?, endtime = ?, day = ?
+      WHERE id = ?
+    `;
+    
+    db.query(query, [name, instructor, starttime, endtime, day, id], (err, result) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send('Error updating schedule');
+      } else {
+        res.status(200).send('Schedule updated successfully');
+      }
+    });
+  });  
 
 app.use(bodyParser.json());
 app.post('/add-announcement', (req, res) => {
