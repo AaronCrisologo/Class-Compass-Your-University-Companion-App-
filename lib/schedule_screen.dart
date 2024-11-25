@@ -24,12 +24,29 @@ class ScheduleScreen extends StatefulWidget {
 class _ScheduleScreenState extends State<ScheduleScreen> {
   final List<String> days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   final List<String> hours = [
-    '7 AM', '8 AM', '9 AM', '10 AM', '11 AM', '12 PM',
-    '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM',
-    '7 PM', '8 PM', '9 PM'
+    '7:00 AM', '7:30 AM',
+    '8:00 AM', '8:30 AM',
+    '9:00 AM', '9:30 AM',
+    '10:00 AM', '10:30 AM',
+    '11:00 AM', '11:30 AM',
+    '12:00 PM', '12:30 PM',
+    '1:00 PM', '1:30 PM',
+    '2:00 PM', '2:30 PM',
+    '3:00 PM', '3:30 PM',
+    '4:00 PM', '4:30 PM',
+    '5:00 PM', '5:30 PM',
+    '6:00 PM', '6:30 PM',
+    '7:00 PM'
   ];
-  
+
   List<dynamic> scheduleData = [];
+  final ScrollController _horizontalController = ScrollController();
+  final ScrollController _verticalController = ScrollController();
+
+  String getFullTimeString(String hour) {
+    if (hour == '-') return '';
+    return hour;
+  }
 
   @override
   void initState() {
@@ -62,96 +79,92 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   }
 
   Color getColorFromString(String colorName) {
-    switch (colorName.toLowerCase()) {
-      case 'red': return Colors.red[100]!;
-      case 'green': return Colors.green[100]!;
-      case 'blue': return Colors.blue[100]!;
-      case 'yellow': return Colors.yellow[100]!;
-      case 'purple': return Colors.purple[100]!;
-      case 'orange': return Colors.orange[100]!;
-      default: return Colors.grey[200]!;
-    }
+    final Map<String, Color> colors = {
+      'red': Color(0xFFFFCACA),
+      'green': Color(0xFFD7FFD9),
+      'blue': Color(0xFFCAE9FF),
+      'yellow': Color(0xFFFFF4CA),
+      'purple': Color(0xFFE9CAFF),
+      'orange': Color(0xFFFFE5CA),
+    };
+    return colors[colorName.toLowerCase()] ?? Color(0xFFF5F5F5);
   }
 
+  // Improved time parsing function
   DateTime parseTimeString(String timeStr) {
-    // Remove any spaces between time and AM/PM
-    timeStr = timeStr.replaceAll(' ', '');
-    
     // Split the time string into components
-    RegExp regex = RegExp(r'(\d{1,2}):?(\d{2})?([APM]{2})');
-    Match? match = regex.firstMatch(timeStr);
+    final parts = timeStr.split(' ');
+    final timeParts = parts[0].split(':');
+    final period = parts[1];
     
-    if (match == null) {
-      throw FormatException('Invalid time format: $timeStr');
-    }
+    int hours = int.parse(timeParts[0]);
+    int minutes = int.parse(timeParts[1]);
     
-    // Extract hours, minutes, and period
-    int hours = int.parse(match.group(1)!);
-    int minutes = match.group(2) != null ? int.parse(match.group(2)!) : 0;
-    String period = match.group(3)!;
-    
-    // Adjust hours for PM
+    // Convert to 24-hour format
     if (period == 'PM' && hours != 12) {
       hours += 12;
     } else if (period == 'AM' && hours == 12) {
       hours = 0;
     }
     
-    // Create DateTime object
     return DateTime(2024, 1, 1, hours, minutes);
   }
 
-  bool isTimeInRange(String timeStr, String startTime, String endTime) {
-    try {
-      // Parse all times using the new parser
-      final time = parseTimeString(timeStr);
-      final start = parseTimeString(startTime);
-      final end = parseTimeString(endTime);
-      
-      return (time.isAtSameMomentAs(start) || time.isAfter(start)) && 
-             (time.isBefore(end) || time.isAtSameMomentAs(end));
-    } catch (e) {
-      print('Error parsing time: $e');
-      return false;
-    }
+  // Improved time comparison function
+  bool isTimeInRange(String currentTimeStr, String startTimeStr, String endTimeStr) {
+    final currentTime = parseTimeString(currentTimeStr);
+    final startTime = parseTimeString(startTimeStr);
+    final endTime = parseTimeString(endTimeStr);
+    
+    return (currentTime.isAtSameMomentAs(startTime) || currentTime.isAfter(startTime)) && 
+           currentTime.isBefore(endTime);
   }
 
-  Widget _buildScheduleCell(String hour, String day) {
+  // Updated schedule cell builder
+  Widget _buildScheduleCell(String timeSlot, String day) {
     List<dynamic> cellSchedules = scheduleData.where((schedule) {
-      return schedule['day'] == day && 
-             isTimeInRange(hour, schedule['starttime'], schedule['endtime']);
+      return schedule['day'] == day &&
+             isTimeInRange(timeSlot, schedule['starttime'], schedule['endtime']);
     }).toList();
 
-    if (cellSchedules.isEmpty) {
-      return Container(
-        padding: EdgeInsets.all(8.0),
-        height: 50,
-        color: Colors.grey[200],
-      );
-    }
-
+    bool isOccupied = cellSchedules.isNotEmpty;
+    
     return Container(
-      padding: EdgeInsets.all(4.0),
-      height: 50,
-      color: getColorFromString(cellSchedules[0]['color']),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            cellSchedules[0]['name'],
-            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            cellSchedules[0]['instructor'],
-            style: TextStyle(fontSize: 8),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+      width: 120,
+      height: 60,
+      decoration: BoxDecoration(
+        color: isOccupied ? getColorFromString(cellSchedules[0]['color']) : Colors.grey[50],
+        border: Border.all(color: Colors.grey[200]!),
       ),
+      child: isOccupied ? Padding(
+        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              cellSchedules[0]['name'],
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (!timeSlot.contains('30')) // Only show time range for full hour cells
+              Text(
+                '${cellSchedules[0]['starttime']} - ${cellSchedules[0]['endtime']}',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.black54,
+                ),
+              ),
+          ],
+        ),
+      ) : null,
     );
   }
+
 
   void _showAddScheduleDialog(BuildContext context) {
     showDialog(
@@ -172,74 +185,93 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("Weekly Schedule"),
-        backgroundColor: Colors.blueAccent,
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: Text(
+          "Weekly Schedule",
+          style: TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add_circle_outline, color: Colors.blue),
+            onPressed: () => _showAddScheduleDialog(context),
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Padding(
-          padding: EdgeInsets.all(8.0),
+      body: Padding(
+        padding: EdgeInsets.all(16),
+        child: SingleChildScrollView(
+          controller: _verticalController,
           child: Column(
             children: [
               SingleChildScrollView(
+                controller: _horizontalController,
                 scrollDirection: Axis.horizontal,
-                child: Table(
-                  border: TableBorder.all(color: Colors.black, width: 1),
-                  columnWidths: {
-                    0: FixedColumnWidth(80),
-                    for (int i = 1; i <= 7; i++) i: FixedColumnWidth(120),
-                  },
-                  children: [
-                    TableRow(
-                      children: [
-                        SizedBox(height: 50),
-                        ...List.generate(
-                          7,
-                          (index) => Container(
-                            height: 50,
-                            padding: EdgeInsets.all(8.0),
-                            child: Center(
-                              child: Text(
-                                days[index],
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                child: IntrinsicWidth(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Header Row
+                      Row(
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 60,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey[200]!),
+                              color: Colors.grey[50],
+                            ),
+                          ),
+                          ...days.map((day) => Container(
+                            width: 120,
+                            height: 60,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey[200]!),
+                              color: Colors.blue.withOpacity(0.1),
+                            ),
+                            child: Text(
+                              day,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue[700],
+                              ),
+                            ),
+                          )),
+                        ],
+                      ),
+                      // Time Slots
+                      ...hours.map((hour) => Row(
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 60,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey[200]!),
+                              color: Colors.grey[50],
+                            ),
+                            child: Text(
+                              hour,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey[600],
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    ...List.generate(
-                      hours.length,
-                      (hourIndex) {
-                        return TableRow(
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(8.0),
-                              height: 50,
-                              child: Text(
-                                hours[hourIndex],
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            ...List.generate(
-                              7,
-                              (dayIndex) => _buildScheduleCell(
-                                hours[hourIndex],
-                                days[dayIndex],
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ],
+                          ...days.map((day) => _buildScheduleCell(hour, day)),
+                        ],
+                      )),
+                    ],
+                  ),
                 ),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () => _showAddScheduleDialog(context),
-                child: Text('Add Schedule'),
               ),
             ],
           ),
