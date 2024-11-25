@@ -241,6 +241,7 @@ Widget _buildScheduleCell(String timeSlot, String day) {
 void _editSchedule(dynamic schedule) {
   final _formKey = GlobalKey<FormState>();
 
+  // Provide default empty string values and use null-aware operators
   final TextEditingController nameController =
       TextEditingController(text: schedule['name']?.toString() ?? '');
   final TextEditingController instructorController =
@@ -251,6 +252,8 @@ void _editSchedule(dynamic schedule) {
       TextEditingController(text: schedule['endtime']?.toString() ?? '');
   final TextEditingController dayController =
       TextEditingController(text: schedule['day']?.toString() ?? '');
+
+  String? selectedColor = schedule['color']?.toString();
 
   showDialog(
     context: context,
@@ -303,6 +306,21 @@ void _editSchedule(dynamic schedule) {
                           ? 'Enter day'
                           : null,
                 ),
+                DropdownButtonFormField<String>(
+                  value: selectedColor,
+                  onChanged: (newValue) => setState(() {
+                    selectedColor = newValue;
+                  }),
+                  items: ['Red', 'Green', 'Blue', 'Yellow', 'Purple', 'Orange']
+                      .map((color) => DropdownMenuItem(
+                            value: color,
+                            child: Text(color),
+                          ))
+                      .toList(),
+                  decoration: InputDecoration(labelText: 'Color'),
+                  validator: (value) =>
+                      value == null ? 'Please select a color' : null,
+                ),
               ],
             ),
           ),
@@ -323,6 +341,7 @@ void _editSchedule(dynamic schedule) {
                   'starttime': startTimeController.text.trim(),
                   'endtime': endTimeController.text.trim(),
                   'day': dayController.text.trim(),
+                  'color': selectedColor ?? schedule['color']?.toString() ?? '',
                 };
 
                 try {
@@ -345,9 +364,15 @@ void _editSchedule(dynamic schedule) {
                     Navigator.of(context).pop();
                   } else {
                     print('Failed to update schedule: ${response.body}');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to update schedule')),
+                    );
                   }
                 } catch (error) {
                   print('Error updating schedule: $error');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error updating schedule')),
+                  );
                 }
               }
             },

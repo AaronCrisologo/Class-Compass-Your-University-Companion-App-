@@ -849,7 +849,7 @@ app.get('/get-schedule', (req, res) => {
 app.post('/deleteSchedule', (req, res) => {
   const { id } = req.body;
 
-  const query = 'DELETE FROM schedules WHERE id = ?';
+  const query = 'DELETE FROM schedule WHERE id = ?';
   db.query(query, [id], (err, result) => {
     if (err) {
       console.error(err);
@@ -877,7 +877,7 @@ app.post('/updateSchedule', (req, res) => {
         res.status(200).send('Schedule updated successfully');
       }
     });
-  });  
+});  
 
 app.use(bodyParser.json());
 app.post('/add-announcement', (req, res) => {
