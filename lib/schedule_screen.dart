@@ -123,29 +123,57 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   // Updated schedule cell builder
   Set<String> displayedNamesAndTimes = {};
 
-  Widget _buildScheduleCell(String timeSlot, String day) {
-    List<dynamic> cellSchedules = scheduleData.where((schedule) {
-      return schedule['day'] == day &&
-            isTimeInRange(timeSlot, schedule['starttime'], schedule['endtime']);
-    }).toList();
+Widget _buildScheduleCell(String timeSlot, String day) {
+  List<dynamic> cellSchedules = scheduleData.where((schedule) {
+    return schedule['day'] == day &&
+          isTimeInRange(timeSlot, schedule['starttime'], schedule['endtime']);
+  }).toList();
 
-    bool isOccupied = cellSchedules.isNotEmpty;
+  bool isOccupied = cellSchedules.isNotEmpty;
 
-    if (isOccupied) {
-      String name = cellSchedules[0]['name'];
-      String timeRange = '${cellSchedules[0]['starttime']} - ${cellSchedules[0]['endtime']}';
-      String uniqueKey = '$name|$timeRange';
+  if (isOccupied) {
+    String name = cellSchedules[0]['name'];
+    String timeRange = '${cellSchedules[0]['starttime']} - ${cellSchedules[0]['endtime']}';
+    String uniqueKey = '$name|$timeRange';
 
-      if (displayedNamesAndTimes.contains(uniqueKey)) {
-        // Clear the name and time to avoid duplication
-        name = '';
-        timeRange = '';
-      } else {
-        // Mark as displayed
-        displayedNamesAndTimes.add(uniqueKey);
-      }
+    if (displayedNamesAndTimes.contains(uniqueKey)) {
+      name = '';
+      timeRange = '';
+    } else {
+      displayedNamesAndTimes.add(uniqueKey);
+    }
 
-      return Container(
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text('Schedule Details'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: cellSchedules.map((schedule) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Text(
+                      'Subject Name: ${schedule['name']}\n(${schedule['starttime']} - ${schedule['endtime']})\nInstructor: ${schedule['instructor']}\nColor: ${schedule['color']}',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  );
+                }).toList(),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('Close'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+      child: Container(
         width: 120,
         height: 60,
         decoration: BoxDecoration(
@@ -179,18 +207,20 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             ],
           ),
         ),
-      );
-    } else {
-      return Container(
-        width: 120,
-        height: 60,
-        decoration: BoxDecoration(
-          color: Colors.grey[50],
-          border: Border.all(color: Colors.grey[200]!),
-        ),
-      );
-    }
+      ),
+    );
+  } else {
+    return Container(
+      width: 120,
+      height: 60,
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+    );
   }
+}
+
 
 void _showAddScheduleDialog(BuildContext context) {
   showDialog(
