@@ -121,164 +121,194 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   }
 
   // Updated schedule cell builder
+  Set<String> displayedNamesAndTimes = {};
+
   Widget _buildScheduleCell(String timeSlot, String day) {
     List<dynamic> cellSchedules = scheduleData.where((schedule) {
       return schedule['day'] == day &&
-             isTimeInRange(timeSlot, schedule['starttime'], schedule['endtime']);
+            isTimeInRange(timeSlot, schedule['starttime'], schedule['endtime']);
     }).toList();
 
     bool isOccupied = cellSchedules.isNotEmpty;
-    
-    return Container(
-      width: 120,
-      height: 60,
-      decoration: BoxDecoration(
-        color: isOccupied ? getColorFromString(cellSchedules[0]['color']) : Colors.grey[50],
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: isOccupied ? Padding(
-        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              cellSchedules[0]['name'],
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-            if (!timeSlot.contains('30')) // Only show time range for full hour cells
-              Text(
-                '${cellSchedules[0]['starttime']} - ${cellSchedules[0]['endtime']}',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.black54,
-                ),
-              ),
-          ],
+
+    if (isOccupied) {
+      String name = cellSchedules[0]['name'];
+      String timeRange = '${cellSchedules[0]['starttime']} - ${cellSchedules[0]['endtime']}';
+      String uniqueKey = '$name|$timeRange';
+
+      if (displayedNamesAndTimes.contains(uniqueKey)) {
+        // Clear the name and time to avoid duplication
+        name = '';
+        timeRange = '';
+      } else {
+        // Mark as displayed
+        displayedNamesAndTimes.add(uniqueKey);
+      }
+
+      return Container(
+        width: 120,
+        height: 60,
+        decoration: BoxDecoration(
+          color: getColorFromString(cellSchedules[0]['color']),
+          border: Border.all(color: Colors.grey[200]!),
         ),
-      ) : null,
-    );
-  }
-
-
-  void _showAddScheduleDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          child: SingleChildScrollView(
-            child: ScheduleForm(onScheduleAdded: () {
-              fetchScheduleData();
-              Navigator.pop(context);
-            }),
-          ),
-        );
-      },
-    );
-  }
-
-@override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        title: Text(
-          "Weekly Schedule",
-          style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add_circle_outline, color: Colors.blue),
-            onPressed: () => _showAddScheduleDialog(context),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          controller: _verticalController,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SingleChildScrollView(
-                controller: _horizontalController,
-                scrollDirection: Axis.horizontal,
-                child: IntrinsicWidth(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Header Row
-                      Row(
-                        children: [
-                          Container(
-                            width: 80,
-                            height: 60,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey[200]!),
-                              color: Colors.grey[50],
-                            ),
-                          ),
-                          ...days.map((day) => Container(
-                            width: 120,
-                            height: 60,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey[200]!),
-                              color: Colors.blue.withOpacity(0.1),
-                            ),
-                            child: Text(
-                              day,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue[700],
-                              ),
-                            ),
-                          )),
-                        ],
-                      ),
-                      // Time Slots
-                      ...hours.map((hour) => Row(
-                        children: [
-                          Container(
-                            width: 80,
-                            height: 60,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey[200]!),
-                              color: Colors.grey[50],
-                            ),
-                            child: Text(
-                              hour,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ),
-                          ...days.map((day) => _buildScheduleCell(hour, day)),
-                        ],
-                      )),
-                    ],
+              if (name.isNotEmpty)
+                Text(
+                  name,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              if (timeRange.isNotEmpty)
+                Text(
+                  timeRange,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.black54,
                   ),
                 ),
-              ),
             ],
           ),
         ),
-      ),
-    );
+      );
+    } else {
+      return Container(
+        width: 120,
+        height: 60,
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          border: Border.all(color: Colors.grey[200]!),
+        ),
+      );
+    }
   }
+
+void _showAddScheduleDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        elevation: 12,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ScheduleForm(onScheduleAdded: () {
+            fetchScheduleData();
+            Navigator.pop(context);
+          }),
+        ),
+      );
+    },
+  );
+}
+
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Colors.white,
+    appBar: AppBar(
+      elevation: 0,
+      backgroundColor: Colors.white,
+      title: Text(
+        "Weekly Schedule",
+        style: TextStyle(
+          color: Colors.black87,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ),
+    body: Padding(
+      padding: EdgeInsets.all(16),
+      child: SingleChildScrollView(
+        controller: _verticalController,
+        child: Column(
+          children: [
+            SingleChildScrollView(
+              controller: _horizontalController,
+              scrollDirection: Axis.horizontal,
+              child: IntrinsicWidth(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Header Row
+                    Row(
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 60,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey[200]!),
+                            color: Colors.grey[50],
+                          ),
+                        ),
+                        ...days.map((day) => Container(
+                          width: 120,
+                          height: 60,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey[200]!),
+                            color: Colors.blue.withOpacity(0.1),
+                          ),
+                          child: Text(
+                            day,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue[700],
+                            ),
+                          ),
+                        )),
+                      ],
+                    ),
+                    // Time Slots
+                    ...hours.map((hour) => Row(
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 60,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey[200]!),
+                            color: Colors.grey[50],
+                          ),
+                          child: Text(
+                            hour,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ),
+                        ...days.map((day) => _buildScheduleCell(hour, day)),
+                      ],
+                    )),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+    floatingActionButton: FloatingActionButton(
+      onPressed: () => _showAddScheduleDialog(context),
+      backgroundColor: Colors.blue,
+      child: Icon(Icons.add, color: Colors.white),
+    ),
+  );
+}
 }
 
 class ScheduleForm extends StatefulWidget {
@@ -407,7 +437,15 @@ class _ScheduleFormState extends State<ScheduleForm> {
           children: [
             TextFormField(
               controller: _nameController,
-              decoration: InputDecoration(labelText: 'Schedule Name'),
+              decoration: InputDecoration(
+                labelText: 'Schedule Name',
+                filled: true,
+                fillColor: Colors.grey[200],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
               validator: (value) =>
                   value?.isEmpty ?? true ? 'Please enter schedule name' : null,
             ),
