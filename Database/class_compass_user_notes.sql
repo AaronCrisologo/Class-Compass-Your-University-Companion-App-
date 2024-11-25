@@ -18,28 +18,29 @@ USE `class_compass`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `holidays`
+-- Table structure for table `user_notes`
 --
 
-DROP TABLE IF EXISTS `holidays`;
+DROP TABLE IF EXISTS `user_notes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `holidays` (
+CREATE TABLE `user_notes` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `holiday_date` date NOT NULL,
-  `holiday_name` varchar(255) NOT NULL,
+  `note_date` date NOT NULL,
+  `note_text` text NOT NULL,
+  `user_id` int DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `holidays`
+-- Dumping data for table `user_notes`
 --
 
-LOCK TABLES `holidays` WRITE;
-/*!40000 ALTER TABLE `holidays` DISABLE KEYS */;
-INSERT INTO `holidays` VALUES (1,'2024-01-01','New Year\'s Day'),(2,'2024-02-10','Chinese New Year'),(3,'2024-03-28','Holy Week - Maundy Thursday'),(4,'2024-03-29','Holy Week - Good Friday'),(5,'2024-05-01','Labor Day'),(6,'2024-06-12','Independence Day'),(7,'2024-08-21','Ninoy Aquino Day'),(8,'2024-08-26','National Heroes Day'),(9,'2024-11-01','All Saints\' Day'),(10,'2024-11-30','Bonifacio Day'),(11,'2024-12-25','Christmas Day'),(12,'2024-12-30','Rizal Day'),(13,'2024-10-31','Test Holiday');
-/*!40000 ALTER TABLE `holidays` ENABLE KEYS */;
+LOCK TABLES `user_notes` WRITE;
+/*!40000 ALTER TABLE `user_notes` DISABLE KEYS */;
+INSERT INTO `user_notes` VALUES (1,'2024-10-30','test',NULL),(2,'2024-10-23','test2',NULL),(4,'2024-11-10','testing this ',6),(5,'2024-11-13','wew',8),(6,'2024-11-22','wow',8);
+/*!40000 ALTER TABLE `user_notes` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -51,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-11-13 14:35:47
+-- Dump completed on 2024-11-23 10:13:14

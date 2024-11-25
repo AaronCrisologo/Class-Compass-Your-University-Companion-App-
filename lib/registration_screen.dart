@@ -13,10 +13,25 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
   final _courseController = TextEditingController();
-  final _sectionController = TextEditingController();
   final _passwordController = TextEditingController(); // Password controller
   final _firstnameController = TextEditingController(); // First name controller
   final _lastnameController = TextEditingController(); // Last name controller
+
+  String? _selectedSection; // Selected value for the dropdown
+  final List<String> _sections = [
+    'Pablo Borbon Campus',
+    'Alangilan Campus',
+    'Arasof-Nasugbu Campus',
+    'Balayan Campus',
+    'Lemery Campus',
+    'Mabini Campus',
+    'JPLPC-Malvar Campus',
+    'Lipa Campus',
+    'Rosario Campus',
+    'San Juan Campus',
+    'Lobo Campus',
+  ];
+  // Example sections
 
   // Registration Function
   void _register() async {
@@ -24,20 +39,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     String phone = _phoneController.text;
     String address = _addressController.text;
     String course = _courseController.text;
-    String section = _sectionController.text;
     String password = _passwordController.text;
     String firstname = _firstnameController.text;
     String lastname = _lastnameController.text;
+    String? section = _selectedSection;
 
     // Check if all fields are filled
     if (email.isEmpty ||
         phone.isEmpty ||
         address.isEmpty ||
         course.isEmpty ||
-        section.isEmpty ||
         password.isEmpty ||
         firstname.isEmpty ||
-        lastname.isEmpty) {
+        lastname.isEmpty ||
+        section == null) {
       _showErrorDialog('All fields are required');
       return;
     }
@@ -56,7 +71,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           'phone': phone,
           'address': address,
           'course': course,
-          'section': section,
+          'section': section, // Use selected section
           'firstName': firstname, // Match the backend field name
           'lastName': lastname, // Match the backend field name
         }),
@@ -186,8 +201,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               Icons.location_on, false),
                           _buildTextField(
                               'Course', _courseController, Icons.book, false),
-                          _buildTextField('Section', _sectionController,
-                              Icons.class_, false),
+                          _buildSectionDropdown(),
                           SizedBox(height: 20),
                           ElevatedButton(
                             onPressed: _register,
@@ -258,6 +272,44 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           obscureText: obscureText,
           decoration: InputDecoration(
             prefixIcon: Icon(icon, color: Colors.red[700]),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+        SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Widget _buildSectionDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Campus',
+            style: TextStyle(
+              color: Colors.red[700],
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+        ),
+        DropdownButtonFormField<String>(
+          value: _selectedSection,
+          items: _sections
+              .map((section) =>
+                  DropdownMenuItem(value: section, child: Text(section)))
+              .toList(),
+          onChanged: (value) {
+            setState(() {
+              _selectedSection = value;
+            });
+          },
+          decoration: InputDecoration(
+            prefixIcon: Icon(Icons.class_, color: Colors.red[700]),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
             ),

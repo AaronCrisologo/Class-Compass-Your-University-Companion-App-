@@ -15,18 +15,20 @@ const jwt = require('jsonwebtoken');
 
 const app = express();
 const moment = require('moment');
+const bodyParser = require('body-parser');
 const port = 3000;
 
 app.use(cors());
 app.use(express.json());
 
 let currentUserId = null;
+let currentCampus = null;
 
 // MySQL Connection
 const db = mysql.createConnection({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || 'password',
+    password: process.env.DB_PASSWORD || '4122133pogi',
     database: process.env.DB_NAME || 'class_compass',
 });
 
@@ -164,7 +166,7 @@ app.get('/calendar/next-events', (req, res) => {
         ORDER BY marked_date ASC
         LIMIT 1
     `;
-    
+
     // Query to get the next holiday
     const queryHolidays = `
         SELECT holiday_date, holiday_name
@@ -173,7 +175,7 @@ app.get('/calendar/next-events', (req, res) => {
         ORDER BY holiday_date ASC
         LIMIT 1
     `;
-    
+
     // Run both queries simultaneously using Promise.all
     Promise.all([
         new Promise((resolve, reject) => {
@@ -189,27 +191,93 @@ app.get('/calendar/next-events', (req, res) => {
             });
         })
     ])
-    .then(([markedDays, holidays]) => {
-        // Convert the dates to the local timezone (Asia/Manila)
-        const nextMarkedDay = markedDays[0] ? {
-            marked_date: moment(markedDays[0].marked_date).local().format('YYYY-MM-DD'),
-            day_type: markedDays[0].day_type
-        } : null;
+        .then(([markedDays, holidays]) => {
+            // Convert the dates to the local timezone (Asia/Manila)
+            const nextMarkedDay = markedDays[0] ? {
+                marked_date: moment(markedDays[0].marked_date).local().format('YYYY-MM-DD'),
+                day_type: markedDays[0].day_type
+            } : null;
 
-        const nextHoliday = holidays[0] ? {
-            holiday_date: moment(holidays[0].holiday_date).local().format('YYYY-MM-DD'),
-            holiday_name: holidays[0].holiday_name
-        } : null;
+            const nextHoliday = holidays[0] ? {
+                holiday_date: moment(holidays[0].holiday_date).local().format('YYYY-MM-DD'),
+                holiday_name: holidays[0].holiday_name
+            } : null;
 
-        // Send the response with correct next marked day and holiday
-        res.json({
-            nextMarkedDay,
-            nextHoliday,
+            // Send the response with correct next marked day and holiday
+            res.json({
+                nextMarkedDay,
+                nextHoliday,
+            });
+        })
+        .catch(err => {
+            console.error('Error fetching next events:', err);
+            res.status(500).send('Error fetching next events');
         });
-    })
-    .catch(err => {
-        console.error('Error fetching next events:', err);
-        res.status(500).send('Error fetching next events');
+});
+
+// API to fetch user's email
+app.get('/accounts/get-email', (req, res) => {
+    res.status(200).send({ email: currentCampus });
+  });
+
+//Admin Added Marked date
+app.post('/calendar/admin-marked-days-with-notes', (req, res) => {
+    const { marked_date, note_text } = req.body;
+
+    // Validate inputs
+    if (!marked_date || !note_text) {
+        return res.status(400).send({ message: 'Marked date and note text are required' });
+    }
+
+    // Query to get all users from the matching campus
+    const getUsersQuery = 'SELECT user_id FROM accounts WHERE section = ?';
+    db.query(getUsersQuery, [currentCampus], (err, users) => {
+        if (err) {
+            console.error('Error fetching users:', err);
+            return res.status(500).send({ message: 'Error fetching users' });
+        }
+
+        if (users.length === 0) {
+            return res.status(404).send({ message: 'No users found for the specified campus' });
+        }
+
+        // Prepare insert queries for each user
+        const insertMarkedDayQuery =
+            'INSERT INTO custom_days (marked_date, day_type, user_id) VALUES (?, ?, ?)';
+        const insertNoteQuery =
+            'INSERT INTO user_notes (note_date, note_text, user_id) VALUES (?, ?, ?)';
+
+        const tasks = users.map(user =>
+            new Promise((resolve, reject) => {
+                // Insert into custom_days
+                db.query(insertMarkedDayQuery, [marked_date, 'no_class', user.user_id], (err) => {
+                    if (err) {
+                        console.error(`Error inserting marked day for user ${user.user_id}:`, err);
+                        reject(err);
+                    }
+                });
+
+                // Insert into user_notes
+                db.query(insertNoteQuery, [marked_date, note_text, user.user_id], (err) => {
+                    if (err) {
+                        console.error(`Error inserting note for user ${user.user_id}:`, err);
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                });
+            })
+        );
+
+        // Execute all queries in parallel
+        Promise.all(tasks)
+            .then(() => {
+                res.status(201).send({ message: 'Marked days and notes added successfully' });
+            })
+            .catch(err => {
+                console.error('Error adding marked days and notes:', err);
+                res.status(500).send({ message: 'An error occurred while adding marked days and notes' });
+            });
     });
 });
 
@@ -526,9 +594,27 @@ app.post('/login', (req, res) => {
     console.log('Received email:', email);  // Log the email
     console.log('Received password:', password);  // Log the password (don't log passwords in production!)
 
+    // Normalize the email input: trim spaces and convert to lowercase
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // List of admin account emails (in lowercase for consistency)
+    const adminEmails = [
+        "pablo borbon admin",
+        "alangilan admin",
+        "arasof-nasugbu admin",
+        "balayan admin",
+        "lemery admin",
+        "mabini admin",
+        "jplpc-malvar admin",
+        "lipa admin",
+        "rosario admin",
+        "san juan admin",
+        "lobo admin"
+    ];
+
     // Check if the email exists in the database
-    const query = 'SELECT user_id, password FROM accounts WHERE email = ?';
-    db.query(query, [email], (err, results) => {
+    const query = 'SELECT user_id, password, section FROM accounts WHERE email = ?';
+    db.query(query, [normalizedEmail], (err, results) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).send({ message: 'Database error' });
@@ -540,28 +626,38 @@ app.post('/login', (req, res) => {
 
             // Compare passwords directly (since both are plain text)
             if (password === storedPassword) {
-                // Password matches, store user_id locally
+                // Password matches, determine account type
                 currentUserId = results[0].user_id;
-                console.log('Login successful for email:', email);
-                console.log(`user id: ${currentUserId}`);  // Log successful login
+                currentCampus = results[0].section;
 
-                // Return the user_id in the response without a token
-                res.status(200).send({
-                    message: 'Login successful',
-                    user_id: currentUserId  // Send the user_id in the response
-                });
+                if (adminEmails.includes(normalizedEmail)) {
+                    console.log('Login successful for admin email:', email); // Log successful admin login
+                    res.status(200).send({
+                        message: 'Login successful for admin',
+                        user_id: currentUserId,
+                        section: currentCampus // Include section in the response
+                    });
+                } else {
+                    console.log('Login successful for student email:', email); // Log successful student login
+                    res.status(200).send({
+                        message: 'Login successful for student',
+                        user_id: currentUserId,
+                        section: currentCampus // Include section in the response
+                    });
+                }
             } else {
                 // Password doesn't match
-                console.log('Incorrect password attempt for email:', email);  // Log incorrect password attempt
+                console.log('Incorrect password attempt for email:', email); // Log incorrect password attempt
                 res.status(401).send({ message: 'Invalid email or password' });
             }
         } else {
             // No user found with the given email
-            console.log('No user found with email:', email);  // Log no user found
+            console.log('No user found with email:', email); // Log no user found
             res.status(401).send({ message: 'Invalid email or password' });
         }
     });
 });
+
 
 
 
@@ -712,7 +808,63 @@ app.get('/getSchedule', (req, res) => {
 });
 
 
+app.use(bodyParser.json());
+app.post('/add-announcement', (req, res) => {
+    const { title, announcement } = req.body;
 
+    // Validate input
+    if (!title || !announcement) {
+        return res.status(400).json({ error: 'Title and announcement are required.' });
+    }
+
+    // Prepare the SQL query
+    const sql = `
+        INSERT INTO admin_announcements (title, body, campus)
+        VALUES (?, ?, ?)
+    `;
+    const values = [title, announcement, currentCampus];
+
+    // Execute the query
+    db.query(sql, values, (err, result) => {
+        if (err) {
+            console.error('Error inserting data into announcements:', err);
+            return res.status(500).json({ error: 'Failed to add announcement.' });
+        }
+        res.status(200).json({
+            message: 'Announcement added successfully!',
+            announcementId: result.insertId, // Return the ID of the newly added announcement
+        });
+    });
+});
+
+app.get('/get-announcements', (req, res) => {
+    console.log('Received request for announcements');
+    if (!currentCampus) {
+        console.log('Current campus not set');
+        return res.status(400).send({ message: 'Current campus is not set' });
+    }
+
+    const query = 'SELECT * FROM admin_announcements WHERE campus = ?';
+    console.log('Running query:', query, 'with parameters:', [currentCampus]);
+
+    db.query(query, [currentCampus], (err, results) => {
+        if (err) {
+            console.error('Error fetching data from admin_announcements:', err);
+            return res.status(500).send({ message: 'Failed to retrieve announcements' });
+        }
+
+        if (results.length > 0) {
+            console.log('Announcements found:', results);
+            res.status(200).send({
+                message: 'Announcements retrieved successfully',
+                announcements: results,
+            });
+        } else {
+            console.log('No announcements found');
+            res.status(404).send({ message: 'No announcements found for the current campus' });
+        }
+    });
+});
 
 
 

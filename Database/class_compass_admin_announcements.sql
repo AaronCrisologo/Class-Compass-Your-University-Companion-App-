@@ -18,29 +18,31 @@ USE `class_compass`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `custom_days`
+-- Table structure for table `admin_announcements`
 --
 
-DROP TABLE IF EXISTS `custom_days`;
+DROP TABLE IF EXISTS `admin_announcements`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `custom_days` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `marked_date` date NOT NULL,
-  `day_type` enum('no_class','partial_no_class','reminder') NOT NULL,
-  `user_id` int DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `admin_announcements` (
+  `announcement_id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) NOT NULL,
+  `body` text NOT NULL,
+  `campus` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`announcement_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `custom_days`
+-- Dumping data for table `admin_announcements`
 --
 
-LOCK TABLES `custom_days` WRITE;
-/*!40000 ALTER TABLE `custom_days` DISABLE KEYS */;
-INSERT INTO `custom_days` VALUES (1,'2024-10-30','reminder',NULL),(2,'2024-10-23','no_class',NULL),(3,'2024-10-29','no_class',NULL),(4,'2024-10-28','reminder',NULL);
-/*!40000 ALTER TABLE `custom_days` ENABLE KEYS */;
+LOCK TABLES `admin_announcements` WRITE;
+/*!40000 ALTER TABLE `admin_announcements` DISABLE KEYS */;
+INSERT INTO `admin_announcements` VALUES (1,'Test','Hello this is a test.','Lipa Campus','2024-11-23 01:13:07','2024-11-23 01:13:07'),(2,'Alangilaan this ','Hello mga eabab.','Alangilan Campus','2024-11-23 01:15:44','2024-11-23 01:15:44');
+/*!40000 ALTER TABLE `admin_announcements` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -52,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-11-13 14:35:47
+-- Dump completed on 2024-11-23 10:13:14

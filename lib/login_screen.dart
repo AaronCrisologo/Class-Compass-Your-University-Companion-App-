@@ -3,6 +3,7 @@ import 'main.dart';
 import 'registration_screen.dart'; // Import the registration screen
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'AdminHomeScreen.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -18,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
     String email = _emailController.text;
     String password = _passwordController.text;
 
-    var url = Uri.parse('http://localhost:3000/login'); // Adjust as needed
+    var url = Uri.parse('http://localhost:3000/login');
 
     var response = await http.post(
       url,
@@ -33,10 +34,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      if (data['message'] == 'Login successful' && data['user_id'] != null) {
+      if (data['message'] == 'Login successful for student' &&
+          data['user_id'] != null &&
+          data['section'] != null) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => MainScreen()),
+        );
+      } else if (data['message'] == 'Login successful for admin' &&
+          data['user_id'] != null &&
+          data['section'] != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => AdminHomeScreen()),
         );
       } else {
         _showErrorDialog('Invalid email or password');
@@ -137,7 +147,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             onPressed: _login,
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.red[700],
-                              backgroundColor: Colors.red[300],
+                              backgroundColor:
+                                  const Color.fromARGB(255, 230, 230, 230),
                               padding: EdgeInsets.symmetric(
                                   horizontal: 50, vertical: 15),
                               shape: RoundedRectangleBorder(
@@ -146,7 +157,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             child: Text(
                               'Login',
-                              style: TextStyle(fontSize: 18),
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold),
                             ),
                           ),
                           SizedBox(height: 10),
