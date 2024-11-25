@@ -719,88 +719,128 @@ app.get('/get-user', (req, res) => {
 
 
 
-app.post("/addSchedule", (req, res) => {
+app.post('/api/schedule', (req, res) => {
     const { name, instructor, startTime, endTime, day, color } = req.body;
 
-    console.log('Received data:', req.body);
-    console.log(`user id in adding class: ${currentUserId}`); // Log the entire body to check if it's correctly received
+    // Debug: Log incoming request data
+    console.log("Received request data:", req.body);
+    console.log("User ID:", currentUserId);
 
-    // Check if any required field is missing
-    if (!name || !instructor || !startTime || !endTime || !day || !color || !currentUserId) {
-        console.log('Missing required fields');
-        return res.status(400).json({ error: "Missing fields or user not authenticated" });
+    // Validate input
+    if (!name || !instructor || !startTime || !endTime || day === undefined || !color) {
+        console.log("Validation failed. Missing required fields.");
+        return res.status(400).send({ message: 'Invalid input data.' });
     }
 
-    // Function to format time as 'HH:MM' (24-hour format)
-    const formatTime = (time) => {
-        const hour = time.hour < 10 ? `0${time.hour}` : time.hour;  // Add leading zero if needed
-        const minute = time.minute < 10 ? `0${time.minute}` : time.minute;  // Add leading zero if needed
-        return `${hour}:${minute}`;
-    };
+    // Debug: Log the validated data
+    console.log("Validated data:", { name, instructor, startTime, endTime, day, color, currentUserId });
 
-    try {
-        // Ensure startTime and endTime are objects with hour and minute properties
-        if (typeof startTime !== 'object' || typeof endTime !== 'object') {
-            throw new Error("Invalid time format");
-        }
+    // Query to check for overlapping schedules
+    const checkOverlapQuery = `
+        SELECT * FROM schedule 
+        WHERE day = ? 
+          AND user_id = ? 
+          AND (
+              (starttime < ? AND endtime > ?) OR  -- Overlaps with existing start time
+              (starttime < ? AND endtime > ?) OR  -- Overlaps with existing end time
+              (starttime >= ? AND endtime <= ?)   -- Completely within an existing schedule
+          )
+    `;
 
-        // Format startTime and endTime to 'HH:MM' format
-        const startTime12 = formatTime(startTime);  // Convert startTime object to string
-        const endTime12 = formatTime(endTime);  // Convert endTime object to string
+    // Debug: Log the query parameters being passed to the checkOverlapQuery
+    console.log("Checking for overlap with query params:", [day, currentUserId, endTime, startTime, endTime, startTime, startTime, endTime]);
 
-        console.log('Formatted Start time:', startTime12);  // Check the formatted time
-        console.log('Formatted End time:', endTime12);  // Check the formatted time
-
-        // Insert the schedule into the database with currentUserId
-        const query = `
-          INSERT INTO schedule (name, instructor, startTime, endTime, day, color, user_id)
-          VALUES (?, ?, ?, ?, ?, ?, ?)`;
-
-        db.query(
-            query,
-            [name, instructor, startTime12, endTime12, day, color, currentUserId],
-            (err, results) => {
-                if (err) {
-                    console.log('Error inserting into DB:', err);  // Log the error for troubleshooting
-                    return res.status(500).json({ error: "Error adding class" });
-                }
-                res.status(200).json({
-                    id: results.insertId,
-                    name,
-                    instructor,
-                    startTime: startTime12,
-                    endTime: endTime12,
-                    day,
-                    color,
-                    currentUserId,  // Send currentUserId back for confirmation
-                });
+    db.query(
+        checkOverlapQuery,
+        [day, currentUserId, endTime, startTime, endTime, startTime, startTime, endTime],
+        (err, results) => {
+            if (err) {
+                console.error('Error checking for overlaps:', err);
+                return res.status(500).send({ message: 'Error checking for schedule overlaps.' });
             }
-        );
-    } catch (err) {
-        console.log('Error processing time:', err);  // Log specific error
-        return res.status(400).json({ error: "Invalid time format or missing data" });
-    }
+
+            // Debug: Log the results of the overlap check
+            console.log("Overlap check results:", results);
+
+            if (results.length > 0) {
+                // Conflict found
+                console.log('Schedule overlap found');
+                return res.status(409).send({ message: 'Schedule overlaps with an existing entry.' });
+            }
+
+            // Debug: Log that no conflict was found
+            console.log('No overlap found, proceeding to insert schedule.');
+
+            // SQL query to insert data into the schedule table
+            const insertQuery = `
+                INSERT INTO schedule (user_id, name, instructor, starttime, endtime, day, color)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            `;
+
+            // Debug: Log the query parameters being passed to the insertQuery
+            console.log("Inserting new schedule with query params:", [currentUserId, name, instructor, startTime, endTime, day, color]);
+
+            db.query(
+                insertQuery,
+                [currentUserId, name, instructor, startTime, endTime, day, color],
+                (err, result) => {
+                    if (err) {
+                        console.error('Failed to insert data:', err);
+                        return res.status(500).send({ message: 'Failed to insert data into the database.' });
+                    }
+
+                    // Debug: Log the result of the insert operation
+                    console.log('Schedule added successfully, schedule ID:', result.insertId);
+
+                    res.status(201).send({
+                        message: 'Schedule added successfully.',
+                        scheduleId: result.insertId, // Return the newly created schedule ID
+                    });
+                }
+            );
+        }
+    );
 });
 
-app.get('/getSchedule', (req, res) => {
-    // Ensure that the user is logged in
+
+app.get('/api/get-schedule', (req, res) => {
+    // Debugging: Log when the API is hit
+    console.log('GET /api/get-schedule endpoint hit');
+
+    // If currentUserId comes from the request (for example, as a query parameter or authentication middleware)
+    // Example: Retrieve from query parameter, or adjust based on your logic
+    // Check if currentUserId exists and log it
     if (!currentUserId) {
-        return res.status(401).json({ error: 'User not authenticated' });
+        console.error('No userId found in request');
+        return res.status(400).json({ error: 'User ID is required' });
     }
+    console.log('Current User ID:', currentUserId);
 
-    // Query the database for schedule data filtered by currentUserId
     const query = 'SELECT * FROM schedule WHERE user_id = ?';
+    console.log('Executing query:', query, 'with userId:', currentUserId);
 
+    // Query the database
     db.query(query, [currentUserId], (err, results) => {
         if (err) {
-            console.error('Error fetching schedule data: ', err);
-            return res.status(500).json({ error: 'An error occurred while fetching data.' });
+            // Debugging: Log the error
+            console.error('Error retrieving schedule from database:', err);
+            return res.status(500).json({ error: 'Failed to retrieve schedule' });
         }
 
-        // Send the schedule data as a response
-        return res.status(200).json(results);
+        // Debugging: Log the results returned from the database
+        console.log('Database query results:', results);
+
+        if (results.length === 0) {
+            console.log('No schedule found for userId:', currentUserId);
+        } else {
+            console.log('Schedule retrieved successfully for userId:', currentUserId);
+        }
+
+        // Send the results as a response
+        res.status(200).json(results);
     });
 });
+
 
 
 app.use(bodyParser.json());
