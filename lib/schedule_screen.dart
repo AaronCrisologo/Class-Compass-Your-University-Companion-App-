@@ -105,24 +105,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                 alignment: Alignment.centerRight,
                                 child: Padding(
                                   padding: const EdgeInsets.only(right: 8.0),
-                                  child: Align(
-                                    alignment: FractionalOffset(1.0,
-                                        -0.1), // Adjust the y-position here
-                                    child: LayoutBuilder(
-                                      builder: (context, constraints) {
-                                        double fontSize = constraints.maxWidth /
-                                            3; // Adjust the divisor as needed
-                                        return Text(
-                                          formatTimeWithoutMinutes(
-                                              context, currentTime),
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: fontSize > 16
-                                                ? 16
-                                                : fontSize, // Set a max font size
-                                          ),
-                                        );
-                                      },
+                                  child: Text(
+                                    formatTimeWithoutMinutes(
+                                        context, currentTime),
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
                                     ),
                                   ),
                                 ),
@@ -140,7 +128,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                               );
 
                               bool isClassBlock = classForTimeSlot.isNotEmpty;
-                              bool isFirstSlot = classForTimeSlot.isNotEmpty &&
+                              bool isFirstSlot = isClassBlock &&
                                   classForTimeSlot['startTime'].hour ==
                                       currentTime.hour;
 
@@ -177,9 +165,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                               Text(
                                                 classForTimeSlot['name'],
                                                 style: TextStyle(
-                                                  fontSize:
-                                                      constraints.maxWidth *
-                                                          0.024,
                                                   fontWeight: FontWeight.bold,
                                                   color: Colors.white,
                                                 ),
@@ -188,9 +173,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                               Text(
                                                 classForTimeSlot['instructor'],
                                                 style: TextStyle(
-                                                  fontSize:
-                                                      constraints.maxWidth *
-                                                          0.019,
                                                   color: Colors.white70,
                                                 ),
                                                 textAlign: TextAlign.center,
@@ -205,42 +187,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           ],
                         );
                       }),
-                      // Add the 7:00 PM time as a standalone text widget
-                      Row(
-                        children: [
-                          Container(
-                            width: cellWidth,
-                            height: cellHeight,
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: LayoutBuilder(
-                                  builder: (context, constraints) {
-                                    double fontSize = constraints.maxWidth /
-                                        3; // Adjust the divisor as needed
-                                    return Align(
-                                      alignment: FractionalOffset(1.0,
-                                          -0.2), // Adjust the y-position here
-                                      child: Text(
-                                        '7 PM',
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: fontSize > 16
-                                              ? 16
-                                              : fontSize, // Set a max font size
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                          Spacer(),
-                          ...List.generate(7, (index) => Spacer()),
-                        ],
-                      ),
                     ],
                   ),
                 ),
@@ -353,162 +299,126 @@ class __ClassDialogState extends State<_ClassDialog> {
       selectedDay = classItem['day'];
       selectedColor = classItem['color'];
     } else {
-      selectedDay = widget.initialDay ?? 0;
-      startTime = widget.initialStartTime ?? TimeOfDay(hour: 7, minute: 0);
-      endTime = widget.initialEndTime ?? TimeOfDay(hour: 8, minute: 0);
+      if (widget.initialDay != null) selectedDay = widget.initialDay!;
+      if (widget.initialStartTime != null) startTime = widget.initialStartTime!;
+      if (widget.initialEndTime != null) endTime = widget.initialEndTime!;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.classItem == null ? 'Add Class' : 'Edit Class'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: classNameController,
-              decoration: InputDecoration(labelText: 'Class Name'),
-            ),
-            TextField(
-              controller: instructorNameController,
-              decoration: InputDecoration(labelText: 'Instructor'),
-            ),
-            DropdownButton<int>(
-              value: selectedDay,
-              onChanged: (value) {
-                setState(() {
-                  selectedDay = value!;
-                });
-              },
-              items: List.generate(7, (index) {
-                return DropdownMenuItem(
-                  value: index,
-                  child: Text([
-                    'Sunday',
-                    'Monday',
-                    'Tuesday',
-                    'Wednesday',
-                    'Thursday',
-                    'Friday',
-                    'Saturday'
-                  ][index]),
-                );
-              }),
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: ListTile(
-                    title: Text('Start Time'),
-                    subtitle: Text(startTime.format(context)),
-                    onTap: () async {
-                      final time = await showTimePicker(
-                        context: context,
-                        initialTime: startTime,
-                      );
-                      if (time != null) {
-                        setState(() {
-                          startTime = time;
-                        });
-                      }
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: ListTile(
-                    title: Text('End Time'),
-                    subtitle: Text(endTime.format(context)),
-                    onTap: () async {
-                      final time = await showTimePicker(
-                        context: context,
-                        initialTime: endTime,
-                      );
-                      if (time != null) {
-                        setState(() {
-                          endTime = time;
-                        });
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-            ListTile(
-              title: Text('Color'),
-              trailing: Padding(
-                padding: const EdgeInsets.only(right: 5.0),
-                child: Icon(
-                  Icons.color_lens,
-                  color: Colors.red,
-                  size: 26.0,
-                ),
+      title: Text('Class Details'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: classNameController,
+            decoration: InputDecoration(labelText: 'Class Name'),
+          ),
+          TextField(
+            controller: instructorNameController,
+            decoration: InputDecoration(labelText: 'Instructor Name'),
+          ),
+          DropdownButton<int>(
+            value: selectedDay,
+            items: List.generate(
+              7,
+              (index) => DropdownMenuItem(
+                value: index,
+                child: Text([
+                  'Sunday',
+                  'Monday',
+                  'Tuesday',
+                  'Wednesday',
+                  'Thursday',
+                  'Friday',
+                  'Saturday'
+                ][index]),
               ),
-              onTap: () async {
-                Color pickedColor = selectedColor;
-                await showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: Text('Pick a color'),
+            ),
+            onChanged: (value) {
+              if (value != null) setState(() => selectedDay = value);
+            },
+          ),
+          Row(
+            children: [
+              Text('Start Time:'),
+              Spacer(),
+              TextButton(
+                onPressed: () async {
+                  final time = await showTimePicker(
+                    context: context,
+                    initialTime: startTime,
+                  );
+                  if (time != null) setState(() => startTime = time);
+                },
+                child: Text(startTime.format(context)),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Text('End Time:'),
+              Spacer(),
+              TextButton(
+                onPressed: () async {
+                  final time = await showTimePicker(
+                    context: context,
+                    initialTime: endTime,
+                  );
+                  if (time != null) setState(() => endTime = time);
+                },
+                child: Text(endTime.format(context)),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Text('Color:'),
+              Spacer(),
+              GestureDetector(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
                       content: SingleChildScrollView(
                         child: BlockPicker(
                           pickerColor: selectedColor,
                           onColorChanged: (color) {
-                            pickedColor = color;
+                            setState(() => selectedColor = color);
+                            Navigator.pop(context);
                           },
                         ),
                       ),
-                      actions: [
-                        TextButton(
-                          style:
-                              TextButton.styleFrom(foregroundColor: Colors.red),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text('OK'),
-                        ),
-                      ],
-                    );
-                  },
-                );
-                setState(() {
-                  selectedColor = pickedColor;
-                });
-              },
-            ),
-            if (widget.classItem != null)
-              TextButton(
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                onPressed: () {
-                  Navigator.of(context).pop({'delete': true});
+                    ),
+                  );
                 },
-                child: Text('Delete Class'),
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  color: selectedColor,
+                ),
               ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
       actions: [
         TextButton(
-          style: TextButton.styleFrom(foregroundColor: Colors.red),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+          onPressed: () => Navigator.pop(context),
           child: Text('Cancel'),
         ),
         TextButton(
-          style: TextButton.styleFrom(foregroundColor: Colors.red),
           onPressed: () {
-            final newClass = {
+            Navigator.pop(context, {
               'name': classNameController.text,
               'instructor': instructorNameController.text,
+              'day': selectedDay,
               'startTime': startTime,
               'endTime': endTime,
-              'day': selectedDay,
               'color': selectedColor,
-            };
-            Navigator.of(context).pop(newClass);
+            });
           },
           child: Text('Save'),
         ),
