@@ -149,40 +149,83 @@ Widget _buildScheduleCell(String timeSlot, String day) {
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: Text('Schedule Details'),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15)
+              ),
+              title: Text(
+                'Schedule Details', 
+                style: TextStyle(
+                  fontWeight: FontWeight.bold, 
+                  color: Colors.red[700]
+                )
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: cellSchedules.map((schedule) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: Text(
-                      'Subject Name: ${schedule['name']}\n(${schedule['starttime']} - ${schedule['endtime']})\nInstructor: ${schedule['instructor']}\nColor: ${schedule['color']}',
-                      style: TextStyle(fontSize: 14),
+                  return Card(
+                    elevation: 3,
+                    margin: EdgeInsets.symmetric(vertical: 5),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${schedule['name']}', 
+                            style: TextStyle(
+                              fontSize: 16, 
+                              fontWeight: FontWeight.bold
+                            )
+                          ),
+                          SizedBox(height: 5),
+                          Text(
+                            'Time: ${schedule['starttime']} - ${schedule['endtime']}', 
+                            style: TextStyle(color: Colors.grey[700])
+                          ),
+                          Text(
+                            'Instructor: ${schedule['instructor']}', 
+                            style: TextStyle(color: Colors.grey[700])
+                          ),
+                          Row(
+                            children: [
+                              Text(
+                                'Color: ${schedule['color']}', 
+                                style: TextStyle(color: Colors.grey[700])
+                              ),
+                              SizedBox(width: 10),
+                              Container(
+                                width: 20,
+                                height: 20,
+                                decoration: BoxDecoration(
+                                  color: getColorFromString(schedule['color']),
+                                  shape: BoxShape.circle
+                                ),
+                              )
+                            ],
+                          )
+                        ],
+                      ),
                     ),
                   );
                 }).toList(),
               ),
               actions: [
                 TextButton(
+                  style: TextButton.styleFrom(foregroundColor: Colors.red[700]),
                   onPressed: () {
-                    // Open edit screen or dialog
                     Navigator.of(context).pop();
-                    _editSchedule(cellSchedules[0]); // Call edit function
+                    _editSchedule(cellSchedules[0]);
                   },
-                  child: Text('Edit'),
+                  child: Text('Edit', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 TextButton(
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
                   onPressed: () {
-                    // Confirm and delete schedule
-                    _deleteSchedule(cellSchedules[0]); // Call delete function
+                    _deleteSchedule(cellSchedules[0]);
                     Navigator.of(context).pop();
                   },
-                  child: Text('Delete', style: TextStyle(color: Colors.red)),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text('Close'),
+                  child: Text('Delete', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ],
             );
@@ -241,25 +284,27 @@ Widget _buildScheduleCell(String timeSlot, String day) {
 void _editSchedule(dynamic schedule) {
   final _formKey = GlobalKey<FormState>();
 
-  // Provide default empty string values and use null-aware operators
-  final TextEditingController nameController =
-      TextEditingController(text: schedule['name']?.toString() ?? '');
-  final TextEditingController instructorController =
-      TextEditingController(text: schedule['instructor']?.toString() ?? '');
-  final TextEditingController startTimeController =
-      TextEditingController(text: schedule['starttime']?.toString() ?? '');
-  final TextEditingController endTimeController =
-      TextEditingController(text: schedule['endtime']?.toString() ?? '');
-  final TextEditingController dayController =
-      TextEditingController(text: schedule['day']?.toString() ?? '');
-
+  String? selectedName = schedule['name']?.toString();
+  String? selectedInstructor = schedule['instructor']?.toString();
+  String? selectedStartTime = schedule['starttime']?.toString();
+  String? selectedEndTime = schedule['endtime']?.toString();
+  String? selectedDay = schedule['day']?.toString();
   String? selectedColor = schedule['color']?.toString();
 
   showDialog(
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: Text('Edit Schedule'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15)
+        ),
+        title: Text(
+          'Edit Schedule', 
+          style: TextStyle(
+            fontWeight: FontWeight.bold, 
+            color: Colors.red[700]
+          )
+        ),
         content: Form(
           key: _formKey,
           child: SingleChildScrollView(
@@ -267,59 +312,99 @@ void _editSchedule(dynamic schedule) {
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextFormField(
-                  controller: nameController,
-                  decoration: InputDecoration(labelText: 'Subject Name'),
+                  initialValue: selectedName,
+                  onChanged: (value) => selectedName = value,
+                  decoration: InputDecoration(
+                    labelText: 'Subject Name',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10)
+                    )
+                  ),
                   validator: (value) =>
                       value == null || value.trim().isEmpty
                           ? 'Enter subject name'
                           : null,
                 ),
+                SizedBox(height: 10),
                 TextFormField(
-                  controller: instructorController,
-                  decoration: InputDecoration(labelText: 'Instructor'),
+                  initialValue: selectedInstructor,
+                  onChanged: (value) => selectedInstructor = value,
+                  decoration: InputDecoration(
+                    labelText: 'Instructor',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10)
+                    )
+                  ),
                   validator: (value) =>
                       value == null || value.trim().isEmpty
                           ? 'Enter instructor name'
                           : null,
                 ),
-                TextFormField(
-                  controller: startTimeController,
-                  decoration: InputDecoration(labelText: 'Start Time'),
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty
-                          ? 'Enter start time'
-                          : null,
+                SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  value: selectedStartTime,
+                  decoration: InputDecoration(
+                    labelText: 'Start Time',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10)
+                    )
+                  ),
+                  items: hours.map((hour) => 
+                    DropdownMenuItem(value: hour, child: Text(hour))
+                  ).toList(),
+                  onChanged: (value) => selectedStartTime = value,
+                  validator: (value) => 
+                    value == null ? 'Select start time' : null,
                 ),
-                TextFormField(
-                  controller: endTimeController,
-                  decoration: InputDecoration(labelText: 'End Time'),
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty
-                          ? 'Enter end time'
-                          : null,
+                SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  value: selectedEndTime,
+                  decoration: InputDecoration(
+                    labelText: 'End Time',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10)
+                    )
+                  ),
+                  items: hours.map((hour) => 
+                    DropdownMenuItem(value: hour, child: Text(hour))
+                  ).toList(),
+                  onChanged: (value) => selectedEndTime = value,
+                  validator: (value) => 
+                    value == null ? 'Select end time' : null,
                 ),
-                TextFormField(
-                  controller: dayController,
-                  decoration: InputDecoration(labelText: 'Day'),
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty
-                          ? 'Enter day'
-                          : null,
+                SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  value: selectedDay,
+                  decoration: InputDecoration(
+                    labelText: 'Day',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10)
+                    )
+                  ),
+                  items: days.map((day) => 
+                    DropdownMenuItem(value: day, child: Text(day))
+                  ).toList(),
+                  onChanged: (value) => selectedDay = value,
+                  validator: (value) => 
+                    value == null ? 'Select day' : null,
                 ),
+                SizedBox(height: 10),
                 DropdownButtonFormField<String>(
                   value: selectedColor,
-                  onChanged: (newValue) => setState(() {
-                    selectedColor = newValue;
-                  }),
+                  decoration: InputDecoration(
+                    labelText: 'Color',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10)
+                    )
+                  ),
                   items: ['Red', 'Green', 'Blue', 'Yellow', 'Purple', 'Orange']
-                      .map((color) => DropdownMenuItem(
-                            value: color,
-                            child: Text(color),
-                          ))
-                      .toList(),
-                  decoration: InputDecoration(labelText: 'Color'),
-                  validator: (value) =>
-                      value == null ? 'Please select a color' : null,
+                    .map((color) => DropdownMenuItem(
+                      value: color,
+                      child: Text(color),
+                    )).toList(),
+                  onChanged: (value) => selectedColor = value,
+                  validator: (value) => 
+                    value == null ? 'Select color' : null,
                 ),
               ],
             ),
@@ -327,23 +412,23 @@ void _editSchedule(dynamic schedule) {
         ),
         actions: [
           TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.grey),
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Cancel'),
+            child: Text('Cancel', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
-          TextButton(
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red[600]),
             onPressed: () async {
               if (_formKey.currentState!.validate()) {
-                // Collect data from controllers
                 final updatedSchedule = {
                   'id': schedule['id'],
-                  'name': nameController.text.trim(),
-                  'instructor': instructorController.text.trim(),
-                  'starttime': startTimeController.text.trim(),
-                  'endtime': endTimeController.text.trim(),
-                  'day': dayController.text.trim(),
-                  'color': selectedColor ?? schedule['color']?.toString() ?? '',
+                  'name': selectedName,
+                  'instructor': selectedInstructor,
+                  'starttime': selectedStartTime,
+                  'endtime': selectedEndTime,
+                  'day': selectedDay,
+                  'color': selectedColor,
                 };
-
                 try {
                   // Send updated data to backend
                   final response = await http.post(
@@ -376,7 +461,7 @@ void _editSchedule(dynamic schedule) {
                 }
               }
             },
-            child: Text('Save'),
+            child: Text('Save', style: TextStyle(color: Colors.white)),
           ),
         ],
       );
@@ -414,15 +499,31 @@ void _showAddScheduleDialog(BuildContext context) {
     builder: (BuildContext context) {
       return Dialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20), // More pronounced rounded corners
         ),
-        elevation: 12,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: ScheduleForm(onScheduleAdded: () {
-            fetchScheduleData();
-            Navigator.pop(context);
-          }),
+        elevation: 16, // Increased elevation for more depth
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              colors: [Colors.white, Colors.red.withOpacity(0.05)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0), // Increased padding
+            child: ScheduleForm(
+              onScheduleAdded: () {
+                fetchScheduleData();
+                Navigator.pop(context);
+              },
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                // Optional: add a subtle background or border if needed
+              ),
+            ),
+          ),
         ),
       );
     },
@@ -437,7 +538,7 @@ Widget build(BuildContext context) {
       elevation: 0,
       backgroundColor: Colors.white,
       title: Text(
-        "Weekly Schedule",
+        "Your Weekly Schedule",
         style: TextStyle(
           color: Colors.black87,
           fontWeight: FontWeight.w600,
@@ -475,13 +576,13 @@ Widget build(BuildContext context) {
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.grey[200]!),
-                            color: Colors.blue.withOpacity(0.1),
+                            color: Colors.red.withOpacity(0.1),
                           ),
                           child: Text(
                             day,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.blue[700],
+                              color: Colors.red[700],
                             ),
                           ),
                         )),
@@ -518,10 +619,18 @@ Widget build(BuildContext context) {
         ),
       ),
     ),
-    floatingActionButton: FloatingActionButton(
+    floatingActionButton: FloatingActionButton.extended(
       onPressed: () => _showAddScheduleDialog(context),
-      backgroundColor: Colors.blue,
-      child: Icon(Icons.add, color: Colors.white),
+      backgroundColor: Colors.red[600],
+      icon: Icon(Icons.add_circle_outline, color: Colors.white),
+      label: Text(
+        'Add Schedule', 
+        style: TextStyle(
+          color: Colors.white, 
+          fontWeight: FontWeight.bold
+        )
+      ),
+      elevation: 6,
     ),
   );
 }
@@ -529,8 +638,12 @@ Widget build(BuildContext context) {
 
 class ScheduleForm extends StatefulWidget {
   final VoidCallback onScheduleAdded;
+  final BoxDecoration? decoration;
 
-  ScheduleForm({required this.onScheduleAdded});
+  ScheduleForm({
+    required this.onScheduleAdded, 
+    this.decoration,
+  });
 
   @override
   _ScheduleFormState createState() => _ScheduleFormState();
@@ -644,102 +757,167 @@ class _ScheduleFormState extends State<ScheduleForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(16.0),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: 'Schedule Name',
-                filled: true,
-                fillColor: Colors.grey[200],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+    return Container(
+      decoration: widget.decoration,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Add New Schedule',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.red[800],
+            ),
+          ),
+          SizedBox(height: 20),
+          Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Improved input fields with consistent styling
+                _buildTextField(
+                  controller: _nameController,
+                  labelText: 'Schedule Name',
+                  icon: Icons.subject,
                 ),
-              ),
-              validator: (value) =>
-                  value?.isEmpty ?? true ? 'Please enter schedule name' : null,
+                SizedBox(height: 10),
+                _buildTextField(
+                  controller: _instructorController,
+                  labelText: 'Instructor',
+                  icon: Icons.person,
+                ),
+                SizedBox(height: 10),
+                // Dropdowns with improved styling
+                _buildDropdown(
+                  value: selectedStartTime,
+                  items: hourValues,
+                  labelText: 'Start Time',
+                  icon: Icons.access_time,
+                  onChanged: (newValue) => setState(() {
+                    selectedStartTime = newValue;
+                  }),
+                ),
+                SizedBox(height: 10),
+                _buildDropdown(
+                  value: selectedEndTime,
+                  items: hourValues,
+                  labelText: 'End Time',
+                  icon: Icons.access_time,
+                  onChanged: (newValue) => setState(() {
+                    selectedEndTime = newValue;
+                  }),
+                ),
+                SizedBox(height: 10),
+                _buildDropdown(
+                  value: selectedDay,
+                  items: daysOfWeek,
+                  labelText: 'Day of Week',
+                  icon: Icons.calendar_today,
+                  onChanged: (newValue) => setState(() {
+                    selectedDay = newValue;
+                  }),
+                ),
+                SizedBox(height: 10),
+                _buildDropdown(
+                  value: selectedColor,
+                  items: ['Red', 'Green', 'Blue', 'Yellow', 'Purple', 'Orange'],
+                  labelText: 'Color',
+                  icon: Icons.color_lens,
+                  onChanged: (newValue) => setState(() {
+                    selectedColor = newValue;
+                  }),
+                ),
+                SizedBox(height: 20),
+                // Improved submit button
+                ElevatedButton(
+                  onPressed: _submitSchedule,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red[600],
+                    padding: EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    elevation: 5,
+                  ),
+                  child: Text(
+                    'Add Schedule',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            TextFormField(
-              controller: _instructorController,
-              decoration: InputDecoration(labelText: 'Instructor'),
-              validator: (value) => value?.isEmpty ?? true
-                  ? 'Please enter instructor name'
-                  : null,
-            ),
-            DropdownButtonFormField<String>(
-              value: selectedStartTime,
-              onChanged: (newValue) => setState(() {
-                selectedStartTime = newValue;
-              }),
-              items: hourValues
-                  .map((hour) => DropdownMenuItem(
-                        value: hour,
-                        child: Text(hour),
-                      ))
-                  .toList(),
-              decoration: InputDecoration(labelText: 'Start Time'),
-              validator: (value) =>
-                  value == null ? 'Please select a start time' : null,
-            ),
-            DropdownButtonFormField<String>(
-              value: selectedEndTime,
-              onChanged: (newValue) => setState(() {
-                selectedEndTime = newValue;
-              }),
-              items: hourValues
-                  .map((hour) => DropdownMenuItem(
-                        value: hour,
-                        child: Text(hour),
-                      ))
-                  .toList(),
-              decoration: InputDecoration(labelText: 'End Time'),
-              validator: (value) =>
-                  value == null ? 'Please select an end time' : null,
-            ),
-            DropdownButtonFormField<String>(
-              value: selectedDay,
-              onChanged: (newValue) => setState(() {
-                selectedDay = newValue;
-              }),
-              items: daysOfWeek
-                  .map((day) => DropdownMenuItem(
-                        value: day,
-                        child: Text(day),
-                      ))
-                  .toList(),
-              decoration: InputDecoration(labelText: 'Day of the Week'),
-              validator: (value) =>
-                  value == null ? 'Please select a day' : null,
-            ),
-            DropdownButtonFormField<String>(
-              value: selectedColor,
-              onChanged: (newValue) => setState(() {
-                selectedColor = newValue;
-              }),
-              items: ['Red', 'Green', 'Blue', 'Yellow', 'Purple', 'Orange']
-                  .map((color) => DropdownMenuItem(
-                        value: color,
-                        child: Text(color),
-                      ))
-                  .toList(),
-              decoration: InputDecoration(labelText: 'Color'),
-              validator: (value) =>
-                  value == null ? 'Please select a color' : null,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _submitSchedule,
-              child: Text('Add Schedule'),
-            ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper method to create consistent text fields
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData icon,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        prefixIcon: Icon(icon, color: Colors.red[600]),
+        filled: true,
+        fillColor: Colors.red.withOpacity(0.05),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.red.shade300, width: 2),
         ),
       ),
+      validator: (value) =>
+          value?.isEmpty ?? true ? 'Please enter $labelText' : null,
+    );
+  }
+
+  // Helper method to create consistent dropdowns
+  Widget _buildDropdown({
+    required String? value,
+    required List<String> items,
+    required String labelText,
+    required IconData icon,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        labelText: labelText,
+        prefixIcon: Icon(icon, color: Colors.red[600]),
+        filled: true,
+        fillColor: Colors.red.withOpacity(0.05),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.red.shade300, width: 2),
+        ),
+      ),
+      items: items
+          .map((item) => DropdownMenuItem(
+                value: item,
+                child: Text(item),
+              ))
+          .toList(),
+      validator: (value) =>
+          value == null ? 'Please select $labelText' : null,
     );
   }
 }

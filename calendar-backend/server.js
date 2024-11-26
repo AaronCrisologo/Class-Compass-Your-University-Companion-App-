@@ -861,15 +861,15 @@ app.post('/deleteSchedule', (req, res) => {
 });
 
 app.post('/updateSchedule', (req, res) => {
-    const { id, name, instructor, starttime, endtime, day } = req.body;
+    const { id, name, instructor, starttime, endtime, day, color } = req.body;
   
     const query = `
       UPDATE schedule
-      SET name = ?, instructor = ?, starttime = ?, endtime = ?, day = ?
+      SET name = ?, instructor = ?, starttime = ?, endtime = ?, day = ?, color = ?
       WHERE id = ?
     `;
     
-    db.query(query, [name, instructor, starttime, endtime, day, id], (err, result) => {
+    db.query(query, [name, instructor, starttime, endtime, day, color, id], (err, result) => {
       if (err) {
         console.error(err);
         res.status(500).send('Error updating schedule');
