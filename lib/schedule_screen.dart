@@ -120,10 +120,15 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
            currentTime.isBefore(endTime);
   }
 
-  // Updated schedule cell builder
+  // Modify the class-level declaration to make it more dynamic
   Set<String> displayedNamesAndTimes = {};
 
 Widget _buildScheduleCell(String timeSlot, String day) {
+  // Reset the displayed names and times at the start of each build
+  if (timeSlot == hours.first && day == days.first) {
+    displayedNamesAndTimes.clear();
+  }
+
   List<dynamic> cellSchedules = scheduleData.where((schedule) {
     return schedule['day'] == day &&
           isTimeInRange(timeSlot, schedule['starttime'], schedule['endtime']);
@@ -134,12 +139,10 @@ Widget _buildScheduleCell(String timeSlot, String day) {
   if (isOccupied) {
     String name = cellSchedules[0]['name'];
     String timeRange = '${cellSchedules[0]['starttime']} - ${cellSchedules[0]['endtime']}';
-    String uniqueKey = '$name|$timeRange';
+    String uniqueKey = '$name|$timeRange|${cellSchedules[0]['day']}';
 
-    if (displayedNamesAndTimes.contains(uniqueKey)) {
-      name = '';
-      timeRange = '';
-    } else {
+    bool shouldDisplayDetails = !displayedNamesAndTimes.contains(uniqueKey);
+    if (shouldDisplayDetails) {
       displayedNamesAndTimes.add(uniqueKey);
     }
 
@@ -149,83 +152,38 @@ Widget _buildScheduleCell(String timeSlot, String day) {
           context: context,
           builder: (context) {
             return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15)
-              ),
-              title: Text(
-                'Schedule Details', 
-                style: TextStyle(
-                  fontWeight: FontWeight.bold, 
-                  color: Colors.red[700]
-                )
-              ),
+              title: Text('Schedule Details'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: cellSchedules.map((schedule) {
-                  return Card(
-                    elevation: 3,
-                    margin: EdgeInsets.symmetric(vertical: 5),
-                    child: Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${schedule['name']}', 
-                            style: TextStyle(
-                              fontSize: 16, 
-                              fontWeight: FontWeight.bold
-                            )
-                          ),
-                          SizedBox(height: 5),
-                          Text(
-                            'Time: ${schedule['starttime']} - ${schedule['endtime']}', 
-                            style: TextStyle(color: Colors.grey[700])
-                          ),
-                          Text(
-                            'Instructor: ${schedule['instructor']}', 
-                            style: TextStyle(color: Colors.grey[700])
-                          ),
-                          Row(
-                            children: [
-                              Text(
-                                'Color: ${schedule['color']}', 
-                                style: TextStyle(color: Colors.grey[700])
-                              ),
-                              SizedBox(width: 10),
-                              Container(
-                                width: 20,
-                                height: 20,
-                                decoration: BoxDecoration(
-                                  color: getColorFromString(schedule['color']),
-                                  shape: BoxShape.circle
-                                ),
-                              )
-                            ],
-                          )
-                        ],
-                      ),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Text(
+                      'Subject Name: ${schedule['name']}\n(${schedule['starttime']} - ${schedule['endtime']})\nInstructor: ${schedule['instructor']}\nColor: ${schedule['color']}\nDay: ${schedule['day']}',
+                      style: TextStyle(fontSize: 14),
                     ),
                   );
                 }).toList(),
               ),
               actions: [
                 TextButton(
-                  style: TextButton.styleFrom(foregroundColor: Colors.red[700]),
                   onPressed: () {
                     Navigator.of(context).pop();
                     _editSchedule(cellSchedules[0]);
                   },
-                  child: Text('Edit', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text('Edit'),
                 ),
                 TextButton(
-                  style: TextButton.styleFrom(foregroundColor: Colors.red),
                   onPressed: () {
                     _deleteSchedule(cellSchedules[0]);
                     Navigator.of(context).pop();
                   },
-                  child: Text('Delete', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text('Delete', style: TextStyle(color: Colors.red)),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('Close'),
                 ),
               ],
             );
@@ -245,7 +203,7 @@ Widget _buildScheduleCell(String timeSlot, String day) {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (name.isNotEmpty)
+              if (shouldDisplayDetails)
                 Text(
                   name,
                   style: TextStyle(
@@ -255,7 +213,7 @@ Widget _buildScheduleCell(String timeSlot, String day) {
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
-              if (timeRange.isNotEmpty)
+              if (shouldDisplayDetails)
                 Text(
                   timeRange,
                   style: TextStyle(
@@ -418,9 +376,9 @@ void _editSchedule(dynamic schedule) {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red[600]),
-            onPressed: () async {
-              if (_formKey.currentState!.validate()) {
-                final updatedSchedule = {
+  onPressed: () async {
+    if (_formKey.currentState!.validate()) {
+      final updatedSchedule = {
                   'id': schedule['id'],
                   'name': selectedName,
                   'instructor': selectedInstructor,
@@ -429,38 +387,41 @@ void _editSchedule(dynamic schedule) {
                   'day': selectedDay,
                   'color': selectedColor,
                 };
-                try {
-                  // Send updated data to backend
-                  final response = await http.post(
-                    Uri.parse('http://localhost:3000/updateSchedule'),
-                    body: json.encode(updatedSchedule),
-                    headers: {'Content-Type': 'application/json'},
-                  );
 
-                  if (response.statusCode == 200) {
-                    // Update local data and trigger UI rebuild
-                    setState(() {
-                      int index = scheduleData.indexWhere((s) => s['id'] == schedule['id']);
-                      if (index != -1) {
-                        scheduleData[index] = updatedSchedule;
-                      }
-                    });
-                    print('Schedule updated successfully');
-                    Navigator.of(context).pop();
-                  } else {
-                    print('Failed to update schedule: ${response.body}');
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Failed to update schedule')),
-                    );
-                  }
-                } catch (error) {
-                  print('Error updating schedule: $error');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error updating schedule')),
-                  );
-                }
-              }
-            },
+      try {
+        final response = await http.post(
+          Uri.parse('http://localhost:3000/updateSchedule'),
+          body: json.encode(updatedSchedule),
+          headers: {'Content-Type': 'application/json'},
+        );
+
+        if (response.statusCode == 200) {
+          // Reset the displayed names and times
+          displayedNamesAndTimes.clear();
+
+          // Update local data and trigger UI rebuild
+          setState(() {
+            int index = scheduleData.indexWhere((s) => s['id'] == schedule['id']);
+            if (index != -1) {
+              scheduleData[index] = updatedSchedule;
+            }
+          });
+          print('Schedule updated successfully');
+          Navigator.of(context).pop();
+        } else {
+          print('Failed to update schedule: ${response.body}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to update schedule')),
+          );
+        }
+      } catch (error) {
+        print('Error updating schedule: $error');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating schedule')),
+        );
+      }
+    }
+  },
             child: Text('Save', style: TextStyle(color: Colors.white)),
           ),
         ],
