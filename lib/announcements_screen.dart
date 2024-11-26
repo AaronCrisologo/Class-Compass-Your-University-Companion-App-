@@ -151,7 +151,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                   return timestampB.compareTo(timestampA); // Sort descending
                 });
 
-                int limit = 3; // Limit to 3 latest announcements
+                int limit = 8; // Limit to 3 latest announcements
                 int count = 0; // Initialize counter
 
                 for (var announcement in campusAnnouncements) {
