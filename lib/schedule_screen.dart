@@ -249,6 +249,21 @@ void _editSchedule(dynamic schedule) {
   String? selectedDay = schedule['day']?.toString();
   String? selectedColor = schedule['color']?.toString();
 
+  bool _validateTimes() {
+    if (selectedStartTime != null && selectedEndTime != null) {
+      final startDateTime = parseTimeString(selectedStartTime!);
+      final endDateTime = parseTimeString(selectedEndTime!);
+
+      if (!endDateTime.isAfter(startDateTime)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('End time must be later than start time'))
+        );
+        return false;
+      }
+    }
+    return true;
+  }
+
   showDialog(
     context: context,
     builder: (context) {
@@ -377,16 +392,16 @@ void _editSchedule(dynamic schedule) {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red[600]),
   onPressed: () async {
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState!.validate() && _validateTimes()) {
       final updatedSchedule = {
-                  'id': schedule['id'],
-                  'name': selectedName,
-                  'instructor': selectedInstructor,
-                  'starttime': selectedStartTime,
-                  'endtime': selectedEndTime,
-                  'day': selectedDay,
-                  'color': selectedColor,
-                };
+        'id': schedule['id'],
+        'name': selectedName,
+        'instructor': selectedInstructor,
+        'starttime': selectedStartTime,
+        'endtime': selectedEndTime,
+        'day': selectedDay,
+        'color': selectedColor,
+      };
 
       try {
         final response = await http.post(
@@ -669,6 +684,19 @@ class _ScheduleFormState extends State<ScheduleForm> {
       final day = selectedDay;
       final color = selectedColor;
 
+      // Add time validation
+      if (startTime != null && endTime != null) {
+        final startDateTime = parseTimeString(startTime);
+        final endDateTime = parseTimeString(endTime);
+
+        if (!endDateTime.isAfter(startDateTime)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('End time must be later than start time'))
+          );
+          return;
+        }
+      }
+
       if (name.isEmpty ||
           instructor.isEmpty ||
           startTime == null ||
@@ -881,4 +909,22 @@ class _ScheduleFormState extends State<ScheduleForm> {
           value == null ? 'Please select $labelText' : null,
     );
   }
+}
+
+DateTime parseTimeString(String timeStr) {
+  final parts = timeStr.split(' ');
+  final timeParts = parts[0].split(':');
+  final period = parts[1];
+  
+  int hours = int.parse(timeParts[0]);
+  int minutes = int.parse(timeParts[1]);
+  
+  // Convert to 24-hour format
+  if (period == 'PM' && hours != 12) {
+    hours += 12;
+  } else if (period == 'AM' && hours == 12) {
+    hours = 0;
+  }
+  
+  return DateTime(2024, 1, 1, hours, minutes);
 }
