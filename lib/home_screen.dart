@@ -12,6 +12,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, String>> announcements = [];
+  List<Map<String, dynamic>> nextDaySchedule = [];
   String nextMarkedDay = "";
   String nextHoliday = "";
   String firstName = '';
@@ -23,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _fetchAnnouncements();
     _fetchNextEvents();
     fetchUserData();
+    _fetchNextDaySchedule();
   }
 
   Future<void> _fetchAnnouncements() async {
@@ -80,6 +82,32 @@ class _HomeScreenState extends State<HomeScreen> {
       print('Error fetching next events: $error');
     }
   }
+
+Future<void> _fetchNextDaySchedule() async {
+  final url = 'http://localhost:3000/get-next-day-schedule';
+
+  try {
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      
+      setState(() {
+        nextDaySchedule = data.map((schedule) => {
+          'name': schedule['name'] ?? 'Unnamed Class',
+          'instructor': schedule['instructor'] ?? 'Unknown Instructor',
+          'startTime': schedule['starttime'] ?? '',
+          'endTime': schedule['endtime'] ?? '',
+          'color': schedule['color'] ?? 'Blue', // Default to 'Blue'
+        }).toList();
+      });
+    } else {
+      print('Failed to load next day schedule');
+    }
+  } catch (error) {
+    print('Error fetching next day schedule: $error');
+  }
+}
 
   String _formatMessage(String message) {
     // Customize message
@@ -174,6 +202,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 40),
 
+                _buildNextDayScheduleSection(), // Add this line
+                const SizedBox(height: 40),
+
                 // Quick Links
                 _buildSectionTitle('Quick Links'),
                 _buildVerticalList(
@@ -224,6 +255,91 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  Widget _buildNextDayScheduleSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('Tomorrow\'s Schedule'),
+        SizedBox(height: 10),
+        nextDaySchedule.isNotEmpty
+            ? Column(
+                children: nextDaySchedule.map((schedule) {
+                  return _buildScheduleCard(schedule);
+                }).toList(),
+              )
+            : Center(
+                child: Text(
+                  'No classes scheduled for tomorrow',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+      ],
+    );
+  }
+
+Widget _buildScheduleCard(Map<String, dynamic> schedule) {
+  // Color mapping for common color names
+  final colorMap = {
+    'Red': Colors.red,
+    'Blue': Colors.blue,
+    'Green': Colors.green,
+    'Yellow': Colors.yellow,
+    'Purple': Colors.purple,
+    'Orange': Colors.orange,
+  };
+
+  // Get color, default to blue if not found
+  Color cardColor = colorMap[schedule['color']] ?? Colors.blue;
+
+  return Card(
+    elevation: 4,
+    margin: EdgeInsets.only(bottom: 10),
+    child: Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Row(
+        children: [
+          Container(
+            width: 10,
+            height: 60,
+            color: cardColor,
+          ),
+          SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  schedule['name'],
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  'Instructor: ${schedule['instructor']}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[700],
+                  ),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  '${schedule['startTime']} - ${schedule['endTime']}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
   Widget _buildAnnouncementCard(
       String announcement, String userName, String userImage) {

@@ -879,6 +879,33 @@ app.post('/updateSchedule', (req, res) => {
     });
 });  
 
+app.get('/get-next-day-schedule', (req, res) => {
+    // Determine the next day
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const today = new Date();
+    const nextDay = new Date(today);
+    nextDay.setDate(today.getDate() + 1);
+    
+    // Get the day of the week for the next day as a string
+    const nextDayOfWeek = days[nextDay.getDay()];
+
+    // Check if currentUserId exists
+    if (!currentUserId) {
+        return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    const query = 'SELECT * FROM schedule WHERE user_id = ? AND day = ?';
+    
+    db.query(query, [currentUserId, nextDayOfWeek], (err, results) => {
+        if (err) {
+            console.error('Error retrieving next day schedule:', err);
+            return res.status(500).json({ error: 'Failed to retrieve schedule' });
+        }
+
+        res.status(200).json(results);
+    });
+});
+
 app.use(bodyParser.json());
 app.post('/add-announcement', (req, res) => {
     const { title, announcement } = req.body;
