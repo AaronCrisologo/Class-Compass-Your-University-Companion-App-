@@ -59,7 +59,7 @@ void filterUpcomingEvents() {
 
   Future<void> fetchCurrentTime() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:3000/calendar/time'));
+      final response = await http.get(Uri.parse('https://ggbg0m6m-3000.asse.devtunnels.ms/calendar/time'));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
@@ -88,7 +88,7 @@ void filterUpcomingEvents() {
 
   Future<void> fetchHolidays() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:3000/calendar/holidays'));
+      final response = await http.get(Uri.parse('https://ggbg0m6m-3000.asse.devtunnels.ms/calendar/holidays'));
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
         for (var holiday in data) {
@@ -106,7 +106,7 @@ void filterUpcomingEvents() {
 
   Future<void> fetchWeatherDisturbances() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:3000/calendar/weather-disturbances'));
+      final response = await http.get(Uri.parse('https://ggbg0m6m-3000.asse.devtunnels.ms/calendar/weather-disturbances'));
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
         for (var disturbance in data) {
@@ -122,7 +122,7 @@ void filterUpcomingEvents() {
 
   Future<void> fetchCombinedNotesAndMarkedDays() async {
     try {
-      final markedDaysResponse = await http.get(Uri.parse('http://localhost:3000/calendar/marked-days'));
+      final markedDaysResponse = await http.get(Uri.parse('https://ggbg0m6m-3000.asse.devtunnels.ms/calendar/marked-days'));
       if (markedDaysResponse.statusCode == 200) {
         List<dynamic> markedDaysData = jsonDecode(markedDaysResponse.body);
         for (var markedDay in markedDaysData) {
@@ -133,7 +133,7 @@ void filterUpcomingEvents() {
         }
       }
 
-      final notesResponse = await http.get(Uri.parse('http://localhost:3000/calendar/notes'));
+      final notesResponse = await http.get(Uri.parse('https://ggbg0m6m-3000.asse.devtunnels.ms/calendar/notes'));
       if (notesResponse.statusCode == 200) {
         List<dynamic> notesData = jsonDecode(notesResponse.body);
         for (var note in notesData) {
@@ -229,13 +229,13 @@ Future<void> _addCustomMarkedDay() async {
 
       if (userInputNote != null && userInputNote.isNotEmpty) {
         await http.post(
-          Uri.parse('http://localhost:3000/calendar/marked-days'),
+          Uri.parse('https://ggbg0m6m-3000.asse.devtunnels.ms/calendar/marked-days'),
           headers: {'Content-Type': 'application/json; charset=UTF-8'},
           body: jsonEncode({'marked_date': selectedDate.toIso8601String(), 'day_type': dayType}),
         );
 
         await http.post(
-          Uri.parse('http://localhost:3000/calendar/notes'),
+          Uri.parse('https://ggbg0m6m-3000.asse.devtunnels.ms/calendar/notes'),
           headers: {'Content-Type': 'application/json; charset=UTF-8'},
           body: jsonEncode({'note_date': selectedDate.toIso8601String(), 'note_text': userInputNote}),
         );
@@ -480,13 +480,13 @@ Future<void> deleteDate(DateTime date) async {
   
   try {
     // Delete user notes
-    final noteResponse = await http.delete(Uri.parse('http://localhost:3000/calendar/notes/$formattedDate'));
+    final noteResponse = await http.delete(Uri.parse('https://ggbg0m6m-3000.asse.devtunnels.ms/calendar/notes/$formattedDate'));
     if (noteResponse.statusCode != 200) {
       print("Failed to delete note: ${noteResponse.body}");
     }
 
     // Delete custom marked day
-    final markedDayResponse = await http.delete(Uri.parse('http://localhost:3000/calendar/marked-days/$formattedDate'));
+    final markedDayResponse = await http.delete(Uri.parse('https://ggbg0m6m-3000.asse.devtunnels.ms/calendar/marked-days/$formattedDate'));
     if (markedDayResponse.statusCode != 200) {
       print("Failed to delete marked day: ${markedDayResponse.body}");
     }

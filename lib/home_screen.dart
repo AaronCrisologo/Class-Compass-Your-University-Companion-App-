@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _fetchAnnouncements() async {
-    final url = 'http://localhost:3000/scrape/gma-suspensions';
+    final url = 'https://ggbg0m6m-3000.asse.devtunnels.ms/scrape/gma-suspensions';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -59,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _fetchNextEvents() async {
-    final url = 'http://localhost:3000/calendar/next-events';
+    final url = 'https://ggbg0m6m-3000.asse.devtunnels.ms/calendar/next-events';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -84,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 Future<void> _fetchNextDaySchedule() async {
-  final url = 'http://localhost:3000/get-next-day-schedule';
+  final url = 'https://ggbg0m6m-3000.asse.devtunnels.ms/get-next-day-schedule';
 
   try {
     final response = await http.get(Uri.parse(url));
@@ -116,7 +116,7 @@ Future<void> _fetchNextDaySchedule() async {
 
   // Function to fetch user data
   Future<void> fetchUserData() async {
-    final response = await http.get(Uri.parse('http://localhost:3000/get-user'));
+    final response = await http.get(Uri.parse('https://ggbg0m6m-3000.asse.devtunnels.ms/get-user'));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);

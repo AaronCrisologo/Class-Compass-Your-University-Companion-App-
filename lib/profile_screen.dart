@@ -22,7 +22,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> fetchUserData() async {
     final response = await http.get(
       Uri.parse(
-          'http://localhost:3000/get-user'), // Replace with your actual URL
+          'https://ggbg0m6m-3000.asse.devtunnels.ms/get-user'), // Replace with your actual URL
     );
 
     if (response.statusCode == 200) {

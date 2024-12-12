@@ -57,7 +57,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   Future<void> fetchScheduleData() async {
     print('Fetching schedule from API...');
     try {
-      final response = await http.get(Uri.parse('http://localhost:3000/get-schedule'));
+      final response = await http.get(Uri.parse('https://ggbg0m6m-3000.asse.devtunnels.ms/get-schedule'));
       if (response.statusCode == 200) {
         print('Response Body: ${response.body}');
         print('Schedule updated successfully.');
@@ -405,7 +405,7 @@ void _editSchedule(dynamic schedule) {
 
       try {
         final response = await http.post(
-          Uri.parse('http://localhost:3000/updateSchedule'),
+          Uri.parse('https://ggbg0m6m-3000.asse.devtunnels.ms/updateSchedule'),
           body: json.encode(updatedSchedule),
           headers: {'Content-Type': 'application/json'},
         );
@@ -450,7 +450,7 @@ void _deleteSchedule(dynamic schedule) async {
   // Backend delete logic
   try {
     final response = await http.post(
-      Uri.parse('http://localhost:3000/deleteSchedule'),
+      Uri.parse('https://ggbg0m6m-3000.asse.devtunnels.ms/deleteSchedule'),
       body: json.encode({'id': schedule['id']}),
       headers: {'Content-Type': 'application/json'},
     );
@@ -710,7 +710,7 @@ class _ScheduleFormState extends State<ScheduleForm> {
 
       try {
         final response = await http.post(
-          Uri.parse('http://localhost:3000/schedule'),
+          Uri.parse('https://ggbg0m6m-3000.asse.devtunnels.ms/schedule'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'name': name,

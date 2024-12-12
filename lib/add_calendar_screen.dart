@@ -37,7 +37,7 @@ class _AddCalendarScreenState extends State<AddCalendarScreen> {
   }
 
   Future<void> _saveAsynchronousDay() async {
-    final String apiUrl = 'http://localhost:3000/calendar/admin-marked-days-with-notes';
+    final String apiUrl = 'https://ggbg0m6m-3000.asse.devtunnels.ms/calendar/admin-marked-days-with-notes';
     final Map<String, dynamic> payload = {
       'marked_date': _selectedDate.toIso8601String(),
       'note_text': _notesController.text,

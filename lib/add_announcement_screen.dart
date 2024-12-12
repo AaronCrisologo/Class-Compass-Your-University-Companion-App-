@@ -13,7 +13,7 @@ class _AddAnnouncementScreenState extends State<AddAnnouncementScreen> {
 
   Future<void> _postAnnouncement(String title, String announcement) async {
     final url = Uri.parse(
-        'http://localhost:3000/add-announcement'); // Replace with your actual endpoint
+        'https://ggbg0m6m-3000.asse.devtunnels.ms/add-announcement'); // Replace with your actual endpoint
     try {
       final response = await http.post(
         url,

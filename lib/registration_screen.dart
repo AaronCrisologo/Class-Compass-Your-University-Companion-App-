@@ -57,7 +57,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       return;
     }
 
-    var url = Uri.parse('http://localhost:3000/register'); // Adjust as needed
+    var url = Uri.parse('https://ggbg0m6m-3000.asse.devtunnels.ms/register'); // Adjust as needed
 
     try {
       var response = await http.post(

@@ -19,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
     String email = _emailController.text;
     String password = _passwordController.text;
 
-    var url = Uri.parse('http://localhost:3000/login');
+    var url = Uri.parse('https://ggbg0m6m-3000.asse.devtunnels.ms/login');
 
     var response = await http.post(
       url,

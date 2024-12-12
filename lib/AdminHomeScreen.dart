@@ -28,7 +28,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
 
   Future<void> _fetchAdminData() async {
-    final String apiUrl = 'http://localhost:3000/accounts/get-email'; // Replace with your API URL
+    final String apiUrl = 'https://ggbg0m6m-3000.asse.devtunnels.ms/accounts/get-email'; // Replace with your API URL
     try {
       final response = await http.get(Uri.parse(apiUrl));
 

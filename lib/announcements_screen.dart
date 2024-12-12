@@ -24,7 +24,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
   // Fetch suspension announcements from the API
   Future<void> _fetchAnnouncements() async {
     final url =
-        'http://localhost:3000/scrape/gma-suspensions'; // Update with your backend endpoint
+        'https://ggbg0m6m-3000.asse.devtunnels.ms/scrape/gma-suspensions'; // Update with your backend endpoint
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -57,7 +57,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
   // Fetch volcano announcements from the API
   Future<void> _fetchVolcanoAnnouncements() async {
     final url =
-        'http://localhost:3000/scrape/gma-volcano'; // Update with your backend endpoint
+        'https://ggbg0m6m-3000.asse.devtunnels.ms/scrape/gma-volcano'; // Update with your backend endpoint
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -90,7 +90,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
   // Fetch weather updates from the API
   Future<void> _fetchWeatherUpdates() async {
     final url =
-        'http://localhost:3000/scrape/gma-weather'; // Update with your backend endpoint
+        'https://ggbg0m6m-3000.asse.devtunnels.ms/scrape/gma-weather'; // Update with your backend endpoint
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -123,7 +123,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
   // Fetch campus-specific announcements
   // Fetch campus-specific announcements
   Future<void> _fetchCampusAnnouncements() async {
-    final url = 'http://localhost:3000/get-announcements'; // New endpoint
+    final url = 'https://ggbg0m6m-3000.asse.devtunnels.ms/get-announcements'; // New endpoint
     print('Fetching campus announcements...'); // Debug print
 
     try {
