@@ -2,13 +2,13 @@
 
 ## **🤼 Name of Team Member**
 
-*Cabalag, Francis Melvin V.*
+*Crisologo, Aaron Angelo*
 
-*Crisologo, Aaron Angelo D.*
+*Bacsa, Angel Mae*
 
-*Gudtan, Gian Aron B.*
+*Barcelona, Nielle*
 
-*Harina, Jhaycie Lloyd D.*
+*Ramos, Mark Kevin*
 
 ## **📝 Project Overview**
   Class Compass is a comprehensive mobile application designed to streamline and enhance the student experience by consolidating critical academic information and updates into a single, user-friendly interface. Built using the Flutter framework, Class Compass is intended to provide students with real-time notifications about class cancellations, school holidays, emergency announcements, and other vital information that could affect their academic schedule. 
