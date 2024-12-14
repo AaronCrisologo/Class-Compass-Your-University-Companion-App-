@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http; // For API calls
 
 import 'add_announcement_screen.dart';
 import 'add_calendar_screen.dart';
+import 'login_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   @override
@@ -64,6 +65,19 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       appBar: AppBar(
         title: Text('Admin Dashboard'),
         centerTitle: false,
+                actions: [
+          IconButton(
+            icon: Icon(
+              Icons.logout,
+            ),
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: _selectedIndex == 0
           ? _buildAdminHome()
