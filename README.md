@@ -57,26 +57,6 @@ A section that aggregates and displays the university’s academic calendar, nat
 **Resource Links and Emergency Contacts:**
 An integrated section with links to valuable academic resources and emergency contact information.
 
-
-### ***Acknowledging Limitations:***
-**No Backend Integration:**
-The project will not involve any backend development. All data used in the application will be static or mocked, and there will be no real-time data fetching or database interactions.
-
-**Limited Real-Time Functionality:**
-While the app will include a design for real-time notifications, the actual implementation of real-time data updates and push notifications will not be covered in this phase.
-
-**Static Data:**
-The academic calendar, event information, and other data displayed in the app will be hardcoded or stored locally within the app for demonstration purposes.
-
-**No Persistent Storage:**
-User-generated data, such as custom schedules and marked class cancellations, will not be saved persistently. Any data entered will be lost once the app is closed.
-
-**Simplified Authentication:**
-The login system will be designed to simulate user authentication and personalization but will not involve actual user verification or secure credential storage.
-
-**No Network Security:**
-Since the project does not involve backend interaction, network security measures like data encryption and secure API communication will not be implemented.
-
 ## **🌳 Climate Action Commitment:**
 The Class Compass project aligns with Sustainable Development Goal 4 (Quality Education), which aims to ensure inclusive and equitable quality education and promote lifelong learning opportunities for all. By providing students with a centralized platform for accessing critical academic information and resources, Class Compass supports Goal 4 by:
 
@@ -95,13 +75,16 @@ Class Compass leverages digital technology to innovate how educational informati
 • **Dart Programming Language:** 
 Dart, the programming language used with Flutter, will be employed for writing the application's logic and user interface components. Dart's efficiency in handling UI rendering and business logic makes it well-suited for mobile app development.
 
+• **Node.js:** 
+We used Node.js to build the backend of our mobile app. It will handle server-side operations, manage API requests, and ensure real-time data processing. Node.js will enable us to create a scalable and efficient server that can handle multiple simultaneous connections, ensuring smooth and responsive interactions for our users.
+
+• **MySQL Database:** 
+MySQL Workbench is our primary tool for designing and managing the database. It helped us create and maintain the database schema, run SQL queries, and manage data efficiently. By using MySQL Workbench, we can ensure that our app has a robust and well-structured database to store user information, schedules, and other critical data securely.
+
 • **Integrated Development Environment (IDE):** 
 **VS Code** will be used as the primary integrated development environment (IDE) for coding, debugging, and testing the Flutter application. Its robust Flutter and Dart extensions simplify development tasks and provide essential tools for efficient coding.
 
+**Android Studio:** will assist in developing the Android version of our mobile app. It will be used for specific tasks such as running the Android emulator, testing the app on various Android devices, and utilizing its powerful debugging tools to ensure optimal performance and compatibility.
+
 • **Version Control System:** 
 Git will be utilized for version control, enabling collaborative development, tracking changes, and managing codebase updates throughout the project lifecycle. **GitHub** will serve as the remote repository hosting service.
-
-• **Mock Data and Assets:** 
-Static data and mock assets, including academic calendars, event information, and departmental resources, will be stored locally within the application. These will be accessed and displayed dynamically to simulate real-time updates and functionality.
-
-## **References**
